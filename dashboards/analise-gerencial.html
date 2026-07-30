@@ -1,0 +1,1204 @@
+<title>Análise Gerencial — BTJ Filetagem & Refile</title>
+<style>
+/* ── DESIGN TOKENS ── */
+:root {
+  color-scheme: dark;
+  --bg:        #0d0d0d;
+  --surf:      #1a1a19;
+  --surf2:     #222221;
+  --surf3:     #2a2a28;
+  --bdr:       #2c2c2a;
+  --bdr2:      #383835;
+  --txt:       #ffffff;
+  --txt2:      #c3c2b7;
+  --txt3:      #898781;
+  --s1:        #2a78d6;  /* blue */
+  --s2:        #eb6834;  /* orange */
+  --s3:        #1baf7a;  /* aqua */
+  --s4:        #eda100;  /* yellow */
+  --s5:        #e87ba4;  /* magenta */
+  --s6:        #008300;  /* green */
+  --s7:        #4a3aa7;  /* violet */
+  --s8:        #e34948;  /* red */
+  --grid:      #2c2c2a;
+  --axis:      #383835;
+  --muted:     #898781;
+  --ok:        #0ca30c;
+  --warn:      #fab219;
+  --crit:      #d03b3b;
+  --meta-fil:  #eda100;
+  --meta-ref:  #eb6834;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:14px;padding:0 20px;height:52px;background:var(--surf);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:100}
+.brand{font-size:16px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;color:var(--txt)}
+.brand em{color:var(--s1);font-style:normal}
+.brand-sep{color:var(--txt3);font-weight:400;margin:0 2px}
+.brand-sub{color:var(--txt2);font-size:12px;font-weight:400}
+.top-spacer{flex:1}
+.top-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--txt3)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;animation:blink 2.4s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.live-lbl{color:var(--ok);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:4px;border:1px solid var(--bdr2);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.03em;background:var(--surf2);color:var(--txt2);transition:background .15s,color .15s}
+.btn:hover{background:var(--surf3);color:var(--txt)}
+.btn-primary{background:#1c3a5e;color:#7bb8f5;border-color:#2a5080}
+.btn-primary:hover{background:#254d7a;color:#a8d0f8}
+
+/* ── FILTERBAR ── */
+.filterbar{display:flex;align-items:center;gap:10px;padding:8px 20px;background:var(--surf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.filter-label{font-size:10px;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.fsel{background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt2);border-radius:4px;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit}
+.fsel:focus{outline:1px solid var(--s1)}
+input[type=date].fsel{color-scheme:dark}
+.fsep{width:1px;height:20px;background:var(--bdr2)}
+.meta-group{display:flex;align-items:center;gap:8px}
+.meta-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:600}
+.meta-fil{background:#1d1800;color:var(--meta-fil);border:1px solid #3a2f00}
+.meta-ref{background:#1e1100;color:var(--meta-ref);border:1px solid #3a1f00}
+.inp-meta{width:58px;padding:5px 7px;font-size:12px}
+
+/* ── GRID LAYOUT ── */
+.page{max-width:1600px;margin:0 auto;padding:16px 20px 40px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.kpi-card{background:var(--surf);border:1px solid var(--bdr);border-radius:6px;padding:14px 16px}
+.kpi-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);font-weight:700;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.03em}
+.kpi-sub{font-size:10px;color:var(--txt3);margin-top:4px}
+.kpi-delta{font-size:11px;font-weight:700;margin-top:3px}
+.delta-up{color:var(--ok)}
+.delta-down{color:var(--crit)}
+.kv-blue{color:#3987e5}
+.kv-orange{color:#eb6834}
+.kv-aqua{color:#1baf7a}
+.kv-yellow{color:#eda100}
+.kv-green{color:var(--ok)}
+.kv-red{color:var(--crit)}
+
+/* ── CHART GRID ── */
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px}
+.chart-grid-wide{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:900px){.chart-grid-2,.chart-grid-3,.chart-grid-wide{grid-template-columns:1fr}}
+
+.chart-card{background:var(--surf);border:1px solid var(--bdr);border-radius:6px;overflow:hidden}
+.chart-card-head{padding:12px 16px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.chart-card-title{font-size:12px;font-weight:700;color:var(--txt);letter-spacing:.01em}
+.chart-card-sub{font-size:10px;color:var(--txt3);margin-top:1px}
+.chart-body{padding:0 12px 12px;position:relative}
+canvas{display:block;border-radius:3px}
+
+/* ── LEGEND ── */
+.legend{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--txt3);flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px}
+.leg-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.leg-rect{width:13px;height:5px;border-radius:2px;display:inline-block;flex-shrink:0}
+.leg-dash{width:18px;height:0;border-top:2px dashed;display:inline-block}
+
+/* ── QUADRANT TABLE ── */
+.quad-table{width:100%;border-collapse:collapse;font-size:11px}
+.quad-table th{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);padding:8px 10px;border-bottom:1px solid var(--bdr);font-weight:700;text-align:left}
+.quad-table td{padding:7px 10px;border-bottom:1px solid var(--bdr);font-variant-numeric:tabular-nums;vertical-align:middle}
+.quad-table tr:last-child td{border-bottom:none}
+.quad-table tr:hover td{background:var(--surf2)}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;font-size:9px;font-weight:700;background:var(--surf3);color:var(--txt3)}
+.rank-1{background:#1a2f00;color:#69f069;border:1px solid #2e5000}
+.rank-2{background:#1a1e0f;color:#b8cc66;border:1px solid #3a4000}
+.rank-3{background:#1e1b00;color:#d4aa00;border:1px solid #3a3000}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;white-space:nowrap}
+.pill-ok{background:#0d2210;color:#4af04a;border:1px solid #1a4a1a}
+.pill-warn{background:#2a1a00;color:#fab219;border:1px solid #4a3000}
+.pill-crit{background:#2a0d0d;color:#e34948;border:1px solid #4a1a1a}
+
+/* ── SCATTER QUADRANT ── */
+.quad-label-box{position:absolute;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:3px;pointer-events:none}
+
+/* ── TOOLTIP ── */
+.tip{position:fixed;pointer-events:none;background:#111;border:1px solid var(--bdr2);border-radius:6px;padding:10px 14px;font-size:11px;line-height:1.7;color:var(--txt2);z-index:300;min-width:190px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.75)}
+.tip-title{font-weight:700;color:var(--txt);font-size:12px;margin-bottom:4px}
+.tip-row{display:flex;justify-content:space-between;gap:14px}
+.tip-key{color:var(--txt3)}
+.tip-val{color:var(--txt);font-weight:600;text-align:right}
+
+/* ── PARETO TABLE (full width) ── */
+.full-card{background:var(--surf);border:1px solid var(--bdr);border-radius:6px;overflow:hidden;margin-bottom:20px}
+
+/* ── EMPTY ── */
+.empty{padding:48px;text-align:center;color:var(--txt3);font-size:12px}
+
+/* ── SEPARATOR ── */
+.sec{margin-bottom:20px}
+</style>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand"><em>BTJ</em> <span class="brand-sep">—</span> <span class="brand-sub">Análise Gerencial</span></div>
+  <div class="top-spacer"></div>
+  <div class="top-meta">
+    <span id="top-date">2026-07-30</span>
+    &nbsp;·&nbsp;
+    <span class="live-dot" id="live-dot"></span>
+    <span class="live-lbl" id="live-status">Conectando…</span>
+    &nbsp;·&nbsp;
+    <span id="top-regs">—</span> registros
+  </div>
+  <button class="btn btn-primary" onclick="fetchData()">&#8635; Atualizar</button>
+  <button class="btn" id="btn-auto" onclick="toggleAuto()">&#9201; Auto: 10s</button>
+  <button class="btn" onclick="exportCSV()">&#8595; CSV</button>
+  <button class="btn" onclick="window.open('apontamentos-btj.html','_blank')">&#8599; Operacional</button>
+</div>
+
+<!-- FILTERBAR -->
+<div class="filterbar">
+  <span class="filter-label">Período</span>
+  <input type="date" class="fsel" id="dt-de"  value="2026-07-30" onchange="fetchData()">
+  <span class="filter-label" style="margin:0 2px">até</span>
+  <input type="date" class="fsel" id="dt-ate" value="2026-07-30" onchange="fetchData()">
+  <div class="fsep"></div>
+  <span class="filter-label">Operador</span>
+  <select class="fsel" id="sel-op" onchange="render()">
+    <option value="">Todos</option>
+  </select>
+  <div class="fsep"></div>
+  <div class="meta-group">
+    <span class="meta-badge meta-fil">&#128298; Meta Filetagem</span>
+    <input type="number" class="fsel inp-meta" id="meta-fil" value="43" min="1" max="200" step="0.5" onchange="render()">
+    <span class="meta-badge meta-ref">&#9986; Meta Refile</span>
+    <input type="number" class="fsel inp-meta" id="meta-ref" value="90" min="1" max="200" step="0.5" onchange="render()">
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- KPIs -->
+  <div class="sec">
+    <div class="section-title">Resumo Executivo</div>
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total Caixas</div><div class="kpi-val kv-blue" id="k-total">—</div><div class="kpi-sub">hoje</div></div>
+      <div class="kpi-card"><div class="kpi-label">Rend. Filetagem</div><div class="kpi-val kv-yellow" id="k-rend-fil">—</div><div class="kpi-sub" id="k-rend-fil-sub">meta 43%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Rend. Refile</div><div class="kpi-val kv-orange" id="k-rend-ref">—</div><div class="kpi-sub" id="k-rend-ref-sub">meta 90%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Kg Entrada Total</div><div class="kpi-val kv-aqua" id="k-kg-in">—</div><div class="kpi-sub">ambos setores</div></div>
+      <div class="kpi-card"><div class="kpi-label">Perda Total</div><div class="kpi-val kv-red" id="k-perda">—</div><div class="kpi-sub">Kg entrada − saída</div></div>
+      <div class="kpi-card"><div class="kpi-label">Operadores Ativos</div><div class="kpi-val kv-blue" id="k-ops">—</div><div class="kpi-sub" id="k-ops-sub">— FIL · — REF</div></div>
+      <div class="kpi-card"><div class="kpi-label">Acima da Meta</div><div class="kpi-val kv-green" id="k-above">—</div><div class="kpi-sub" id="k-above-sub">operadores</div></div>
+      <div class="kpi-card"><div class="kpi-label">Abaixo da Meta</div><div class="kpi-val kv-red" id="k-below">—</div><div class="kpi-sub" id="k-below-sub">operadores</div></div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Rendimento comparativo + distribuição -->
+  <div class="sec">
+    <div class="section-title">Rendimento por Operador</div>
+    <div class="chart-grid-wide">
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Comparativo Filetagem vs Refile — Rendimento Médio</div><div class="chart-card-sub">Ordenado por setor; linha amarela = meta</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-dash" style="border-color:var(--meta-fil)"></span> Meta FIL</div>
+            <div class="leg-item"><span class="leg-dash" style="border-color:var(--meta-ref)"></span> Meta REF</div>
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s1)"></span> Filetagem</div>
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s2)"></span> Refile</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="c-rend-comp"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Distribuição de Rendimento</div><div class="chart-card-sub">Histograma por faixa de rendimento (%)</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s1)"></span> Filetagem</div>
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s2)"></span> Refile</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="c-hist"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Evolução no tempo + perda por operador -->
+  <div class="sec">
+    <div class="section-title">Evolução e Perda</div>
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Rendimento ao Longo do Turno — Filetagem</div><div class="chart-card-sub">Média móvel de 5 caixas por hora</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s1);height:3px"></span> Rend. (mov. 5)</div>
+            <div class="leg-item"><span class="leg-dash" style="border-color:var(--meta-fil)"></span> Meta 43%</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="c-trend-fil"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Rendimento ao Longo do Turno — Refile</div><div class="chart-card-sub">Média móvel de 5 caixas por hora</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s2);height:3px"></span> Rend. (mov. 5)</div>
+            <div class="leg-item"><span class="leg-dash" style="border-color:var(--meta-ref)"></span> Meta 90%</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="c-trend-ref"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Scatter eficiência + Pareto de perda -->
+  <div class="sec">
+    <div class="section-title">Eficiência & Pareto de Perdas</div>
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Quadrante de Eficiência — Filetagem</div><div class="chart-card-sub">Caixas processadas vs Rendimento médio (%)</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-dot" style="background:var(--s1)"></span> Filetagem</div>
+            <div class="leg-item"><span class="leg-dot" style="background:var(--s2)"></span> Refile</div>
+          </div>
+        </div>
+        <div class="chart-body" style="position:relative"><canvas id="c-scatter"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Pareto — Perda de Kg por Operador</div><div class="chart-card-sub">Quem gera mais perda total (kg entrada − kg saída)</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-rect" style="background:var(--s8)"></span> Perda (kg)</div>
+            <div class="leg-item"><span class="leg-dash" style="border-color:var(--s4)"></span> Acumulado %</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="c-pareto"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Ranking gerencial -->
+  <div class="sec">
+    <div class="section-title">Ranking Gerencial — Filetagem</div>
+    <div class="full-card">
+      <table class="quad-table" id="tbl-fil">
+        <thead><tr>
+          <th>#</th><th>Operador</th><th>Caixas</th>
+          <th>Rend. Médio</th><th>Kg Entrada</th><th>Kg Saída</th>
+          <th>Perda (kg)</th><th>Cx/Hora</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody-fil"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="section-title">Ranking Gerencial — Refile</div>
+    <div class="full-card">
+      <table class="quad-table" id="tbl-ref">
+        <thead><tr>
+          <th>#</th><th>Operador</th><th>Caixas</th>
+          <th>Rend. Médio</th><th>Kg Entrada</th><th>Kg Saída</th>
+          <th>Perda (kg)</th><th>Cx/Hora</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody-ref"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div id="tip" class="tip" style="display:none"></div>
+
+<script>
+/* ── OPERADORES ── */
+const OPS = {
+  833:{name:'Adalberto Lima'},68:{name:'Alex Yudi'},761:{name:'Alexandre Gregorio'},
+  835:{name:'Bruno Henrique'},860:{name:'Carlos Rodrigues'},1014:{name:'Caua Clemente'},
+  40:{name:'Djalma Santos'},811:{name:'Fabio Santos'},14:{name:'Icaro Renato'},
+  865:{name:'Italo Carlos'},280:{name:'Jadiel Mota'},15:{name:'Joao Santos'},
+  92:{name:'Kaic Jhonatan'},37:{name:'Manoel Vintura'},1026:{name:'Nailson Cavalcanti'},
+  510:{name:'Rafael Guilherme'},93:{name:'Ricardo Bezerra'},892:{name:'Sergio Araujo'},
+  107:{name:'Sidmar Torres'},1021:{name:'Silas Souza'},74:{name:'Valcir Silva'},
+  690:{name:'Viviane Cassia'},
+  438:{name:'Aline Kaori'},820:{name:'Ana Paula'},506:{name:'Brislane Lima'},
+  331:{name:'Claudeane Santos'},701:{name:'Claudia Leite'},266:{name:'Edimara Netto'},
+  823:{name:'Edvaneide Ferreira'},212:{name:'Elizangela Sousa'},635:{name:'Gisele Valentim'},
+  451:{name:'Janaina Silva'},750:{name:'Jessica Paixao'},234:{name:'Jocelia Jesus'},
+  357:{name:'Laislaine Cruz'},828:{name:'Maria Eduarda'},769:{name:'Maria Selma'},
+  742:{name:'Marineide Aparecida'},528:{name:'Noeuzi Santana'},170:{name:'Rayane Eduarda'},
+  502:{name:'Roseni Aparecida'},687:{name:'Rosimeire Oliveira'},681:{name:'Suellen Fernanda'},
+  2001:{name:'Eloiza Daniela'},
+};
+
+/* ── GRAFANA CONFIG ── */
+const IS_LOCAL    = ['localhost','127.0.0.1'].includes(location.hostname);
+const GRAFANA_URL = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
+const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
+const DS_UID      = 'aeal1lruwzif4c';
+
+/* ── FALLBACK DATA ── */
+const FIL_FB = [
+  {lote:'LOT-2001',hora:'07:05',op:37,  cx:'CX-001',pi:26.4,pf:11.20,res:0.30},
+  {lote:'LOT-2001',hora:'07:52',op:37,  cx:'CX-002',pi:24.8,pf:10.90,res:0.50},
+  {lote:'LOT-2002',hora:'08:47',op:37,  cx:'CX-003',pi:28.1,pf:12.30,res:0.40},
+  {lote:'LOT-2002',hora:'09:31',op:37,  cx:'CX-004',pi:25.6,pf:11.50,res:0.20},
+  {lote:'LOT-2003',hora:'10:15',op:37,  cx:'CX-005',pi:27.3,pf:12.40,res:0.60},
+  {lote:'LOT-2004',hora:'07:18',op:835, cx:'CX-006',pi:30.2,pf:13.80,res:0.40},
+  {lote:'LOT-2004',hora:'08:10',op:835, cx:'CX-007',pi:27.5,pf:12.40,res:0.30},
+  {lote:'LOT-2005',hora:'09:02',op:835, cx:'CX-008',pi:29.8,pf:13.50,res:0.70},
+  {lote:'LOT-2005',hora:'09:55',op:835, cx:'CX-009',pi:26.4,pf:11.80,res:0.50},
+  {lote:'LOT-2006',hora:'10:48',op:835, cx:'CX-010',pi:31.2,pf:14.30,res:0.40},
+  {lote:'LOT-2007',hora:'07:33',op:510, cx:'CX-011',pi:25.1,pf:11.40,res:0.20},
+  {lote:'LOT-2007',hora:'08:20',op:510, cx:'CX-012',pi:28.7,pf:13.00,res:0.50},
+  {lote:'LOT-2008',hora:'09:08',op:510, cx:'CX-013',pi:26.9,pf:12.20,res:0.30},
+  {lote:'LOT-2008',hora:'09:55',op:510, cx:'CX-014',pi:30.4,pf:13.50,res:0.80},
+  {lote:'LOT-2009',hora:'10:42',op:510, cx:'CX-015',pi:27.2,pf:12.60,res:0.40},
+  {lote:'LOT-2010',hora:'07:42',op:1026,cx:'CX-016',pi:24.5,pf:11.50,res:0.30},
+  {lote:'LOT-2010',hora:'08:30',op:1026,cx:'CX-017',pi:26.8,pf:12.70,res:0.20},
+  {lote:'LOT-2011',hora:'09:18',op:1026,cx:'CX-018',pi:29.1,pf:13.90,res:0.50},
+  {lote:'LOT-2011',hora:'10:05',op:1026,cx:'CX-019',pi:25.3,pf:12.10,res:0.40},
+  {lote:'LOT-2012',hora:'10:53',op:1026,cx:'CX-020',pi:28.6,pf:13.60,res:0.30},
+  {lote:'LOT-2013',hora:'07:55',op:14,  cx:'CX-021',pi:27.4,pf:12.00,res:0.40},
+  {lote:'LOT-2013',hora:'08:45',op:14,  cx:'CX-022',pi:29.8,pf:13.20,res:0.60},
+  {lote:'LOT-2014',hora:'09:35',op:14,  cx:'CX-023',pi:26.1,pf:11.70,res:0.30},
+  {lote:'LOT-2014',hora:'10:25',op:14,  cx:'CX-024',pi:30.5,pf:13.80,res:0.50},
+  {lote:'LOT-2015',hora:'11:15',op:14,  cx:'CX-025',pi:28.3,pf:12.80,res:0.40},
+  {lote:'LOT-2016',hora:'08:02',op:892, cx:'CX-026',pi:25.8,pf:11.10,res:0.30},
+  {lote:'LOT-2016',hora:'08:55',op:892, cx:'CX-027',pi:28.2,pf:12.30,res:0.50},
+  {lote:'LOT-2017',hora:'09:47',op:892, cx:'CX-028',pi:26.9,pf:11.80,res:0.20},
+  {lote:'LOT-2017',hora:'10:40',op:892, cx:'CX-029',pi:30.1,pf:13.20,res:0.70},
+  {lote:'LOT-2018',hora:'11:33',op:892, cx:'CX-030',pi:27.5,pf:12.00,res:0.40},
+];
+const REF_FB = [
+  {hora:'07:22',op:438, cx:'CX-R001',pi:12.4,pf:10.8,res:0.90},
+  {hora:'08:15',op:438, cx:'CX-R002',pi:15.2,pf:13.1,res:1.40},
+  {hora:'09:10',op:438, cx:'CX-R003',pi:11.8,pf:10.2,res:1.00},
+  {hora:'10:05',op:438, cx:'CX-R004',pi:14.6,pf:12.8,res:1.20},
+  {hora:'07:35',op:506, cx:'CX-R005',pi:13.5,pf:12.0,res:0.80},
+  {hora:'08:28',op:506, cx:'CX-R006',pi:16.1,pf:14.2,res:1.30},
+  {hora:'09:22',op:506, cx:'CX-R007',pi:12.7,pf:11.3,res:0.90},
+  {hora:'10:15',op:506, cx:'CX-R008',pi:14.9,pf:13.2,res:1.10},
+  {hora:'07:48',op:502, cx:'CX-R009',pi:11.2,pf:9.80,res:0.80},
+  {hora:'08:42',op:502, cx:'CX-R010',pi:14.8,pf:13.1,res:1.00},
+  {hora:'09:36',op:502, cx:'CX-R011',pi:12.5,pf:11.0,res:0.90},
+  {hora:'08:05',op:820, cx:'CX-R012',pi:15.5,pf:13.7,res:1.20},
+  {hora:'09:00',op:820, cx:'CX-R013',pi:13.2,pf:11.6,res:1.00},
+  {hora:'09:55',op:820, cx:'CX-R014',pi:16.8,pf:14.9,res:1.30},
+  {hora:'10:51',op:820, cx:'CX-R015',pi:14.1,pf:12.5,res:1.10},
+];
+
+/* ── STATE ── */
+let FIL = [...FIL_FB], REF = [...REF_FB];
+let autoEnabled = true, countdownSecs = 10;
+let autoTimer = null;
+
+/* ── HELPERS ── */
+function toMins(h) {
+  if (!h) return 0;
+  const p = h.split(':').map(Number);
+  return (p[0]||0)*60 + (p[1]||0) + (p[2]||0)/60;
+}
+function rFIL(r){ return (r.pf / Math.max(.01, r.pi - r.res)) * 100; }
+function rREF(r){ return ((r.pf + r.res) / Math.max(.01, r.pi)) * 100; }
+function fKg(v){ return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function fPct(v){ return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'; }
+function opName(op){ return OPS[op]?.name || `Op.${op}`; }
+
+function opStats(rows, rendFn) {
+  const m = {};
+  rows.forEach(r => {
+    if (!m[r.op]) m[r.op] = [];
+    m[r.op].push({...r, rd: rendFn(r), mins: toMins(r.hora)});
+  });
+  return Object.entries(m).map(([op, cx]) => {
+    cx.sort((a,b) => a.mins - b.mins);
+    const n      = cx.length;
+    const sumPi  = cx.reduce((s,r)=>s+r.pi,0);
+    const sumPf  = cx.reduce((s,r)=>s+r.pf,0);
+    const sumRes = cx.reduce((s,r)=>s+r.res,0);
+    const avgRd  = cx.reduce((s,r)=>s+r.rd,0)/n;
+    const perda  = sumPi - sumPf;
+    const span   = cx[n-1].mins - cx[0].mins;
+    const cxh    = span > 0 ? (n/(span/60)) : 0;
+    return {op:Number(op), caixas:n, sumPi, sumPf, sumRes, avgRd, perda, cxh,
+            firstHora:cx[0].hora, lastHora:cx[n-1].hora};
+  });
+}
+
+function movingAvg(arr, k) {
+  return arr.map((_,i) => {
+    const slice = arr.slice(Math.max(0,i-k+1), i+1);
+    return slice.reduce((s,v)=>s+v,0)/slice.length;
+  });
+}
+
+/* ── STATUS UI ── */
+function setStatus(msg, type) {
+  const el = document.getElementById('live-status');
+  const dt = document.getElementById('live-dot');
+  const c  = {ok:'#0ca30c', erro:'#d03b3b', load:'#fab219'};
+  el.textContent = msg;
+  el.style.color = c[type]||'#898781';
+  if (dt) dt.style.background = c[type]||'#898781';
+}
+
+/* ── CSS VAR GETTER ── */
+const CV = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ── GRAFANA FETCH ── */
+const SQL_FIL = `SELECT DataInicio,Lote,CONVERT(varchar(8),HoraFim,108) AS Ultimo_apontamento,Operador,CodigoCaixa,PesoInicial,PesoFinal,coalesce(PesoResiduo,0) as PesoResiduo FROM BTJDW.industriafrigo.ApontamentoCaixaFiletagem WHERE $__timeFilter(DataInicio) AND situacao='F' AND Operador<>667 AND DataInicio>'2026-02-19'`;
+const SQL_REF = `SELECT DataInicio,CONVERT(varchar(8),HoraFim,108) AS Ultimo_apontamento,Operador,CodigoCaixa,PesoInicial,PesoFinal,coalesce(PesoResiduo,0) as PesoResiduo FROM BTJDW.industriafrigo.ApontamentoCaixaRefile WHERE $__timeFilter(DataInicio) AND situacao='F' AND Operador<>667 AND DataInicio>'2026-02-19'`;
+
+async function queryGrafana(sql, dtDe, dtAte) {
+  const from = new Date(dtDe+'T00:00:00').getTime();
+  const to   = new Date(dtAte+'T23:59:59').getTime();
+  const res  = await fetch(`${GRAFANA_URL}/api/ds/query`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':GRAFANA_AUTH},
+    body:JSON.stringify({
+      queries:[{datasource:{type:'mssql',uid:DS_UID},rawSql:sql,format:'table',refId:'A',rawQuery:true,dataset:'ERP'}],
+      from:String(from), to:String(to),
+    }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const j = await res.json();
+  const fr = j?.results?.A?.frames?.[0];
+  if (!fr) throw new Error('Resposta inesperada');
+  return fr;
+}
+
+function parseFrame(frame, type) {
+  const fields = frame.schema.fields;
+  const vals   = frame.data.values;
+  const n      = vals[0]?.length || 0;
+  const rows   = [];
+  for (let i = 0; i < n; i++) {
+    const raw = {};
+    fields.forEach((f,j) => { raw[f.name] = vals[j][i]; });
+    let hora = raw['Ultimo_apontamento'] || '';
+    if (typeof hora !== 'string') hora = String(hora);
+    hora = hora.substring(0,5);
+    const row = {hora, op:Number(raw['Operador']), cx:raw['CodigoCaixa']||'',
+                 pi:Number(raw['PesoInicial'])||0, pf:Number(raw['PesoFinal'])||0,
+                 res:Number(raw['PesoResiduo'])||0};
+    if (type==='FIL') row.lote = raw['Lote']||'';
+    rows.push(row);
+  }
+  return rows;
+}
+
+async function fetchData() {
+  const dtDe  = document.getElementById('dt-de').value;
+  const dtAte = document.getElementById('dt-ate').value;
+  setStatus('Carregando…','load');
+  try {
+    const [fFil, fRef] = await Promise.all([
+      queryGrafana(SQL_FIL, dtDe, dtAte),
+      queryGrafana(SQL_REF, dtDe, dtAte),
+    ]);
+    FIL = parseFrame(fFil,'FIL');
+    REF = parseFrame(fRef,'REF');
+    const now = new Date().toLocaleTimeString('pt-BR');
+    setStatus(`Grafana · ${now}`,'ok');
+    document.getElementById('top-regs').textContent = (FIL.length+REF.length)+' registros';
+  } catch(e) {
+    FIL = [...FIL_FB]; REF = [...REF_FB];
+    setStatus('Modo demo (sem conexão)','erro');
+    document.getElementById('top-regs').textContent = (FIL.length+REF.length)+' (demo)';
+  }
+  populateOpFilter();
+  render();
+}
+
+/* ── FILTER ── */
+function populateOpFilter() {
+  const sel = document.getElementById('sel-op');
+  const cur = sel.value;
+  const ops = [...new Set([...FIL.map(r=>r.op),...REF.map(r=>r.op)])].sort();
+  sel.innerHTML = '<option value="">Todos</option>';
+  ops.forEach(op => {
+    const o = document.createElement('option');
+    o.value = op; o.textContent = `${opName(op)} (${op})`;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function filterRows(rows) {
+  const op = document.getElementById('sel-op').value;
+  return op ? rows.filter(r => String(r.op) === op) : rows;
+}
+
+/* ── TOOLTIP ── */
+const TIP = document.getElementById('tip');
+function showTip(html, e) {
+  TIP.innerHTML = html; TIP.style.display = 'block';
+  moveTip(e);
+}
+function moveTip(e) {
+  const x = e.clientX + 14, y = e.clientY - 10;
+  const r = TIP.getBoundingClientRect();
+  TIP.style.left = (x + r.width > window.innerWidth ? x - r.width - 28 : x) + 'px';
+  TIP.style.top  = Math.max(8, Math.min(y, window.innerHeight - r.height - 8)) + 'px';
+}
+function hideTip() { TIP.style.display = 'none'; }
+
+/* ── CANVAS SETUP ── */
+function setupCanvas(id, cssW, cssH) {
+  const c   = document.getElementById(id);
+  const dpr = window.devicePixelRatio || 1;
+  c.style.width  = cssW + 'px';
+  c.style.height = cssH + 'px';
+  c.width  = Math.round(cssW * dpr);
+  c.height = Math.round(cssH * dpr);
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return {c, ctx, cssW, cssH, dpr};
+}
+
+/* ── GRID HELPERS ── */
+function drawGrid(ctx, x0, y0, w, h, yMin, yMax, nLines, surf, gridColor, mutedColor) {
+  ctx.fillStyle = surf;
+  ctx.fillRect(x0, y0, w, h);
+  const step = (yMax - yMin) / nLines;
+  for (let i = 0; i <= nLines; i++) {
+    const v = yMin + i * step;
+    const y = y0 + h - (v - yMin) / (yMax - yMin) * h;
+    ctx.strokeStyle = gridColor; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0+w, y); ctx.stroke();
+    ctx.fillStyle = mutedColor;
+    ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(Math.round(v)+'%', x0-5, y);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   CHART 1 — RENDIMENTO COMPARATIVO (horizontal bars)
+══════════════════════════════════════════════════ */
+function renderRendComp(filStats, refStats, metaFil, metaRef) {
+  const card    = document.getElementById('c-rend-comp').parentElement;
+  const cssW    = card.clientWidth - 24;
+  const ROW     = 26;
+  const PAD     = {top:20, right:80, bottom:28, left:160};
+  const allStats = [
+    ...filStats.map(s=>({...s, setor:'FIL'})),
+    ...refStats.map(s=>({...s, setor:'REF'})),
+  ].sort((a,b)=>b.avgRd-a.avgRd);
+  const cssH = allStats.length * ROW + PAD.top + PAD.bottom;
+  const {c, ctx} = setupCanvas('c-rend-comp', cssW, cssH);
+
+  const vals = allStats.map(s=>s.avgRd);
+  const xMin = Math.max(0, Math.floor(Math.min(...vals, metaFil, metaRef))-3);
+  const xMax = Math.ceil(Math.max(...vals, metaFil, metaRef))+5;
+  const plotW = cssW - PAD.left - PAD.right;
+  const xS = v => PAD.left + (v-xMin)/(xMax-xMin)*plotW;
+
+  ctx.fillStyle = '#1a1a19';
+  ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid vertical */
+  const nG = 6;
+  for(let i=0;i<=nG;i++){
+    const v = xMin + (xMax-xMin)*i/nG;
+    const x = xS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(x,PAD.top); ctx.lineTo(x,cssH-PAD.bottom); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(Math.round(v)+'%', x, cssH-PAD.bottom+5);
+  }
+
+  /* bars */
+  allStats.forEach((s,i)=>{
+    const y0  = PAD.top + i*ROW + 3;
+    const bh  = ROW - 6;
+    const x0  = xS(xMin);
+    const bw  = Math.max(2, xS(s.avgRd)-x0);
+    const meta = s.setor==='FIL' ? metaFil : metaRef;
+    const col  = s.setor==='FIL' ? '#2a78d6' : '#eb6834';
+    const above = s.avgRd >= meta;
+
+    ctx.fillStyle='#222221';
+    ctx.fillRect(PAD.left, y0, plotW, bh);
+
+    ctx.globalAlpha = above ? 0.92 : 0.65;
+    ctx.fillStyle = above ? col : '#e34948';
+    ctx.fillRect(x0, y0, bw, bh);
+    ctx.globalAlpha = 1;
+
+    /* name */
+    const name = opName(s.op);
+    const short = name.length>21 ? name.slice(0,20)+'…' : name;
+    ctx.fillStyle='#c3c2b7'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(short, PAD.left-7, y0+bh/2);
+
+    /* setor badge */
+    ctx.fillStyle = col; ctx.font='bold 8px system-ui,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText(s.setor, 4, y0+bh/2+1);
+
+    /* value */
+    ctx.fillStyle = above ? '#69f069' : '#ff7a7a';
+    ctx.font='bold 10px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(fPct(s.avgRd), PAD.left+plotW+6, y0+bh/2);
+  });
+
+  /* meta lines */
+  [[metaFil,'#eda100'],[metaRef,'#eb6834']].forEach(([m,col])=>{
+    const mx = xS(m);
+    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(mx,PAD.top-4); ctx.lineTo(mx,cssH-PAD.bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=col; ctx.font='bold 8px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(m+'%', mx, PAD.top-6);
+  });
+
+  /* hover */
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const my = (e.clientY - rect.top) * (c.height/c.clientHeight);
+    const idx = Math.floor((my/c.height * cssH - PAD.top) / ROW);
+    if (idx<0||idx>=allStats.length) { hideTip(); return; }
+    const s = allStats[idx];
+    const meta = s.setor==='FIL' ? metaFil : metaRef;
+    showTip(`<div class="tip-title">${opName(s.op)}</div>
+      <div class="tip-row"><span class="tip-key">Setor</span><span class="tip-val">${s.setor==='FIL'?'Filetagem':'Refile'}</span></div>
+      <div class="tip-row"><span class="tip-key">Rendimento</span><span class="tip-val">${fPct(s.avgRd)}</span></div>
+      <div class="tip-row"><span class="tip-key">Meta</span><span class="tip-val">${fPct(meta)}</span></div>
+      <div class="tip-row"><span class="tip-key">Caixas</span><span class="tip-val">${s.caixas}</span></div>
+      <div class="tip-row"><span class="tip-key">Kg Entrada</span><span class="tip-val">${fKg(s.sumPi)} kg</span></div>
+      <div class="tip-row"><span class="tip-key">Perda</span><span class="tip-val">${fKg(s.perda)} kg</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* ══════════════════════════════════════════════════
+   CHART 2 — HISTOGRAMA DE DISTRIBUIÇÃO
+══════════════════════════════════════════════════ */
+function renderHistogram(filRows, refRows) {
+  const card = document.getElementById('c-hist').parentElement;
+  const cssW = card.clientWidth - 24;
+  const cssH = 260;
+  const PAD  = {top:20, right:20, bottom:48, left:44};
+  const {c, ctx} = setupCanvas('c-hist', cssW, cssH);
+
+  /* buckets: 5% wide, range 20%–120% */
+  const BMIN=20, BMAX=120, BSTEP=5;
+  const nBins = (BMAX-BMIN)/BSTEP;
+  const bins = Array.from({length:nBins},(_,i)=>({from:BMIN+i*BSTEP, fil:0, ref:0}));
+  const bucket = rd => Math.min(nBins-1, Math.max(0, Math.floor((rd-BMIN)/BSTEP)));
+
+  filRows.forEach(r => bins[bucket(rFIL(r))].fil++);
+  refRows.forEach(r => bins[bucket(rREF(r))].ref++);
+
+  const maxCount = Math.max(...bins.map(b=>b.fil+b.ref), 1);
+  const plotW = cssW - PAD.left - PAD.right;
+  const plotH = cssH - PAD.top  - PAD.bottom;
+  const bw    = plotW / nBins;
+  const yS    = v => PAD.top + plotH - v/maxCount*plotH;
+
+  ctx.fillStyle = '#1a1a19';
+  ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  for(let i=0;i<=5;i++){
+    const v = maxCount*i/5;
+    const y = yS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+plotW,y); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(v), PAD.left-4, y);
+  }
+
+  /* bars */
+  bins.forEach((b,i)=>{
+    const x    = PAD.left + i*bw;
+    const bwi  = bw - 2;
+    const hFil = b.fil/maxCount*plotH;
+    const hRef = b.ref/maxCount*plotH;
+    const yBase = PAD.top+plotH;
+
+    if (b.fil > 0) {
+      ctx.fillStyle = '#2a78d6'; ctx.globalAlpha=0.85;
+      ctx.fillRect(x+1, yBase-hFil, bwi/2-1, hFil);
+      ctx.globalAlpha=1;
+    }
+    if (b.ref > 0) {
+      ctx.fillStyle = '#eb6834'; ctx.globalAlpha=0.85;
+      ctx.fillRect(x+1+bwi/2, yBase-hRef, bwi/2-1, hRef);
+      ctx.globalAlpha=1;
+    }
+
+    /* x label every 2 */
+    if (i % 2 === 0) {
+      ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(b.from+'%', x+bw/2, yBase+5);
+    }
+  });
+
+  /* baseline */
+  ctx.strokeStyle='#383835'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top+plotH); ctx.lineTo(PAD.left+plotW,PAD.top+plotH); ctx.stroke();
+
+  /* x-axis label */
+  ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center';
+  ctx.fillText('Faixa de Rendimento (%)', PAD.left+plotW/2, cssH-8);
+
+  /* hover */
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (c.width/c.clientWidth);
+    const idx = Math.floor((mx/c.width*cssW - PAD.left) / bw);
+    if (idx<0||idx>=nBins) { hideTip(); return; }
+    const b = bins[idx];
+    showTip(`<div class="tip-title">Faixa ${b.from}% – ${b.from+BSTEP}%</div>
+      <div class="tip-row"><span class="tip-key">Filetagem</span><span class="tip-val">${b.fil} cx</span></div>
+      <div class="tip-row"><span class="tip-key">Refile</span><span class="tip-val">${b.ref} cx</span></div>
+      <div class="tip-row"><span class="tip-key">Total</span><span class="tip-val">${b.fil+b.ref} cx</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* ══════════════════════════════════════════════════
+   CHART 3/4 — TREND LINE (moving avg)
+══════════════════════════════════════════════════ */
+function renderTrend(canvasId, rows, rendFn, meta, color, metaColor) {
+  const card = document.getElementById(canvasId).parentElement;
+  const cssW = card.clientWidth - 24;
+  const cssH = 200;
+  const PAD  = {top:24, right:24, bottom:36, left:50};
+  const {c, ctx} = setupCanvas(canvasId, cssW, cssH);
+
+  const sorted = [...rows].sort((a,b) => toMins(a.hora) - toMins(b.hora));
+  if (sorted.length < 2) {
+    ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+    ctx.fillStyle='#898781'; ctx.font='12px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('Sem dados suficientes', cssW/2, cssH/2);
+    return;
+  }
+
+  const rds  = sorted.map(r => rendFn(r));
+  const ma   = movingAvg(rds, 5);
+  const plotW= cssW - PAD.left - PAD.right;
+  const plotH= cssH - PAD.top  - PAD.bottom;
+  const yMin = Math.max(0, Math.floor(Math.min(...rds, meta))-5);
+  const yMax = Math.ceil(Math.max(...rds, meta))+5;
+  const xS   = i => PAD.left + (i/(sorted.length-1))*plotW;
+  const yS   = v => PAD.top  + plotH - (v-yMin)/(yMax-yMin)*plotH;
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  const nG = 4;
+  for(let i=0;i<=nG;i++){
+    const v = yMin+(yMax-yMin)*i/nG;
+    const y = yS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+plotW,y); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(v)+'%', PAD.left-5, y);
+  }
+
+  /* meta line */
+  const my = yS(meta);
+  ctx.strokeStyle=metaColor; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(PAD.left,my); ctx.lineTo(PAD.left+plotW,my); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=metaColor; ctx.font='bold 8px system-ui,sans-serif';
+  ctx.textAlign='left'; ctx.fillText(meta+'%', PAD.left+2, my-4);
+
+  /* area under MA */
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ma.forEach((v,i) => { i===0 ? ctx.moveTo(xS(i),yS(v)) : ctx.lineTo(xS(i),yS(v)); });
+  ctx.lineTo(xS(ma.length-1), PAD.top+plotH);
+  ctx.lineTo(xS(0), PAD.top+plotH);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+
+  /* raw dots */
+  sorted.forEach((r,i) => {
+    const v = rds[i];
+    const x = xS(i), y = yS(v);
+    const above = v >= meta;
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle = above ? '#0ca30c' : '#d03b3b';
+    ctx.fill();
+  });
+
+  /* MA line */
+  ctx.strokeStyle=color; ctx.lineWidth=2; ctx.lineJoin='round';
+  ctx.beginPath();
+  ma.forEach((v,i) => { i===0 ? ctx.moveTo(xS(i),yS(v)) : ctx.lineTo(xS(i),yS(v)); });
+  ctx.stroke();
+
+  /* x-axis hours: max 6 labels */
+  const step = Math.max(1, Math.ceil(sorted.length/6));
+  ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center';
+  sorted.forEach((r,i) => {
+    if (i % step === 0 || i === sorted.length-1)
+      ctx.fillText(r.hora.substring(0,5), xS(i), PAD.top+plotH+14);
+  });
+
+  /* hover */
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (c.width/c.clientWidth);
+    const idx = Math.round((mx/c.width*cssW - PAD.left) / (plotW/(sorted.length-1)));
+    if (idx<0||idx>=sorted.length) { hideTip(); return; }
+    const r  = sorted[idx];
+    const rd = rds[idx], avg = ma[idx];
+    showTip(`<div class="tip-title">${opName(r.op)} · ${r.hora}</div>
+      <div class="tip-row"><span class="tip-key">Rend. cx</span><span class="tip-val">${fPct(rd)}</span></div>
+      <div class="tip-row"><span class="tip-key">Média móv.</span><span class="tip-val">${fPct(avg)}</span></div>
+      <div class="tip-row"><span class="tip-key">Meta</span><span class="tip-val">${fPct(meta)}</span></div>
+      <div class="tip-row"><span class="tip-key">Kg entrada</span><span class="tip-val">${fKg(r.pi)} kg</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* ══════════════════════════════════════════════════
+   CHART 5 — SCATTER QUADRANTE
+══════════════════════════════════════════════════ */
+function renderScatter(filStats, refStats, metaFil, metaRef) {
+  const card = document.getElementById('c-scatter').parentElement;
+  const cssW = card.clientWidth - 24;
+  const cssH = 300;
+  const PAD  = {top:28, right:28, bottom:44, left:54};
+  const {c, ctx} = setupCanvas('c-scatter', cssW, cssH);
+
+  const allPts = [
+    ...filStats.map(s=>({...s, setor:'FIL', col:'#2a78d6', meta:metaFil})),
+    ...refStats.map(s=>({...s, setor:'REF', col:'#eb6834', meta:metaRef})),
+  ];
+  if (!allPts.length) return;
+
+  const plotW = cssW - PAD.left - PAD.right;
+  const plotH = cssH - PAD.top  - PAD.bottom;
+
+  const xMax = Math.max(...allPts.map(p=>p.caixas))+2;
+  const yMin = Math.max(0, Math.floor(Math.min(...allPts.map(p=>p.avgRd), metaFil, metaRef))-5);
+  const yMax = Math.ceil(Math.max(...allPts.map(p=>p.avgRd), metaFil, metaRef))+5;
+
+  const xS = v => PAD.left + v/xMax*plotW;
+  const yS = v => PAD.top  + plotH - (v-yMin)/(yMax-yMin)*plotH;
+  const metaY = (metaFil+metaRef)/2;
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  for(let i=0;i<=5;i++){
+    const v = yMin+(yMax-yMin)*i/5;
+    const y = yS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+plotW,y); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(v)+'%', PAD.left-5, y);
+  }
+  for(let i=0;i<=5;i++){
+    const v = xMax*i/5;
+    const x = xS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(x,PAD.top); ctx.lineTo(x,PAD.top+plotH); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(Math.round(v), x, PAD.top+plotH+5);
+  }
+
+  /* quadrant lines */
+  const medX = xS(xMax/2);
+  const medY = yS(metaY);
+  ctx.strokeStyle='rgba(56,56,53,0.8)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(medX,PAD.top); ctx.lineTo(medX,PAD.top+plotH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD.left,medY); ctx.lineTo(PAD.left+plotW,medY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* quadrant labels */
+  ctx.font='bold 9px system-ui,sans-serif'; ctx.textBaseline='top';
+  ctx.fillStyle='rgba(26,175,122,0.35)'; ctx.textAlign='left';
+  ctx.fillText('★ ALTA REND. + VOLUME', medX+5, PAD.top+3);
+  ctx.fillStyle='rgba(211,59,59,0.35)'; ctx.textAlign='right';
+  ctx.fillText('BAIXA REND. + POUCO VOLUME ▼', medX-5, PAD.top+3);
+  ctx.fillStyle='rgba(237,161,0,0.3)'; ctx.textAlign='left';
+  ctx.fillText('ALTA REND. POUCO VOLUME', medX+5, PAD.top+plotH-14);
+  ctx.fillStyle='rgba(235,104,52,0.3)'; ctx.textAlign='right';
+  ctx.fillText('VOLUME MAS BAIXO REND.', medX-5, PAD.top+plotH-14);
+
+  /* dots */
+  const hits = [];
+  allPts.forEach(p => {
+    const x = xS(p.caixas), y = yS(p.avgRd);
+    const r = 6;
+    ctx.save();
+    ctx.shadowColor = p.col; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle = p.col; ctx.fill();
+    ctx.restore();
+    /* ring */
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth=1.5; ctx.stroke();
+    hits.push({p, x, y, r});
+  });
+
+  /* axis labels */
+  ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText('Caixas Processadas', PAD.left+plotW/2, PAD.top+plotH+28);
+
+  /* hover */
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const mx = (e.clientX-rect.left)*(c.width/c.clientWidth);
+    const my = (e.clientY-rect.top) *(c.height/c.clientHeight);
+    const hit = hits.find(h => Math.hypot(mx-h.x*(c.width/c.clientWidth), my-h.y*(c.height/c.clientHeight)) < 14);
+    if (!hit) { hideTip(); return; }
+    const p = hit.p;
+    showTip(`<div class="tip-title">${opName(p.op)}</div>
+      <div class="tip-row"><span class="tip-key">Setor</span><span class="tip-val">${p.setor==='FIL'?'Filetagem':'Refile'}</span></div>
+      <div class="tip-row"><span class="tip-key">Rendimento</span><span class="tip-val">${fPct(p.avgRd)}</span></div>
+      <div class="tip-row"><span class="tip-key">Caixas</span><span class="tip-val">${p.caixas}</span></div>
+      <div class="tip-row"><span class="tip-key">Cx/Hora</span><span class="tip-val">${p.cxh.toFixed(1)}</span></div>
+      <div class="tip-row"><span class="tip-key">Perda</span><span class="tip-val">${fKg(p.perda)} kg</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* ══════════════════════════════════════════════════
+   CHART 6 — PARETO DE PERDA
+══════════════════════════════════════════════════ */
+function renderPareto(filStats, refStats) {
+  const card  = document.getElementById('c-pareto').parentElement;
+  const cssW  = card.clientWidth - 24;
+  const cssH  = 300;
+  const PAD   = {top:24, right:56, bottom:60, left:52};
+  const {c, ctx} = setupCanvas('c-pareto', cssW, cssH);
+
+  const all = [
+    ...filStats.map(s=>({...s, setor:'FIL'})),
+    ...refStats.map(s=>({...s, setor:'REF'})),
+  ].sort((a,b) => b.perda - a.perda);
+
+  const total = all.reduce((s,p)=>s+p.perda,0);
+  const plotW = cssW - PAD.left - PAD.right;
+  const plotH = cssH - PAD.top  - PAD.bottom;
+  const bw    = plotW / Math.max(1,all.length);
+
+  const maxP = Math.max(...all.map(p=>p.perda));
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  for(let i=0;i<=5;i++){
+    const v = maxP*i/5;
+    const y = PAD.top + plotH - v/maxP*plotH;
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+plotW,y); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(fKg(v), PAD.left-4, y);
+  }
+
+  /* bars + accumulate */
+  let cumPct = 0;
+  const cumPts = [];
+  all.forEach((p,i)=>{
+    const x = PAD.left + i*bw;
+    const bh = p.perda/maxP*plotH;
+    const y  = PAD.top + plotH - bh;
+    const col = p.setor==='FIL' ? '#e34948' : '#eb6834';
+
+    ctx.fillStyle = col; ctx.globalAlpha=0.85;
+    ctx.fillRect(x+1, y, bw-2, bh);
+    ctx.globalAlpha=1;
+
+    /* x label */
+    const nm = opName(p.op).split(' ')[0];
+    ctx.save();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif';
+    ctx.translate(x+bw/2, PAD.top+plotH+6);
+    ctx.rotate(-Math.PI/4);
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(nm, 0, 0);
+    ctx.restore();
+
+    cumPct += p.perda/total*100;
+    cumPts.push({x: x+bw/2, y: PAD.top + plotH*(1 - cumPct/100), pct: cumPct});
+  });
+
+  /* cumulative line */
+  if (cumPts.length > 1) {
+    ctx.strokeStyle='#eda100'; ctx.lineWidth=2;
+    ctx.beginPath();
+    cumPts.forEach((pt,i) => i===0 ? ctx.moveTo(pt.x,pt.y) : ctx.lineTo(pt.x,pt.y));
+    ctx.stroke();
+    cumPts.forEach(pt => {
+      ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2);
+      ctx.fillStyle='#eda100'; ctx.fill();
+    });
+    /* right y-axis % */
+    for(let p=0;p<=100;p+=20){
+      const y = PAD.top + plotH*(1-p/100);
+      ctx.fillStyle='#eda100'; ctx.font='8px system-ui,sans-serif';
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(p+'%', PAD.left+plotW+5, y);
+    }
+    /* 80% threshold */
+    const y80 = PAD.top + plotH*0.2;
+    ctx.strokeStyle='rgba(237,161,0,0.4)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(PAD.left,y80); ctx.lineTo(PAD.left+plotW,y80); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(237,161,0,0.5)'; ctx.font='8px system-ui,sans-serif'; ctx.textAlign='right'; ctx.textBaseline='bottom';
+    ctx.fillText('80% acumulado', PAD.left+plotW, y80-2);
+  }
+
+  /* hover */
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const mx = (e.clientX-rect.left)*(c.width/c.clientWidth);
+    const idx = Math.floor((mx/c.width*cssW - PAD.left) / bw);
+    if (idx<0||idx>=all.length) { hideTip(); return; }
+    const p = all[idx];
+    const pct = (p.perda/total*100).toFixed(1);
+    showTip(`<div class="tip-title">${opName(p.op)}</div>
+      <div class="tip-row"><span class="tip-key">Setor</span><span class="tip-val">${p.setor==='FIL'?'Filetagem':'Refile'}</span></div>
+      <div class="tip-row"><span class="tip-key">Perda total</span><span class="tip-val">${fKg(p.perda)} kg</span></div>
+      <div class="tip-row"><span class="tip-key">% do total</span><span class="tip-val">${pct}%</span></div>
+      <div class="tip-row"><span class="tip-key">Caixas</span><span class="tip-val">${p.caixas}</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* ── RANKING TABLES ── */
+function renderTable(tbodyId, stats, meta) {
+  const tb = document.getElementById(tbodyId);
+  tb.innerHTML = '';
+  const sorted = [...stats].sort((a,b)=>b.avgRd-a.avgRd);
+  sorted.forEach((s,i)=>{
+    const above = s.avgRd >= meta;
+    const status = above
+      ? `<span class="pill pill-ok">✓ Acima</span>`
+      : `<span class="pill pill-crit">✗ Abaixo</span>`;
+    const rankCls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
+      <td><strong>${opName(s.op)}</strong><br><span style="font-size:9px;color:var(--txt3)">Op. ${s.op}</span></td>
+      <td>${s.caixas}</td>
+      <td style="color:${above?'#69f069':'#ff7a7a'};font-weight:700">${fPct(s.avgRd)}</td>
+      <td>${fKg(s.sumPi)} kg</td>
+      <td>${fKg(s.sumPf)} kg</td>
+      <td style="color:#e34948">${fKg(s.perda)} kg</td>
+      <td>${s.cxh.toFixed(1)}</td>
+      <td>${status}</td>`;
+    tb.appendChild(tr);
+  });
+  if (!sorted.length) tb.innerHTML = '<tr><td colspan="9" class="empty">Sem dados</td></tr>';
+}
+
+/* ── KPI UPDATE ── */
+function updateKPIs(filStats, refStats, filRows, refRows, metaFil, metaRef) {
+  const g = id => document.getElementById(id);
+  const totalCx = filRows.length + refRows.length;
+  g('k-total').textContent = totalCx;
+
+  const sumFil = s => filStats.reduce((a,v)=>a+v[s],0);
+  const sumRef = s => refStats.reduce((a,v)=>a+v[s],0);
+
+  const piFilT = sumFil('sumPi'), pfFilT = sumFil('sumPf'), resFilT = sumFil('sumRes');
+  const piRefT = sumRef('sumPi'), pfRefT = sumRef('sumPf');
+  const ovFil = piFilT>0 ? (pfFilT/(piFilT-resFilT))*100 : 0;
+  const ovRef = piRefT>0 ? ((pfRefT)/piRefT)*100 : 0;
+
+  g('k-rend-fil').textContent = fPct(ovFil);
+  g('k-rend-fil').className   = 'kpi-val ' + (ovFil >= metaFil ? 'kv-green' : 'kv-red');
+  g('k-rend-fil-sub').textContent = `meta ${fPct(metaFil)}`;
+  g('k-rend-ref').textContent = fPct(ovRef);
+  g('k-rend-ref').className   = 'kpi-val ' + (ovRef >= metaRef ? 'kv-green' : 'kv-red');
+  g('k-rend-ref-sub').textContent = `meta ${fPct(metaRef)}`;
+
+  const kgIn = piFilT + piRefT;
+  const kgOut = pfFilT + pfRefT + resFilT;
+  const perda = kgIn - kgOut;
+  g('k-kg-in').textContent = fKg(kgIn)+' kg';
+  g('k-perda').textContent = fKg(perda)+' kg';
+
+  const opsFil = new Set(filRows.map(r=>r.op)).size;
+  const opsRef = new Set(refRows.map(r=>r.op)).size;
+  g('k-ops').textContent = opsFil+opsRef;
+  g('k-ops-sub').textContent = `${opsFil} FIL · ${opsRef} REF`;
+
+  const above = [...filStats.filter(s=>s.avgRd>=metaFil),...refStats.filter(s=>s.avgRd>=metaRef)].length;
+  const below = [...filStats.filter(s=>s.avgRd<metaFil),...refStats.filter(s=>s.avgRd<metaRef)].length;
+  g('k-above').textContent = above;
+  g('k-below').textContent = below;
+}
+
+/* ── MAIN RENDER ── */
+function render() {
+  const metaFil = parseFloat(document.getElementById('meta-fil').value)||43;
+  const metaRef = parseFloat(document.getElementById('meta-ref').value)||90;
+  const filRows = filterRows(FIL);
+  const refRows = filterRows(REF);
+
+  const filStats = opStats(filRows, rFIL);
+  const refStats = opStats(refRows, rREF);
+
+  updateKPIs(filStats, refStats, filRows, refRows, metaFil, metaRef);
+  renderRendComp(filStats, refStats, metaFil, metaRef);
+  renderHistogram(filRows, refRows);
+  renderTrend('c-trend-fil', filRows, rFIL, metaFil, '#2a78d6', '#eda100');
+  renderTrend('c-trend-ref', refRows, rREF, metaRef, '#eb6834', '#eb6834');
+  renderScatter(filStats, refStats, metaFil, metaRef);
+  renderPareto(filStats, refStats);
+  renderTable('tbody-fil', filStats, metaFil);
+  renderTable('tbody-ref', refStats, metaRef);
+}
+
+/* ── AUTO REFRESH ── */
+function startAuto(){
+  stopAuto(); autoEnabled=true; countdownSecs=10; updateAutoBtn();
+  autoTimer=setInterval(()=>{
+    countdownSecs--; updateAutoBtn();
+    if(countdownSecs<=0){countdownSecs=10; fetchData();}
+  },1000);
+}
+function stopAuto(){ autoEnabled=false; clearInterval(autoTimer); autoTimer=null; updateAutoBtn(); }
+function toggleAuto(){ autoEnabled?stopAuto():startAuto(); }
+function updateAutoBtn(){
+  const btn=document.getElementById('btn-auto');
+  btn.textContent = autoEnabled ? `⏱ Auto: ${countdownSecs}s` : '⏱ Auto: OFF';
+  btn.style.opacity = autoEnabled?'1':'.5';
+}
+
+/* ── CSV EXPORT ── */
+function exportCSV(){
+  const rows=[['Setor','Operador','Hora','Caixa','PesoInicial','PesoFinal','PesoResiduo','Rendimento']];
+  [...FIL.map(r=>({...r,setor:'FIL',rd:rFIL(r)})),
+   ...REF.map(r=>({...r,setor:'REF',rd:rREF(r)}))].forEach(r=>{
+    rows.push([r.setor,opName(r.op),r.hora,r.cx,r.pi,r.pf,r.res,r.rd.toFixed(2)]);
+  });
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`analise-gerencial-${document.getElementById('dt-de').value}.csv`;
+  a.click();
+}
+
+/* ── RESIZE ── */
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(render, 180);
+});
+
+/* ── INIT ── */
+document.getElementById('top-date').textContent = new Date().toLocaleDateString('pt-BR');
+fetchData();
+startAuto();
+</script>
