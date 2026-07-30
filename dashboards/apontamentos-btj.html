@@ -189,18 +189,69 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 const TODAY = '2026-07-30';
 
 /* ── OPERADORES ── */
-/* Cores fixas por operador — paleta BTJ (amarelo, roxo, laranja, teal, azul, vermelho, cinza, ciano) */
-const OP_PALETTE = ['#ffc107','#9c27b0','#ff8f00','#009688','#2196f3','#f44336','#607d8b','#00bcd4'];
+/* Paleta BTJ — cores fixas, cicla para muitos operadores */
+const OP_PALETTE = [
+  '#ffc107','#9c27b0','#ff8f00','#009688','#2196f3','#f44336',
+  '#00bcd4','#8bc34a','#ff5722','#673ab7','#03a9f4','#e91e63',
+  '#4caf50','#ff9800','#607d8b','#795548','#9e9e9e','#3f51b5',
+  '#cddc39','#009688','#f44336','#2196f3',
+];
+function opColor(code) {
+  // hash do código para cor fixa (não muda com reordenação)
+  return OP_PALETTE[code % OP_PALETTE.length];
+}
+
+/* Colaboradores reais — Filetagem e Refile */
 const OPS = {
-  101: {name:'Carlos Silva',    color:OP_PALETTE[0]},
-  102: {name:'João Pereira',   color:OP_PALETTE[1]},
-  203: {name:'André Santos',   color:OP_PALETTE[2]},
-  204: {name:'Lucas Oliveira', color:OP_PALETTE[3]},
-  305: {name:'Paulo Mendes',   color:OP_PALETTE[4]},
-  306: {name:'Ricardo Lima',   color:OP_PALETTE[5]},
-  401: {name:'Marcos Costa',   color:OP_PALETTE[6]},
-  502: {name:'Diego Ferreira', color:OP_PALETTE[7]},
+  // FILETAGEM
+  833:  {name:'Adalberto Lima'},
+  68:   {name:'Alex Yudi'},
+  761:  {name:'Alexandre Gregório'},
+  835:  {name:'Bruno Henrique'},
+  860:  {name:'Carlos Rodrigues'},
+  1014: {name:'Caua Clemente'},
+  40:   {name:'Djalma Santos'},
+  811:  {name:'Fabio Santos'},
+  14:   {name:'Icaro Renato'},
+  865:  {name:'Italo Carlos'},
+  280:  {name:'Jadiel Mota'},
+  15:   {name:'Joao Santos'},
+  92:   {name:'Kaic Jhonatan'},
+  37:   {name:'Manoel Vintura'},
+  1026: {name:'Nailson Cavalcanti'},
+  510:  {name:'Rafael Guilherme'},
+  93:   {name:'Ricardo Bezerra'},
+  892:  {name:'Sergio Araujo'},
+  107:  {name:'Sidmar Torres'},
+  1021: {name:'Silas Souza'},
+  74:   {name:'Valcir Silva'},
+  690:  {name:'Viviane Cassia'},
+  // REFILE
+  438:  {name:'Aline Kaori'},
+  820:  {name:'Ana Paula'},
+  506:  {name:'Brislane Lima'},
+  331:  {name:'Claudeane Santos'},
+  701:  {name:'Claudia Leite'},
+  266:  {name:'Edimara Netto'},
+  823:  {name:'Edvaneide Ferreira'},
+  212:  {name:'Elizangela Sousa'},
+  635:  {name:'Gisele Valentim'},
+  451:  {name:'Janaina Silva'},
+  750:  {name:'Jessica Paixao'},
+  234:  {name:'Jocelia Jesus'},
+  357:  {name:'Laislaine Cruz'},
+  828:  {name:'Maria Eduarda'},
+  769:  {name:'Maria Selma'},
+  742:  {name:'Marineide Aparecida'},
+  528:  {name:'Noeuzi Santana'},
+  170:  {name:'Rayane Eduarda'},
+  502:  {name:'Roseni Aparecida'},
+  687:  {name:'Rosimeire Oliveira'},
+  681:  {name:'Suellen Fernanda'},
+  2001: {name:'Eloiza Daniela'},
 };
+// injeta cor em cada operador
+Object.keys(OPS).forEach(k => { OPS[k].color = opColor(Number(k)); });
 
 /* ── CONFIG GRAFANA ── */
 // Quando rodando via proxy local (scripts/proxy.py), usa path relativo.
@@ -210,65 +261,65 @@ const GRAFANA_URL  = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
 const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
 const DS_UID       = 'aeal1lruwzif4c';
 
-/* ── DADOS LOCAIS (fallback) ── */
+/* ── DADOS LOCAIS (fallback — colaboradores reais) ── */
 const FIL_FALLBACK = [
-  {lote:'LOT-2001',hora:'07:05:22',op:101,cx:'CX-001',pi:26.4,pf:11.20,res:0.30},
-  {lote:'LOT-2001',hora:'07:52:11',op:101,cx:'CX-002',pi:24.8,pf:10.90,res:0.50},
-  {lote:'LOT-2002',hora:'08:47:33',op:101,cx:'CX-003',pi:28.1,pf:12.30,res:0.40},
-  {lote:'LOT-2002',hora:'09:31:08',op:101,cx:'CX-004',pi:25.6,pf:11.50,res:0.20},
-  {lote:'LOT-2003',hora:'10:15:44',op:101,cx:'CX-005',pi:27.3,pf:12.40,res:0.60},
+  {lote:'LOT-2001',hora:'07:05:22',op:37,  cx:'CX-001',pi:26.4,pf:11.20,res:0.30},
+  {lote:'LOT-2001',hora:'07:52:11',op:37,  cx:'CX-002',pi:24.8,pf:10.90,res:0.50},
+  {lote:'LOT-2002',hora:'08:47:33',op:37,  cx:'CX-003',pi:28.1,pf:12.30,res:0.40},
+  {lote:'LOT-2002',hora:'09:31:08',op:37,  cx:'CX-004',pi:25.6,pf:11.50,res:0.20},
+  {lote:'LOT-2003',hora:'10:15:44',op:37,  cx:'CX-005',pi:27.3,pf:12.40,res:0.60},
 
-  {lote:'LOT-2004',hora:'07:18:55',op:102,cx:'CX-006',pi:30.2,pf:13.80,res:0.40},
-  {lote:'LOT-2004',hora:'08:10:22',op:102,cx:'CX-007',pi:27.5,pf:12.40,res:0.30},
-  {lote:'LOT-2005',hora:'09:02:44',op:102,cx:'CX-008',pi:29.8,pf:13.50,res:0.70},
-  {lote:'LOT-2005',hora:'09:55:31',op:102,cx:'CX-009',pi:26.4,pf:11.80,res:0.50},
-  {lote:'LOT-2006',hora:'10:48:17',op:102,cx:'CX-010',pi:31.2,pf:14.30,res:0.40},
+  {lote:'LOT-2004',hora:'07:18:55',op:835, cx:'CX-006',pi:30.2,pf:13.80,res:0.40},
+  {lote:'LOT-2004',hora:'08:10:22',op:835, cx:'CX-007',pi:27.5,pf:12.40,res:0.30},
+  {lote:'LOT-2005',hora:'09:02:44',op:835, cx:'CX-008',pi:29.8,pf:13.50,res:0.70},
+  {lote:'LOT-2005',hora:'09:55:31',op:835, cx:'CX-009',pi:26.4,pf:11.80,res:0.50},
+  {lote:'LOT-2006',hora:'10:48:17',op:835, cx:'CX-010',pi:31.2,pf:14.30,res:0.40},
 
-  {lote:'LOT-2007',hora:'07:33:10',op:203,cx:'CX-011',pi:25.1,pf:11.40,res:0.20},
-  {lote:'LOT-2007',hora:'08:20:45',op:203,cx:'CX-012',pi:28.7,pf:13.00,res:0.50},
-  {lote:'LOT-2008',hora:'09:08:22',op:203,cx:'CX-013',pi:26.9,pf:12.20,res:0.30},
-  {lote:'LOT-2008',hora:'09:55:00',op:203,cx:'CX-014',pi:30.4,pf:13.50,res:0.80},
-  {lote:'LOT-2009',hora:'10:42:18',op:203,cx:'CX-015',pi:27.2,pf:12.60,res:0.40},
+  {lote:'LOT-2007',hora:'07:33:10',op:510, cx:'CX-011',pi:25.1,pf:11.40,res:0.20},
+  {lote:'LOT-2007',hora:'08:20:45',op:510, cx:'CX-012',pi:28.7,pf:13.00,res:0.50},
+  {lote:'LOT-2008',hora:'09:08:22',op:510, cx:'CX-013',pi:26.9,pf:12.20,res:0.30},
+  {lote:'LOT-2008',hora:'09:55:00',op:510, cx:'CX-014',pi:30.4,pf:13.50,res:0.80},
+  {lote:'LOT-2009',hora:'10:42:18',op:510, cx:'CX-015',pi:27.2,pf:12.60,res:0.40},
 
-  {lote:'LOT-2010',hora:'07:42:05',op:204,cx:'CX-016',pi:24.5,pf:11.50,res:0.30},
-  {lote:'LOT-2010',hora:'08:30:40',op:204,cx:'CX-017',pi:26.8,pf:12.70,res:0.20},
-  {lote:'LOT-2011',hora:'09:18:15',op:204,cx:'CX-018',pi:29.1,pf:13.90,res:0.50},
-  {lote:'LOT-2011',hora:'10:05:50',op:204,cx:'CX-019',pi:25.3,pf:12.10,res:0.40},
-  {lote:'LOT-2012',hora:'10:53:25',op:204,cx:'CX-020',pi:28.6,pf:13.60,res:0.30},
+  {lote:'LOT-2010',hora:'07:42:05',op:1026,cx:'CX-016',pi:24.5,pf:11.50,res:0.30},
+  {lote:'LOT-2010',hora:'08:30:40',op:1026,cx:'CX-017',pi:26.8,pf:12.70,res:0.20},
+  {lote:'LOT-2011',hora:'09:18:15',op:1026,cx:'CX-018',pi:29.1,pf:13.90,res:0.50},
+  {lote:'LOT-2011',hora:'10:05:50',op:1026,cx:'CX-019',pi:25.3,pf:12.10,res:0.40},
+  {lote:'LOT-2012',hora:'10:53:25',op:1026,cx:'CX-020',pi:28.6,pf:13.60,res:0.30},
 
-  {lote:'LOT-2013',hora:'07:55:32',op:305,cx:'CX-021',pi:27.4,pf:12.00,res:0.40},
-  {lote:'LOT-2013',hora:'08:45:18',op:305,cx:'CX-022',pi:29.8,pf:13.20,res:0.60},
-  {lote:'LOT-2014',hora:'09:35:05',op:305,cx:'CX-023',pi:26.1,pf:11.70,res:0.30},
-  {lote:'LOT-2014',hora:'10:25:41',op:305,cx:'CX-024',pi:30.5,pf:13.80,res:0.50},
-  {lote:'LOT-2015',hora:'11:15:27',op:305,cx:'CX-025',pi:28.3,pf:12.80,res:0.40},
+  {lote:'LOT-2013',hora:'07:55:32',op:14,  cx:'CX-021',pi:27.4,pf:12.00,res:0.40},
+  {lote:'LOT-2013',hora:'08:45:18',op:14,  cx:'CX-022',pi:29.8,pf:13.20,res:0.60},
+  {lote:'LOT-2014',hora:'09:35:05',op:14,  cx:'CX-023',pi:26.1,pf:11.70,res:0.30},
+  {lote:'LOT-2014',hora:'10:25:41',op:14,  cx:'CX-024',pi:30.5,pf:13.80,res:0.50},
+  {lote:'LOT-2015',hora:'11:15:27',op:14,  cx:'CX-025',pi:28.3,pf:12.80,res:0.40},
 
-  {lote:'LOT-2016',hora:'08:02:44',op:306,cx:'CX-026',pi:25.8,pf:11.10,res:0.30},
-  {lote:'LOT-2016',hora:'08:55:20',op:306,cx:'CX-027',pi:28.2,pf:12.30,res:0.50},
-  {lote:'LOT-2017',hora:'09:47:55',op:306,cx:'CX-028',pi:26.9,pf:11.80,res:0.20},
-  {lote:'LOT-2017',hora:'10:40:30',op:306,cx:'CX-029',pi:30.1,pf:13.20,res:0.70},
-  {lote:'LOT-2018',hora:'11:33:08',op:306,cx:'CX-030',pi:27.5,pf:12.00,res:0.40},
+  {lote:'LOT-2016',hora:'08:02:44',op:892, cx:'CX-026',pi:25.8,pf:11.10,res:0.30},
+  {lote:'LOT-2016',hora:'08:55:20',op:892, cx:'CX-027',pi:28.2,pf:12.30,res:0.50},
+  {lote:'LOT-2017',hora:'09:47:55',op:892, cx:'CX-028',pi:26.9,pf:11.80,res:0.20},
+  {lote:'LOT-2017',hora:'10:40:30',op:892, cx:'CX-029',pi:30.1,pf:13.20,res:0.70},
+  {lote:'LOT-2018',hora:'11:33:08',op:892, cx:'CX-030',pi:27.5,pf:12.00,res:0.40},
 ];
 
 /* ── DADOS REFILE FALLBACK ── */
 const REF_FALLBACK = [
-  {hora:'07:22:15',op:102,cx:'CX-R001',pi:12.4,pf:10.8,res:0.90},
-  {hora:'08:15:30',op:102,cx:'CX-R002',pi:15.2,pf:13.1,res:1.40},
-  {hora:'09:10:45',op:102,cx:'CX-R003',pi:11.8,pf:10.2,res:1.00},
-  {hora:'10:05:00',op:102,cx:'CX-R004',pi:14.6,pf:12.8,res:1.20},
+  {hora:'07:22:15',op:438, cx:'CX-R001',pi:12.4,pf:10.8,res:0.90},
+  {hora:'08:15:30',op:438, cx:'CX-R002',pi:15.2,pf:13.1,res:1.40},
+  {hora:'09:10:45',op:438, cx:'CX-R003',pi:11.8,pf:10.2,res:1.00},
+  {hora:'10:05:00',op:438, cx:'CX-R004',pi:14.6,pf:12.8,res:1.20},
 
-  {hora:'07:35:20',op:203,cx:'CX-R005',pi:13.5,pf:12.0,res:0.80},
-  {hora:'08:28:45',op:203,cx:'CX-R006',pi:16.1,pf:14.2,res:1.30},
-  {hora:'09:22:10',op:203,cx:'CX-R007',pi:12.7,pf:11.3,res:0.90},
-  {hora:'10:15:35',op:203,cx:'CX-R008',pi:14.9,pf:13.2,res:1.10},
+  {hora:'07:35:20',op:506, cx:'CX-R005',pi:13.5,pf:12.0,res:0.80},
+  {hora:'08:28:45',op:506, cx:'CX-R006',pi:16.1,pf:14.2,res:1.30},
+  {hora:'09:22:10',op:506, cx:'CX-R007',pi:12.7,pf:11.3,res:0.90},
+  {hora:'10:15:35',op:506, cx:'CX-R008',pi:14.9,pf:13.2,res:1.10},
 
-  {hora:'07:48:05',op:305,cx:'CX-R009',pi:11.2,pf:9.80,res:0.80},
-  {hora:'08:42:20',op:305,cx:'CX-R010',pi:14.8,pf:13.1,res:1.00},
-  {hora:'09:36:35',op:305,cx:'CX-R011',pi:12.5,pf:11.0,res:0.90},
+  {hora:'07:48:05',op:502, cx:'CX-R009',pi:11.2,pf:9.80,res:0.80},
+  {hora:'08:42:20',op:502, cx:'CX-R010',pi:14.8,pf:13.1,res:1.00},
+  {hora:'09:36:35',op:502, cx:'CX-R011',pi:12.5,pf:11.0,res:0.90},
 
-  {hora:'08:05:15',op:401,cx:'CX-R012',pi:15.5,pf:13.7,res:1.20},
-  {hora:'09:00:30',op:401,cx:'CX-R013',pi:13.2,pf:11.6,res:1.00},
-  {hora:'09:55:45',op:401,cx:'CX-R014',pi:16.8,pf:14.9,res:1.30},
-  {hora:'10:51:00',op:401,cx:'CX-R015',pi:14.1,pf:12.5,res:1.10},
+  {hora:'08:05:15',op:820, cx:'CX-R012',pi:15.5,pf:13.7,res:1.20},
+  {hora:'09:00:30',op:820, cx:'CX-R013',pi:13.2,pf:11.6,res:1.00},
+  {hora:'09:55:45',op:820, cx:'CX-R014',pi:16.8,pf:14.9,res:1.30},
+  {hora:'10:51:00',op:820, cx:'CX-R015',pi:14.1,pf:12.5,res:1.10},
 ];
 
 /* ── ESTADO ── */
