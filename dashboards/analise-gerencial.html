@@ -166,7 +166,49 @@ canvas{display:block;border-radius:3px}
 .nc-destino-rep {display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(250,178,25,.12);color:#fab219;border:1px solid rgba(250,178,25,.25)}
 .nc-destino-desc{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(211,59,59,.12);color:#ff8a8a;border:1px solid rgba(211,59,59,.25)}
 .nc-destino-ok  {display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(12,163,12,.1);color:#69f069;border:1px solid rgba(12,163,12,.25)}
+
+/* ── ALERT BANNER ── */
+#alert-banner{display:none;position:sticky;top:52px;z-index:90;
+  background:#1a0505;border-bottom:2px solid #d03b3b;
+  box-shadow:0 4px 24px rgba(208,59,59,.35)}
+.alert-inner{max-width:1600px;margin:0 auto;padding:0 20px}
+.alert-header{display:flex;align-items:center;gap:10px;padding:10px 0 8px;cursor:pointer;user-select:none}
+.alert-siren{font-size:18px;animation:siren 1s ease-in-out infinite alternate}
+@keyframes siren{from{opacity:1;transform:scale(1)}to{opacity:.5;transform:scale(.9)}}
+.alert-title{font-size:13px;font-weight:700;color:#ff6b6b;letter-spacing:.02em}
+.alert-count{display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:22px;padding:0 6px;border-radius:11px;
+  background:#d03b3b;color:#fff;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+.alert-toggle{margin-left:auto;font-size:10px;color:#ff8a8a;opacity:.7}
+.alert-threshold{font-size:10px;color:#ff8a8a;opacity:.6;margin-left:4px}
+.alert-list{display:none;padding-bottom:12px}
+.alert-list.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.alert-card{background:#200808;border:1px solid rgba(208,59,59,.5);border-left:3px solid #d03b3b;
+  border-radius:5px;padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.alert-card-cx{font-size:12px;font-weight:700;color:#ff8a8a;letter-spacing:.03em}
+.alert-card-op{font-size:10px;color:#c3c2b7}
+.alert-card-row{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.alert-card-key{color:#898781}
+.alert-card-pct{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:#ff4444}
+.alert-bar-wrap{height:4px;background:#2c0a0a;border-radius:2px;overflow:hidden;margin-top:2px}
+.alert-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#d03b3b,#ff4444);transition:width .4s}
+.alert-new{animation:flash-new .6s ease-out 3}
+@keyframes flash-new{0%,100%{background:#1a0505}50%{background:#300d0d}}
 </style>
+
+<!-- ALERT BANNER (sticky abaixo do topbar) -->
+<div id="alert-banner">
+  <div class="alert-inner">
+    <div class="alert-header" onclick="toggleAlertList()">
+      <span class="alert-siren">🚨</span>
+      <span class="alert-title">CAIXAS COM NC ACIMA DO LIMITE</span>
+      <span class="alert-count" id="alert-count">0</span>
+      <span class="alert-threshold">· limite 10%</span>
+      <span class="alert-toggle" id="alert-toggle-lbl">▼ ver detalhes</span>
+    </div>
+    <div class="alert-list" id="alert-list"></div>
+  </div>
+</div>
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -1278,6 +1320,7 @@ function render() {
   renderPareto(filStats, refStats);
   renderTable('tbody-fil', filStats, metaFil);
   renderTable('tbody-ref', refStats, metaRef);
+  checkCaixaAlerts();
 }
 
 /* ══════════════════════════════════════════════════
@@ -1398,6 +1441,7 @@ async function fetchNC() {
     if (dot) dot.style.background = '#d03b3b';
   }
   renderNC();
+  checkCaixaAlerts();
 }
 
 /* ── RENDER NC ── */
@@ -1640,6 +1684,156 @@ function renderNcTable(rows) {
   if (!sorted.length) tb.innerHTML = '<tr><td colspan="8" class="empty">Sem registros de NC para o período</td></tr>';
 }
 
+/* ══════════════════════════════════════════════════
+   ALERTA — NC > 10% por Caixa
+══════════════════════════════════════════════════ */
+
+const NC_THRESHOLD = 0.10;   /* 10% */
+let _prevAlertCxs  = new Set();
+let _alertOpen     = false;
+
+function checkCaixaAlerts() {
+  /* Cruza REF (apontamentos com PesoInicial por caixa)
+     com NC_DATA (registros de NC com CodigoCaixa)
+     Métrica: soma(NC peso) / PesoInicial da caixa ≥ 10%
+     Fallback quando NC sem peso: conta 1 NC = 10% do total de caixas */
+
+  const cxMap = {};   /* cx → {pi, pf, op, hora, ncPeso, ncCount, ncs:[]} */
+
+  /* preenche a partir dos apontamentos de Refile */
+  REF.forEach(r => {
+    if (!r.cx) return;
+    if (!cxMap[r.cx]) cxMap[r.cx] = {pi:r.pi, pf:r.pf, op:r.op, hora:r.hora,
+                                       ncPeso:0, ncCount:0, ncs:[], setor:'REF'};
+  });
+  /* também Filetagem */
+  FIL.forEach(r => {
+    if (!r.cx) return;
+    if (!cxMap[r.cx]) cxMap[r.cx] = {pi:r.pi, pf:r.pf, op:r.op, hora:r.hora,
+                                       ncPeso:0, ncCount:0, ncs:[], setor:'FIL'};
+  });
+
+  /* acumula NCs por caixa */
+  NC_DATA.forEach(n => {
+    const key = n.cx || n.lote;   /* tenta CodigoCaixa, senão Lote */
+    if (!key || key === '—') return;
+    if (!cxMap[key]) cxMap[key] = {pi:0, pf:0, op:n.op, hora:n.hora,
+                                    ncPeso:0, ncCount:0, ncs:[], setor:'REF'};
+    cxMap[key].ncPeso  += n.peso  || 0;
+    cxMap[key].ncCount += n.qtd   || 1;
+    cxMap[key].ncs.push(n);
+  });
+
+  /* calcula % NC */
+  const alertas = [];
+  Object.entries(cxMap).forEach(([cx, d]) => {
+    if (!d.ncCount) return;   /* sem NC, ignora */
+
+    let pct;
+    if (d.pi > 0 && d.ncPeso > 0) {
+      pct = d.ncPeso / d.pi;              /* kg NC / kg entrada */
+    } else if (d.ncCount > 0) {
+      /* sem peso: usa contagem proporcional ao total de registros */
+      const totalRec = (d.ncs.length || 1);
+      pct = totalRec / Math.max(1, NC_DATA.length) * Object.keys(cxMap).length;
+      pct = Math.min(pct, 1);
+    } else {
+      return;
+    }
+
+    if (pct >= NC_THRESHOLD) {
+      alertas.push({cx, pct, ...d});
+    }
+  });
+
+  alertas.sort((a,b) => b.pct - a.pct);
+
+  /* detecta caixas novas (para piscar) */
+  const curSet = new Set(alertas.map(a=>a.cx));
+  const novas  = [...curSet].filter(cx => !_prevAlertCxs.has(cx));
+  _prevAlertCxs = curSet;
+
+  /* dispara notificação do browser nas novas */
+  if (novas.length) fireDesktopNotification(novas, alertas);
+
+  renderAlertBanner(alertas, novas);
+}
+
+function renderAlertBanner(alertas, novas) {
+  const banner = document.getElementById('alert-banner');
+  const list   = document.getElementById('alert-list');
+  const cnt    = document.getElementById('alert-count');
+
+  if (!alertas.length) { banner.style.display='none'; return; }
+
+  banner.style.display = 'block';
+  cnt.textContent = alertas.length;
+
+  list.innerHTML = alertas.map(a => {
+    const pctStr  = (a.pct*100).toFixed(1)+'%';
+    const barW    = Math.min(100, a.pct*100).toFixed(1);
+    const isNova  = novas.includes(a.cx);
+    const tipos   = [...new Set(a.ncs.map(n=>n.tipo))].join(', ') || '—';
+    const destDesc= a.ncs.filter(n=>/descarte/i.test(n.destino)).length;
+    return `<div class="alert-card${isNova?' alert-new':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="alert-card-cx">📦 ${a.cx}</div>
+          <div class="alert-card-op">${opName(a.op)} · ${a.hora||'—'} · ${a.setor}</div>
+        </div>
+        <div class="alert-card-pct">${pctStr}</div>
+      </div>
+      <div class="alert-bar-wrap"><div class="alert-bar-fill" style="width:${barW}%"></div></div>
+      <div class="alert-card-row">
+        <span class="alert-card-key">Tipo(s)</span>
+        <span style="font-size:10px;color:#c3c2b7">${tipos}</span>
+      </div>
+      <div class="alert-card-row">
+        <span class="alert-card-key">Kg NC / Kg entrada</span>
+        <span style="font-size:10px;color:#c3c2b7">${a.ncPeso>0?fKg(a.ncPeso)+' / '+fKg(a.pi)+' kg':'—'}</span>
+      </div>
+      ${destDesc?`<div class="alert-card-row">
+        <span class="alert-card-key">Para descarte</span>
+        <span style="font-size:10px;color:#ff8a8a;font-weight:700">${destDesc} item(s)</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+
+  if (_alertOpen) list.classList.add('open');
+}
+
+function toggleAlertList() {
+  _alertOpen = !_alertOpen;
+  document.getElementById('alert-list').classList.toggle('open', _alertOpen);
+  document.getElementById('alert-toggle-lbl').textContent =
+    _alertOpen ? '▲ recolher' : '▼ ver detalhes';
+}
+
+/* Notificação desktop (pede permissão na primeira vez) */
+let _notifPermission = 'default';
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') { _notifPermission='granted'; return; }
+  if (Notification.permission !== 'denied') {
+    const p = await Notification.requestPermission();
+    _notifPermission = p;
+  }
+}
+function fireDesktopNotification(novas, alertas) {
+  if (_notifPermission !== 'granted') return;
+  const a = alertas.find(x=>x.cx===novas[0]);
+  if (!a) return;
+  try {
+    const n = new Notification('⚠ BTJ — Caixa com NC elevada', {
+      body: `${a.cx}: ${(a.pct*100).toFixed(1)}% de NC (op. ${opName(a.op)})`,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="28" font-size="28">📦</text></svg>',
+      tag: 'btj-nc-alert',
+      requireInteraction: true,
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  } catch(_) {}
+}
+
 /* ── AUTO REFRESH ── */
 function startAuto(){
   stopAuto(); autoEnabled=true; countdownSecs=10; updateAutoBtn();
@@ -1679,6 +1873,7 @@ window.addEventListener('resize', ()=>{
 
 /* ── INIT ── */
 document.getElementById('top-date').textContent = new Date().toLocaleDateString('pt-BR');
+requestNotifPermission();
 fetchData();
 startAuto();
 </script>
