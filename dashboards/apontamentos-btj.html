@@ -876,7 +876,11 @@ function renderTimeline(rows, type) {
   const GAP_MIN = 30; /* minutos para marcar gap */
 
   const containerW = scroll.clientWidth || 800;
-  const plotW = Math.max(containerW - LABEL_W - PAD_L - PAD_R, spanM * 1.8);
+  const availW = Math.max(0, containerW - LABEL_W - PAD_L - PAD_R);
+  const plotW  = Math.min(
+    Math.max(availW, spanM * 1.8),
+    Math.max(spanM * 2, 400)          /* teto: no máximo 2 px/min */
+  );
   const cssW  = LABEL_W + PAD_L + PAD_R + plotW;
   const cssH  = opKeys.length * ROW_H + PAD_TOP + PAD_BOT;
 
