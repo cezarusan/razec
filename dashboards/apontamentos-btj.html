@@ -126,6 +126,14 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .badge-medio{background:#3e2800;color:#ffb300;border:1px solid #e65100}
 .badge-baixo{background:#3b0f0f;color:#ff8a80;border:1px solid #c62828}
 
+/* ── LINE CHART ── */
+.linechart-section{padding:0 16px 16px;border-bottom:1px solid var(--bdr);background:var(--bg)}
+.linechart-legend{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--txt3)}
+.linechart-legend-item{display:flex;align-items:center;gap:5px}
+.dot-green{width:9px;height:9px;border-radius:50%;background:#4caf50;display:inline-block;flex-shrink:0}
+.dot-red  {width:9px;height:9px;border-radius:50%;background:#f44336;display:inline-block;flex-shrink:0}
+#line-chart{display:block;border-radius:4px}
+
 /* ── EMPTY ── */
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
 
@@ -188,7 +196,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   <input type="date" class="fselect" id="dt-ate" value="2026-07-30" onchange="render()" style="padding:3px 7px;font-size:12px;color-scheme:dark">
   <div class="filter-sep"></div>
   <span class="filter-label">Meta %</span>
-  <input type="number" class="fselect" id="inp-meta" value="45" min="1" max="150" step="0.5" onchange="render()" style="width:60px;padding:3px 7px">
+  <input type="number" class="fselect" id="inp-meta" value="43" min="1" max="150" step="0.5" onchange="render()" style="width:60px;padding:3px 7px">
   <div class="filter-sep"></div>
   <span class="filter-label">Ordenar</span>
   <select class="fselect" id="sel-sort" onchange="render()">
@@ -224,11 +232,26 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   <div class="op-grid" id="op-grid"></div>
 </div>
 
+<!-- LINE CHART -->
+<div class="linechart-section" id="linechart-section" style="display:none">
+  <div class="chart-header">
+    <div class="chart-title">Rendimento por Leitura — Linha do Tempo</div>
+    <div class="linechart-legend">
+      <div class="linechart-legend-item"><span class="dot-green"></span> Acima do limite</div>
+      <div class="linechart-legend-item"><span class="dot-red"></span> Abaixo do limite</div>
+    </div>
+  </div>
+  <canvas id="line-chart"></canvas>
+</div>
+
 <script>
 const TODAY = '2026-07-30';
 
 /* Metas de rendimento por setor (editavel no filtro "Meta %") */
-const META_DEFAULT = {FIL: 45, REF: 90};
+const META_DEFAULT = {FIL: 43, REF: 90};
+
+/* Limiar de cor para o grafico de linha (abaixo = vermelho, acima = verde) */
+const LIMIAR = {FIL: 43, REF: 90};
 
 /* ── OPERADORES ── */
 const OP_PALETTE = [
@@ -635,6 +658,142 @@ function renderChart(sorted, type, meta) {
   ctx.fillText('META', mx, PAD.top - 7);
 }
 
+/* ── LINE CHART ── */
+function renderLineChart(rows, type) {
+  const canvas  = document.getElementById('line-chart');
+  const section = document.getElementById('linechart-section');
+  if (!rows.length || !canvas) { section.style.display='none'; return; }
+  section.style.display = 'block';
+
+  const threshold = LIMIAR[type];
+
+  /* pontos ordenados por hora */
+  const pts = rows.map(r => ({
+    mins: toMins(r.hora),
+    hora: r.hora.substring(0,5),
+    rd:   rend(r, type),
+    op:   r.op,
+    cx:   r.cx,
+  })).sort((a,b) => a.mins - b.mins);
+
+  const dpr  = window.devicePixelRatio || 1;
+  const cssW = section.clientWidth - 32;
+  const cssH = 260;
+  const PAD  = {top:28, right:24, bottom:44, left:56};
+
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  /* background */
+  ctx.fillStyle = '#131b24';
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  const plotW = cssW - PAD.left - PAD.right;
+  const plotH = cssH - PAD.top  - PAD.bottom;
+
+  /* escala */
+  const rds    = pts.map(p=>p.rd);
+  const minRd  = Math.max(0, Math.floor(Math.min(...rds, threshold)) - 3);
+  const maxRd  = Math.ceil(Math.max(...rds, threshold)) + 3;
+  const minM   = pts[0].mins;
+  const maxM   = pts[pts.length-1].mins;
+  const spanM  = Math.max(1, maxM - minM);
+
+  const xS = m => PAD.left + (m - minM) / spanM * plotW;
+  const yS = r => PAD.top  + (1 - (r - minRd) / (maxRd - minRd)) * plotH;
+
+  /* grid horizontal */
+  const yStep = Math.max(1, Math.round((maxRd - minRd) / 5));
+  for (let r = Math.ceil(minRd/yStep)*yStep; r <= maxRd; r += yStep) {
+    const y = yS(r);
+    ctx.strokeStyle = '#1e2d3f'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left+plotW, y); ctx.stroke();
+    ctx.fillStyle = '#384f63'; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(r+'%', PAD.left-5, y+3);
+  }
+
+  /* zona vermelha (abaixo do limiar) */
+  const ty = yS(threshold);
+  if (ty < cssH - PAD.bottom) {
+    ctx.save();
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = '#f44336';
+    ctx.fillRect(PAD.left, ty, plotW, cssH - PAD.bottom - ty);
+    ctx.restore();
+  }
+
+  /* zona verde (acima do limiar) */
+  if (ty > PAD.top) {
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(PAD.left, PAD.top, plotW, ty - PAD.top);
+    ctx.restore();
+  }
+
+  /* linha do limiar */
+  ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(PAD.left, ty); ctx.lineTo(PAD.left+plotW, ty); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffc107'; ctx.font = 'bold 9px system-ui,sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(threshold+'%', PAD.left+4, ty-4);
+
+  /* linha de conexao entre pontos (cinza suave) */
+  if (pts.length > 1) {
+    ctx.strokeStyle = 'rgba(99,125,148,0.35)'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    pts.forEach((p,i) => {
+      const x = xS(p.mins), y = yS(p.rd);
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+
+  /* bolinhas */
+  pts.forEach(p => {
+    const x     = xS(p.mins);
+    const y     = yS(p.rd);
+    const above = p.rd >= threshold;
+    const fill  = above ? '#4caf50' : '#f44336';
+    const ring  = above ? '#a5d6a7' : '#ef9a9a';
+
+    /* sombra */
+    ctx.save();
+    ctx.shadowColor = fill; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.restore();
+
+    /* anel externo */
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2);
+    ctx.strokeStyle = ring; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  /* rotulos do eixo X (hora) — max 8 labels */
+  const maxLabels = 8;
+  const step = Math.max(1, Math.ceil(pts.length / maxLabels));
+  ctx.fillStyle = '#384f63'; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'center';
+  pts.forEach((p, i) => {
+    if (i % step === 0 || i === pts.length-1) {
+      ctx.fillText(p.hora, xS(p.mins), cssH - PAD.bottom + 14);
+    }
+  });
+
+  /* label eixo X */
+  ctx.fillStyle = '#384f63'; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Hora', PAD.left + plotW/2, cssH - PAD.bottom + 28);
+
+  /* titulo do limiar no canto direito */
+  ctx.fillStyle = '#6e8ca8'; ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'right';
+  ctx.fillText(`Limite: ${threshold}%`, PAD.left+plotW, PAD.top-10);
+}
+
 /* ── EXPORT CSV ── */
 function exportCSV() {
   const rows = setor==='FIL' ? FIL : REF;
@@ -737,6 +896,7 @@ function render() {
   renderChart(sorted, setor, meta);
 
   const grid = document.getElementById('op-grid');
+
   if (!sorted.length) {
     grid.innerHTML = '<div class="empty">Nenhum dado para o filtro selecionado.</div>';
     return;
@@ -801,6 +961,9 @@ function render() {
       </div>
     </div>`;
   }).join('');
+
+  /* grafico de linha com bolinhas por leitura */
+  renderLineChart(rows, setor);
 }
 
 function renderKPI(gs, rows, type, meta) {
@@ -829,7 +992,7 @@ function renderKPI(gs, rows, type, meta) {
     </div>`).join('');
 }
 
-/* resize */
+/* resize — redraw ambos os graficos */
 let resizeTmr;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTmr);
