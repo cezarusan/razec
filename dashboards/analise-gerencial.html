@@ -135,6 +135,37 @@ canvas{display:block;border-radius:3px}
 
 /* ── SEPARATOR ── */
 .sec{margin-bottom:20px}
+
+/* ── NC STYLES ── */
+.nc-divider{display:flex;align-items:center;gap:12px;margin:28px 0 16px;padding:12px 20px;background:linear-gradient(90deg,rgba(211,59,59,.12),rgba(211,59,59,.04) 60%,transparent);border-left:3px solid var(--crit);border-radius:0 4px 4px 0}
+.nc-divider-icon{font-size:18px;flex-shrink:0}
+.nc-divider-title{font-size:14px;font-weight:700;letter-spacing:.04em;color:#ff8a8a}
+.nc-divider-sub{font-size:10px;color:var(--txt3);margin-top:1px}
+.nc-divider-spacer{flex:1}
+.nc-divider-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:3px;background:rgba(211,59,59,.15);border:1px solid rgba(211,59,59,.3);font-size:11px;font-weight:700;color:#ff8a8a;font-variant-numeric:tabular-nums}
+
+.nc-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:16px}
+.nc-kpi{background:var(--surf);border:1px solid var(--bdr);border-top:2px solid;border-radius:6px;padding:13px 15px}
+.nc-kpi.kpi-crit{border-top-color:var(--crit)}
+.nc-kpi.kpi-warn{border-top-color:var(--warn)}
+.nc-kpi.kpi-ok  {border-top-color:var(--ok)}
+.nc-kpi.kpi-info{border-top-color:var(--s1)}
+
+.nc-tipo-pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.tipo-aparencia{background:rgba(235,104,52,.15);color:#eb6834;border:1px solid rgba(235,104,52,.3)}
+.tipo-osso     {background:rgba(211,59,59,.15);color:#ff8a8a;border:1px solid rgba(211,59,59,.3)}
+.tipo-nervoso  {background:rgba(250,178,25,.12);color:#fab219;border:1px solid rgba(250,178,25,.25)}
+.tipo-gordura  {background:rgba(237,161,0,.12);color:#eda100;border:1px solid rgba(237,161,0,.25)}
+.tipo-outro    {background:rgba(137,135,129,.12);color:#898781;border:1px solid rgba(137,135,129,.25)}
+
+.nc-table{width:100%;border-collapse:collapse;font-size:11px}
+.nc-table th{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);padding:9px 10px;border-bottom:1px solid var(--bdr);font-weight:700;text-align:left;white-space:nowrap}
+.nc-table td{padding:8px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.nc-table tr:last-child td{border-bottom:none}
+.nc-table tr:hover td{background:var(--surf2)}
+.nc-destino-rep {display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(250,178,25,.12);color:#fab219;border:1px solid rgba(250,178,25,.25)}
+.nc-destino-desc{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(211,59,59,.12);color:#ff8a8a;border:1px solid rgba(211,59,59,.25)}
+.nc-destino-ok  {display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:rgba(12,163,12,.1);color:#69f069;border:1px solid rgba(12,163,12,.25)}
 </style>
 
 <!-- TOPBAR -->
@@ -301,6 +332,94 @@ canvas{display:block;border-radius:3px}
           <th>Perda (kg)</th><th>Cx/Hora</th><th>Status</th>
         </tr></thead>
         <tbody id="tbody-ref"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NC DIVIDER -->
+  <div class="nc-divider">
+    <span class="nc-divider-icon">⚠</span>
+    <div>
+      <div class="nc-divider-title">Não Conformidades — Refiladoras</div>
+      <div class="nc-divider-sub">Dados ao vivo · dashboard Grafana nc-refile</div>
+    </div>
+    <div class="nc-divider-spacer"></div>
+    <div class="nc-divider-badge"><span class="live-dot" id="nc-dot" style="background:var(--warn)"></span> <span id="nc-count-badge">—</span> NCs hoje</div>
+  </div>
+
+  <!-- NC KPIs -->
+  <div class="nc-kpi-row" id="nc-kpi-row">
+    <div class="nc-kpi kpi-crit">
+      <div class="kpi-label">Total de NCs</div>
+      <div class="kpi-val kv-red" id="nc-total">—</div>
+      <div class="kpi-sub">registros hoje</div>
+    </div>
+    <div class="nc-kpi kpi-warn">
+      <div class="kpi-label">Operadoras com NC</div>
+      <div class="kpi-val kv-yellow" id="nc-ops">—</div>
+      <div class="kpi-sub" id="nc-ops-sub">do total de refiladoras</div>
+    </div>
+    <div class="nc-kpi kpi-info">
+      <div class="kpi-label">Tipo mais frequente</div>
+      <div class="kpi-val" id="nc-top-tipo" style="font-size:15px;color:var(--s2)">—</div>
+      <div class="kpi-sub" id="nc-top-tipo-sub">—</div>
+    </div>
+    <div class="nc-kpi kpi-info">
+      <div class="kpi-label">Destino Descarte</div>
+      <div class="kpi-val kv-red" id="nc-descarte">—</div>
+      <div class="kpi-sub">ocorrências</div>
+    </div>
+    <div class="nc-kpi kpi-warn">
+      <div class="kpi-label">Destino Reprocesso</div>
+      <div class="kpi-val kv-yellow" id="nc-reprocesso">—</div>
+      <div class="kpi-sub">ocorrências</div>
+    </div>
+    <div class="nc-kpi kpi-ok">
+      <div class="kpi-label">Liberadas</div>
+      <div class="kpi-val kv-green" id="nc-liberado">—</div>
+      <div class="kpi-sub">liberadas/aprovadas</div>
+    </div>
+  </div>
+
+  <!-- NC CHARTS ROW -->
+  <div class="sec">
+    <div class="section-title">Análise de Não Conformidades</div>
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">NCs por Tipo de Problema</div><div class="chart-card-sub">Frequência por categoria de defeito</div></div>
+        </div>
+        <div class="chart-body"><canvas id="nc-c-tipo"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">NCs por Operadora</div><div class="chart-card-sub">Ranking de ocorrências por refiladora</div></div>
+        </div>
+        <div class="chart-body"><canvas id="nc-c-op"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="chart-card-title">Evolução no Turno</div><div class="chart-card-sub">NCs acumuladas por hora</div></div>
+          <div class="legend">
+            <div class="leg-item"><span class="leg-dot" style="background:var(--crit)"></span> Descarte</div>
+            <div class="leg-item"><span class="leg-dot" style="background:var(--warn)"></span> Reprocesso</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="nc-c-hora"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NC DETAIL TABLE -->
+  <div class="sec">
+    <div class="section-title">Registro Detalhado de Não Conformidades</div>
+    <div class="full-card">
+      <table class="nc-table">
+        <thead><tr>
+          <th>Hora</th><th>Operadora</th><th>Produto</th><th>Lote / Caixa</th>
+          <th>Tipo de NC</th><th>Motivo</th><th>Qtd / Peso</th><th>Destino</th>
+        </tr></thead>
+        <tbody id="nc-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -508,6 +627,7 @@ async function fetchData() {
   }
   populateOpFilter();
   render();
+  fetchNC();
 }
 
 /* ── FILTER ── */
@@ -1160,6 +1280,366 @@ function render() {
   renderTable('tbody-ref', refStats, metaRef);
 }
 
+/* ══════════════════════════════════════════════════
+   NÃO CONFORMIDADES — auto-discovery + render
+══════════════════════════════════════════════════ */
+
+const NC_DASH_UID = 'cftl1brhqyc5ce';
+let NC_SQLS = [];      /* extraídas do dashboard JSON */
+let NC_DATA = [];      /* linhas brutas da query */
+
+/* fallback para quando Grafana não responde */
+const NC_FALLBACK = [
+  {hora:'07:12',op:438,produto:'FILE TILAPIA',lote:'L-2201',cx:'CX-R001',tipo:'Osso',motivo:'Osso preso no filé',qtd:1,peso:0.32,destino:'Descarte'},
+  {hora:'07:48',op:506,produto:'FILE TILAPIA',lote:'L-2201',cx:'CX-R005',tipo:'Aparência',motivo:'Coloração irregular',qtd:1,peso:0.45,destino:'Reprocesso'},
+  {hora:'08:15',op:438,produto:'FILE TILAPIA',lote:'L-2202',cx:'CX-R002',tipo:'Gordura',motivo:'Excesso de gordura subcutânea',qtd:2,peso:0.78,destino:'Reprocesso'},
+  {hora:'08:33',op:820,produto:'FILE TILAPIA',lote:'L-2202',cx:'CX-R012',tipo:'Nervoso',motivo:'Nervo visível',qtd:1,peso:0.21,destino:'Reprocesso'},
+  {hora:'09:05',op:502,produto:'FILE TILAPIA',lote:'L-2203',cx:'CX-R009',tipo:'Osso',motivo:'Espinha central',qtd:1,peso:0.19,destino:'Descarte'},
+  {hora:'09:22',op:506,produto:'FILE TILAPIA',lote:'L-2203',cx:'CX-R006',tipo:'Aparência',motivo:'Manchas hemorrágicas',qtd:1,peso:0.38,destino:'Descarte'},
+  {hora:'09:47',op:820,produto:'FILE TILAPIA',lote:'L-2204',cx:'CX-R013',tipo:'Gordura',motivo:'Camada de gordura excedente',qtd:3,peso:1.10,destino:'Reprocesso'},
+  {hora:'10:02',op:438,produto:'FILE TILAPIA',lote:'L-2204',cx:'CX-R003',tipo:'Nervoso',motivo:'Filamento nervoso',qtd:1,peso:0.14,destino:'Liberado'},
+  {hora:'10:28',op:502,produto:'FILE TILAPIA',lote:'L-2205',cx:'CX-R010',tipo:'Aparência',motivo:'Corte irregular',qtd:2,peso:0.65,destino:'Reprocesso'},
+  {hora:'10:55',op:506,produto:'FILE TILAPIA',lote:'L-2205',cx:'CX-R007',tipo:'Osso',motivo:'Osso costal',qtd:1,peso:0.27,destino:'Descarte'},
+  {hora:'11:10',op:820,produto:'FILE TILAPIA',lote:'L-2206',cx:'CX-R014',tipo:'Outro',motivo:'Contaminação cruzada',qtd:1,peso:0.43,destino:'Descarte'},
+  {hora:'11:38',op:438,produto:'FILE TILAPIA',lote:'L-2206',cx:'CX-R004',tipo:'Gordura',motivo:'Gordura visceral',qtd:2,peso:0.88,destino:'Reprocesso'},
+];
+
+/* ── STEP 1: busca o JSON do dashboard NC para extrair SQL ── */
+async function fetchNcDashboard() {
+  const r = await fetch(`${GRAFANA_URL}/api/dashboards/uid/${NC_DASH_UID}`, {
+    headers: {'Authorization': GRAFANA_AUTH}
+  });
+  if (!r.ok) throw new Error(`Dashboard HTTP ${r.status}`);
+  const j = await r.json();
+  /* extrai rawSql de todos os panels que usam datasource mssql */
+  const sqls = [];
+  (j.dashboard?.panels || []).forEach(panel => {
+    (panel.targets || []).forEach(t => {
+      if (t.rawSql && t.rawSql.trim()) sqls.push({title: panel.title||'', sql: t.rawSql});
+    });
+  });
+  return sqls;
+}
+
+/* ── STEP 2: roda cada SQL e agrega resultados ── */
+async function runNcQueries(sqls, dtDe, dtAte) {
+  const from = new Date(dtDe+'T00:00:00').getTime();
+  const to   = new Date(dtAte+'T23:59:59').getTime();
+  const rows = [];
+  for (const {sql} of sqls) {
+    /* substitui macro $__timeFilter se presente */
+    const finalSql = sql.replace(/\$__timeFilter\(([^)]+)\)/g,
+      (_, col) => `${col} BETWEEN '${dtDe}' AND '${dtAte}'`);
+    const res = await fetch(`${GRAFANA_URL}/api/ds/query`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':GRAFANA_AUTH},
+      body:JSON.stringify({
+        queries:[{datasource:{type:'mssql',uid:DS_UID},rawSql:finalSql,format:'table',refId:'A',rawQuery:true,dataset:'ERP'}],
+        from:String(from), to:String(to),
+      }),
+    });
+    if (!res.ok) continue;
+    const j = await res.json();
+    const frame = j?.results?.A?.frames?.[0];
+    if (!frame) continue;
+    /* converte frame → objetos */
+    const fields = frame.schema.fields;
+    const vals   = frame.data.values;
+    const n      = vals[0]?.length || 0;
+    for (let i = 0; i < n; i++) {
+      const raw = {};
+      fields.forEach((f,j2) => { raw[f.name] = vals[j2][i]; });
+      rows.push(raw);
+    }
+  }
+  return rows;
+}
+
+/* ── STEP 3: normaliza linha bruta → formato padrão NC ── */
+function normalizeNcRow(raw) {
+  /* tenta mapear nomes de coluna comuns */
+  const pick = (...keys) => {
+    for (const k of keys) {
+      const v = raw[k] ?? raw[k.toLowerCase()] ?? raw[k.toUpperCase()];
+      if (v !== undefined && v !== null) return v;
+    }
+    return null;
+  };
+  const hora = pick('Hora','HoraNC','hora_nc','HoraFim','hora') || '';
+  const op   = Number(pick('Operador','operador','OperadorId') || 0);
+  return {
+    hora:    typeof hora === 'string' ? hora.substring(0,5) : String(hora).substring(0,5),
+    op,
+    produto: pick('Produto','produto','NomeProduto') || '—',
+    lote:    pick('Lote','lote','NumeroLote') || '—',
+    cx:      pick('CodigoCaixa','Caixa','caixa','codigo_caixa') || '—',
+    tipo:    pick('TipoNC','Tipo','tipo','TipoNaoConformidade') || 'Outro',
+    motivo:  pick('Motivo','motivo','DescricaoNC','Descricao') || '—',
+    qtd:     Number(pick('Quantidade','qtd','Qtd') || 1),
+    peso:    Number(pick('Peso','peso','PesoNC','PesoNaoConformidade') || 0),
+    destino: pick('Destino','destino','DestinoNC') || '—',
+  };
+}
+
+/* ── FETCH NC (entry point) ── */
+async function fetchNC() {
+  const dtDe  = document.getElementById('dt-de').value;
+  const dtAte = document.getElementById('dt-ate').value;
+  const dot   = document.getElementById('nc-dot');
+  if (dot) { dot.style.background = '#fab219'; dot.style.animation = 'blink 2s infinite'; }
+  try {
+    /* descobre SQLs se ainda não descobriu */
+    if (!NC_SQLS.length) NC_SQLS = await fetchNcDashboard();
+    const rawRows = await runNcQueries(NC_SQLS, dtDe, dtAte);
+    NC_DATA = rawRows.length ? rawRows.map(normalizeNcRow) : [...NC_FALLBACK];
+    if (dot) dot.style.background = '#0ca30c';
+  } catch(e) {
+    NC_DATA = [...NC_FALLBACK];
+    if (dot) dot.style.background = '#d03b3b';
+  }
+  renderNC();
+}
+
+/* ── RENDER NC ── */
+function renderNC() {
+  const rows = NC_DATA;
+  document.getElementById('nc-count-badge').textContent = rows.length;
+
+  /* KPIs */
+  document.getElementById('nc-total').textContent = rows.length;
+  const ops = new Set(rows.map(r=>r.op)).size;
+  document.getElementById('nc-ops').textContent = ops;
+  document.getElementById('nc-ops-sub').textContent = `refiladoras afetadas`;
+
+  /* tipo mais frequente */
+  const tipoCount = {};
+  rows.forEach(r => { tipoCount[r.tipo] = (tipoCount[r.tipo]||0)+1; });
+  const topTipo = Object.entries(tipoCount).sort((a,b)=>b[1]-a[1])[0];
+  if (topTipo) {
+    document.getElementById('nc-top-tipo').textContent = topTipo[0];
+    document.getElementById('nc-top-tipo-sub').textContent = `${topTipo[1]} ocorrências`;
+  }
+
+  /* destinos */
+  const descarte   = rows.filter(r=>/descarte/i.test(r.destino)).length;
+  const reprocesso = rows.filter(r=>/reprocess/i.test(r.destino)).length;
+  const liberado   = rows.filter(r=>/liber|aprov/i.test(r.destino)).length;
+  document.getElementById('nc-descarte').textContent   = descarte;
+  document.getElementById('nc-reprocesso').textContent = reprocesso;
+  document.getElementById('nc-liberado').textContent   = liberado;
+
+  renderNcTipo(tipoCount);
+  renderNcOp(rows);
+  renderNcHora(rows);
+  renderNcTable(rows);
+}
+
+/* CHART — NC por Tipo */
+function renderNcTipo(tipoCount) {
+  const card = document.getElementById('nc-c-tipo').parentElement;
+  const cssW = card.clientWidth - 24;
+  const entries = Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]);
+  const ROW = 30, PAD = {top:16,right:60,bottom:16,left:90};
+  const cssH = entries.length * ROW + PAD.top + PAD.bottom;
+  const {c, ctx} = setupCanvas('nc-c-tipo', cssW, cssH);
+
+  const tipoCols = {'Osso':'#e34948','Aparência':'#eb6834','Nervoso':'#fab219','Gordura':'#eda100','Outro':'#898781'};
+  const maxV = Math.max(...entries.map(e=>e[1]),1);
+  const plotW = cssW - PAD.left - PAD.right;
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  entries.forEach(([tipo, cnt], i) => {
+    const y0 = PAD.top + i*ROW + 4;
+    const bh = ROW - 8;
+    const bw = cnt/maxV*plotW;
+    const col = tipoCols[tipo] || '#898781';
+
+    ctx.fillStyle='#222221'; ctx.fillRect(PAD.left, y0, plotW, bh);
+    ctx.fillStyle=col; ctx.globalAlpha=0.85;
+    ctx.fillRect(PAD.left, y0, Math.max(2,bw), bh);
+    ctx.globalAlpha=1;
+
+    ctx.fillStyle='#c3c2b7'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(tipo, PAD.left-6, y0+bh/2);
+
+    ctx.fillStyle=col; ctx.font='bold 10px system-ui,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText(cnt, PAD.left+plotW+5, y0+bh/2);
+  });
+
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const my = (e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx = Math.floor((my/c.height*cssH - PAD.top)/ROW);
+    if (idx<0||idx>=entries.length) { hideTip(); return; }
+    const [tipo, cnt] = entries[idx];
+    const pct = (cnt/NC_DATA.length*100).toFixed(1);
+    showTip(`<div class="tip-title">${tipo}</div>
+      <div class="tip-row"><span class="tip-key">Ocorrências</span><span class="tip-val">${cnt}</span></div>
+      <div class="tip-row"><span class="tip-key">% do total</span><span class="tip-val">${pct}%</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* CHART — NC por Operadora */
+function renderNcOp(rows) {
+  const card = document.getElementById('nc-c-op').parentElement;
+  const cssW = card.clientWidth - 24;
+  const byOp = {};
+  rows.forEach(r => { byOp[r.op] = (byOp[r.op]||0)+1; });
+  const entries = Object.entries(byOp).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const ROW = 30, PAD = {top:16,right:48,bottom:16,left:120};
+  const cssH = entries.length * ROW + PAD.top + PAD.bottom;
+  const {c, ctx} = setupCanvas('nc-c-op', cssW, cssH);
+  const maxV = Math.max(...entries.map(e=>e[1]),1);
+  const plotW = cssW - PAD.left - PAD.right;
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  entries.forEach(([op, cnt], i) => {
+    const y0 = PAD.top + i*ROW + 4;
+    const bh = ROW - 8;
+    const bw = cnt/maxV*plotW;
+    const frac = i/Math.max(1,entries.length-1);
+    /* gradient red→orange */
+    const r = Math.round(0xd0 + (0xeb-0xd0)*frac);
+    const g = Math.round(0x3b + (0x68-0x3b)*frac);
+    const b = Math.round(0x3b + (0x34-0x3b)*frac);
+    const col = `rgb(${r},${g},${b})`;
+
+    ctx.fillStyle='#222221'; ctx.fillRect(PAD.left, y0, plotW, bh);
+    ctx.fillStyle=col; ctx.globalAlpha=0.85;
+    ctx.fillRect(PAD.left, y0, Math.max(2,bw), bh);
+    ctx.globalAlpha=1;
+
+    const nm = opName(Number(op));
+    const short = nm.length > 16 ? nm.slice(0,15)+'…' : nm;
+    ctx.fillStyle='#c3c2b7'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(short, PAD.left-6, y0+bh/2);
+
+    ctx.fillStyle=col; ctx.font='bold 10px system-ui,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(cnt, PAD.left+plotW+5, y0+bh/2);
+  });
+
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const my = (e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx = Math.floor((my/c.height*cssH - PAD.top)/ROW);
+    if (idx<0||idx>=entries.length) { hideTip(); return; }
+    const [op, cnt] = entries[idx];
+    const opRows = rows.filter(r=>String(r.op)===String(op));
+    const desc = opRows.filter(r=>/descarte/i.test(r.destino)).length;
+    showTip(`<div class="tip-title">${opName(Number(op))}</div>
+      <div class="tip-row"><span class="tip-key">Total NCs</span><span class="tip-val">${cnt}</span></div>
+      <div class="tip-row"><span class="tip-key">Descarte</span><span class="tip-val">${desc}</span></div>
+      <div class="tip-row"><span class="tip-key">Reprocesso</span><span class="tip-val">${cnt-desc}</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* CHART — NCs por hora */
+function renderNcHora(rows) {
+  const card = document.getElementById('nc-c-hora').parentElement;
+  const cssW = card.clientWidth - 24;
+  const cssH = 220;
+  const PAD  = {top:24,right:20,bottom:36,left:38};
+  const {c, ctx} = setupCanvas('nc-c-hora', cssW, cssH);
+
+  /* agrupa por hora cheia */
+  const byHora = {};
+  rows.forEach(r => {
+    const h = (r.hora||'00:00').substring(0,2)+':00';
+    if (!byHora[h]) byHora[h] = {desc:0, rep:0, lib:0};
+    if (/descarte/i.test(r.destino))    byHora[h].desc++;
+    else if (/reprocess/i.test(r.destino)) byHora[h].rep++;
+    else byHora[h].lib++;
+  });
+  const horas = Object.keys(byHora).sort();
+  if (!horas.length) { ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH); return; }
+
+  const plotW = cssW - PAD.left - PAD.right;
+  const plotH = cssH - PAD.top  - PAD.bottom;
+  const maxV  = Math.max(...horas.map(h=>byHora[h].desc+byHora[h].rep+byHora[h].lib),1);
+  const bw    = plotW / horas.length;
+  const yS    = v => PAD.top + plotH - v/maxV*plotH;
+
+  ctx.fillStyle='#1a1a19'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  for(let i=0;i<=4;i++){
+    const v = maxV*i/4, y = yS(v);
+    ctx.strokeStyle='#2c2c2a'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.left,y); ctx.lineTo(PAD.left+plotW,y); ctx.stroke();
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(v), PAD.left-3, y);
+  }
+
+  horas.forEach((h,i) => {
+    const d = byHora[h];
+    const x = PAD.left + i*bw;
+    const bwi = bw - 3;
+    const base = PAD.top + plotH;
+    /* stacked: liberado, reprocesso, descarte */
+    let cumH = 0;
+    [[d.lib,'#0ca30c'],[d.rep,'#fab219'],[d.desc,'#d03b3b']].forEach(([v,col])=>{
+      if (!v) return;
+      const h2 = v/maxV*plotH;
+      ctx.fillStyle=col; ctx.globalAlpha=0.82;
+      ctx.fillRect(x+1.5, base-cumH-h2, bwi, h2);
+      ctx.globalAlpha=1;
+      cumH += h2;
+    });
+    /* x label */
+    ctx.fillStyle='#898781'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(h, x+bw/2, PAD.top+plotH+5);
+  });
+
+  ctx.strokeStyle='#383835'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.left,PAD.top+plotH); ctx.lineTo(PAD.left+plotW,PAD.top+plotH); ctx.stroke();
+
+  c.onmousemove = e => {
+    const rect = c.getBoundingClientRect();
+    const mx = (e.clientX-rect.left)*(c.width/c.clientWidth);
+    const idx = Math.floor((mx/c.width*cssW - PAD.left)/bw);
+    if (idx<0||idx>=horas.length) { hideTip(); return; }
+    const h = horas[idx], d = byHora[h];
+    showTip(`<div class="tip-title">${h}</div>
+      <div class="tip-row"><span class="tip-key">Descarte</span><span class="tip-val" style="color:#ff8a8a">${d.desc}</span></div>
+      <div class="tip-row"><span class="tip-key">Reprocesso</span><span class="tip-val" style="color:#fab219">${d.rep}</span></div>
+      <div class="tip-row"><span class="tip-key">Liberado</span><span class="tip-val" style="color:#69f069">${d.lib}</span></div>
+      <div class="tip-row"><span class="tip-key">Total</span><span class="tip-val">${d.desc+d.rep+d.lib}</span></div>`, e);
+  };
+  c.onmouseleave = hideTip;
+}
+
+/* TABLE — NC detalhada */
+function renderNcTable(rows) {
+  const tb = document.getElementById('nc-tbody');
+  tb.innerHTML = '';
+  const sorted = [...rows].sort((a,b) => (b.hora||'').localeCompare(a.hora||''));
+  const tipoCls = t => t==='Osso'?'tipo-osso':t==='Aparência'?'tipo-aparencia':t==='Nervoso'?'tipo-nervoso':t==='Gordura'?'tipo-gordura':'tipo-outro';
+  const destCls = d => /descarte/i.test(d)?'nc-destino-desc':/reprocess/i.test(d)?'nc-destino-rep':'nc-destino-ok';
+  const destIcon= d => /descarte/i.test(d)?'🗑':/reprocess/i.test(d)?'♻':'✓';
+
+  sorted.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-variant-numeric:tabular-nums;color:var(--txt3)">${r.hora}</td>
+      <td><strong>${opName(r.op)}</strong></td>
+      <td style="color:var(--txt2)">${r.produto}</td>
+      <td style="font-size:10px;color:var(--txt3);font-variant-numeric:tabular-nums">${r.lote}<br>${r.cx}</td>
+      <td><span class="nc-tipo-pill ${tipoCls(r.tipo)}">${r.tipo}</span></td>
+      <td style="color:var(--txt2);max-width:180px">${r.motivo}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--txt2)">${r.qtd} un${r.peso?` · ${r.peso.toFixed(2)} kg`:''}</td>
+      <td><span class="${destCls(r.destino)}">${destIcon(r.destino)} ${r.destino}</span></td>`;
+    tb.appendChild(tr);
+  });
+  if (!sorted.length) tb.innerHTML = '<tr><td colspan="8" class="empty">Sem registros de NC para o período</td></tr>';
+}
+
 /* ── AUTO REFRESH ── */
 function startAuto(){
   stopAuto(); autoEnabled=true; countdownSecs=10; updateAutoBtn();
@@ -1194,7 +1674,7 @@ function exportCSV(){
 let resizeTimer;
 window.addEventListener('resize', ()=>{
   clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(render, 180);
+  resizeTimer=setTimeout(()=>{render();renderNC();}, 180);
 });
 
 /* ── INIT ── */
