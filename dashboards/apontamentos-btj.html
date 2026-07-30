@@ -134,6 +134,20 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .dot-red  {width:9px;height:9px;border-radius:50%;background:#f44336;display:inline-block;flex-shrink:0}
 #line-chart{display:block;border-radius:4px}
 
+/* ── TIMELINE ── */
+.timeline-section{padding:0 16px 20px;border-bottom:1px solid var(--bdr);background:var(--bg)}
+.timeline-scroll{overflow-x:auto;overflow-y:hidden;border-radius:4px}
+#timeline-chart{display:block;cursor:crosshair}
+.tl-tooltip{position:fixed;pointer-events:none;background:#0b0f16;border:1px solid #26394f;border-radius:7px;padding:10px 14px;font-size:11px;line-height:1.7;color:#ccd6e0;z-index:200;min-width:210px;max-width:300px;box-shadow:0 6px 24px rgba(0,0,0,.7)}
+.tl-name{font-weight:700;color:#00bcd4;font-size:12px;margin-bottom:1px}
+.tl-time{color:#6e8ca8;font-size:10px;margin-bottom:6px}
+.tl-hr{border:none;border-top:1px solid #1e2d3f;margin:5px 0}
+.tl-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-width:0}
+.tl-key{color:#384f63;white-space:nowrap}
+.tl-val{color:#ccd6e0;font-weight:600;text-align:right}
+.tl-ok{color:#4caf50;font-weight:700}
+.tl-bad{color:#f44336;font-weight:700}
+
 /* ── EMPTY ── */
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
 
@@ -243,6 +257,22 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   </div>
   <canvas id="line-chart"></canvas>
 </div>
+
+<!-- TIMELINE POR OPERADOR -->
+<div class="timeline-section" id="timeline-section" style="display:none">
+  <div class="chart-header">
+    <div class="chart-title">Linha do Tempo por Operador</div>
+    <div class="chart-legend">
+      <div class="chart-legend-item"><span class="above-dot"></span> Acima da meta</div>
+      <div class="chart-legend-item"><span class="below-dot"></span> Abaixo da meta</div>
+      <div class="chart-legend-item"><span style="display:inline-block;width:14px;height:2px;background:#ffc107;vertical-align:middle;margin-right:4px"></span>Gap longo</div>
+    </div>
+  </div>
+  <div class="timeline-scroll" id="timeline-scroll">
+    <canvas id="timeline-chart"></canvas>
+  </div>
+</div>
+<div id="tl-tooltip" class="tl-tooltip" style="display:none"></div>
 
 <script>
 const TODAY = '2026-07-30';
@@ -794,6 +824,233 @@ function renderLineChart(rows, type) {
   ctx.fillText(`Limite: ${threshold}%`, PAD.left+plotW, PAD.top-10);
 }
 
+/* ── RENDER TIMELINE ── */
+/* polyfill roundRect para browsers antigos */
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    const s = Array.isArray(r) ? r[0] : (r || 0);
+    this.moveTo(x+s, y); this.lineTo(x+w-s, y);
+    this.quadraticCurveTo(x+w, y, x+w, y+s);
+    this.lineTo(x+w, y+h-s);
+    this.quadraticCurveTo(x+w, y+h, x+w-s, y+h);
+    this.lineTo(x+s, y+h);
+    this.quadraticCurveTo(x, y+h, x, y+h-s);
+    this.lineTo(x, y+s);
+    this.quadraticCurveTo(x, y, x+s, y);
+    this.closePath();
+  };
+}
+
+let _tlBoxes = [];
+
+function renderTimeline(rows, type) {
+  const section = document.getElementById('timeline-section');
+  const scroll  = document.getElementById('timeline-scroll');
+  const canvas  = document.getElementById('timeline-chart');
+  if (!rows.length || !canvas) { section.style.display='none'; return; }
+  section.style.display = 'block';
+
+  const threshold = LIMIAR[type];
+  const dpr = window.devicePixelRatio || 1;
+
+  /* agrupar por operador */
+  const byOp = {};
+  rows.forEach(r => {
+    if (!byOp[r.op]) byOp[r.op] = [];
+    byOp[r.op].push({...r, mins: toMins(r.hora), rd: rend(r, type)});
+  });
+  const opKeys = Object.keys(byOp).map(Number)
+    .sort((a,b) => (OPS[a]?.name||'').localeCompare(OPS[b]?.name||''));
+  opKeys.forEach(op => byOp[op].sort((a,b) => a.mins - b.mins));
+
+  /* intervalo de tempo */
+  const allMins = rows.map(r => toMins(r.hora)).filter(m => m > 0);
+  const minM = Math.min(...allMins) - 5;
+  const maxM = Math.max(...allMins) + 5;
+  const spanM = Math.max(30, maxM - minM);
+
+  /* layout */
+  const LABEL_W = 158, ROW_H = 42, PAD_TOP = 36, PAD_BOT = 12;
+  const PAD_L = 6, PAD_R = 16;
+  const BOX_W = 14, BOX_H = 20;
+  const GAP_MIN = 30; /* minutos para marcar gap */
+
+  const containerW = scroll.clientWidth || 800;
+  const plotW = Math.max(containerW - LABEL_W - PAD_L - PAD_R, spanM * 1.8);
+  const cssW  = LABEL_W + PAD_L + PAD_R + plotW;
+  const cssH  = opKeys.length * ROW_H + PAD_TOP + PAD_BOT;
+
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const xS = m => LABEL_W + PAD_L + (m - minM) / spanM * plotW;
+  _tlBoxes = [];
+
+  /* fundo */
+  ctx.fillStyle = '#131b24';
+  ctx.fillRect(0, 0, cssW, cssH);
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, LABEL_W, cssH);
+  ctx.strokeStyle = '#1e2d3f'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(LABEL_W, 0); ctx.lineTo(LABEL_W, cssH); ctx.stroke();
+
+  /* eixo de tempo (topo) */
+  const targetL = Math.max(4, Math.floor(plotW / 72));
+  const rawStep = spanM / targetL;
+  const nStep   = rawStep < 10 ? 5 : rawStep < 20 ? 10 : rawStep < 40 ? 15 : rawStep < 70 ? 30 : 60;
+  const firstL  = Math.ceil(minM / nStep) * nStep;
+  for (let m = firstL; m <= maxM + nStep; m += nStep) {
+    const x = xS(m);
+    if (x < LABEL_W || x > cssW) continue;
+    ctx.strokeStyle = '#1a2535'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, PAD_TOP - 2); ctx.lineTo(x, cssH - PAD_BOT); ctx.stroke();
+    const hh = Math.floor(m / 60).toString().padStart(2,'0');
+    const mm = (Math.round(m) % 60).toString().padStart(2,'0');
+    ctx.fillStyle = '#384f63'; ctx.font = '9px system-ui,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(`${hh}:${mm}`, x, PAD_TOP - 7);
+  }
+  ctx.strokeStyle = '#1e2d3f'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(LABEL_W, PAD_TOP - 2); ctx.lineTo(cssW, PAD_TOP - 2); ctx.stroke();
+
+  /* linhas de operador */
+  opKeys.forEach((op, i) => {
+    const recs  = byOp[op];
+    const nome  = OPS[op]?.name || `Op. ${op}`;
+    const color = OPS[op]?.color || '#78909c';
+    const rowY  = PAD_TOP + i * ROW_H;
+    const cy    = rowY + ROW_H / 2;
+
+    /* fundo alternado */
+    if (i % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.018)';
+      ctx.fillRect(LABEL_W, rowY, cssW - LABEL_W, ROW_H);
+    }
+    /* separador */
+    ctx.strokeStyle = '#15202e'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(0, rowY + ROW_H); ctx.lineTo(cssW, rowY + ROW_H); ctx.stroke();
+
+    /* label esquerda */
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = color; ctx.font = 'bold 10px system-ui,sans-serif';
+    ctx.fillText(`Op.${op}`, LABEL_W - 6, cy - 7);
+    ctx.fillStyle = '#4e6a80'; ctx.font = '9px system-ui,sans-serif';
+    const shortName = nome.length > 17 ? nome.substring(0,16) + '…' : nome;
+    ctx.fillText(shortName, LABEL_W - 6, cy + 7);
+
+    /* baseline tracejada */
+    ctx.strokeStyle = 'rgba(30,45,63,0.6)'; ctx.lineWidth = 1;
+    ctx.setLineDash([2, 7]);
+    ctx.beginPath(); ctx.moveTo(LABEL_W + PAD_L, cy); ctx.lineTo(cssW - PAD_R, cy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* linhas de conexao e marcadores de gap */
+    for (let j = 1; j < recs.length; j++) {
+      const prev = recs[j-1], curr = recs[j];
+      const gapMin = curr.mins - prev.mins;
+      const x0 = xS(prev.mins), x1 = xS(curr.mins);
+      const isCrit  = gapMin > 120;
+      const isHuge  = gapMin > 60;
+      const isLarge = gapMin > GAP_MIN;
+      ctx.strokeStyle = isCrit  ? 'rgba(244,67,54,0.35)'
+                       : isHuge  ? 'rgba(255,152,0,0.30)'
+                       : isLarge ? 'rgba(255,193,7,0.22)'
+                       : 'rgba(30,45,63,0.45)';
+      ctx.lineWidth = isLarge ? 1.5 : 1;
+      if (isLarge) ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(x0, cy); ctx.lineTo(x1, cy); ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (isLarge) {
+        const gx  = (x0 + x1) / 2;
+        const lbl = gapMin >= 60 ? `+${(gapMin/60).toFixed(1)}h` : `+${Math.round(gapMin)}min`;
+        const col = isCrit ? '#ef5350' : isHuge ? '#ff8f00' : '#ffc107';
+        ctx.font = 'bold 8px system-ui,sans-serif';
+        const tw = ctx.measureText(lbl).width;
+        const pw = tw + 9, ph = 14;
+        const px = gx - pw/2, py = cy - ROW_H/2 + 4;
+        ctx.fillStyle = 'rgba(10,14,20,0.9)';
+        ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 3); ctx.fill();
+        ctx.strokeStyle = col; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 3); ctx.stroke();
+        ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(lbl, gx, py + ph/2);
+      }
+    }
+
+    /* caixas de apontamento */
+    recs.forEach(rec => {
+      const x    = xS(rec.mins);
+      const above = rec.rd >= threshold;
+      const bx = x - BOX_W/2, by = cy - BOX_H/2;
+
+      if (!above) {
+        ctx.save();
+        ctx.shadowColor = '#f44336'; ctx.shadowBlur = 8;
+        ctx.fillStyle = '#f44336';
+        ctx.beginPath(); ctx.arc(x, cy, 3, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.fillStyle   = above ? '#1b5e20' : '#7f0000';
+      ctx.strokeStyle = above ? '#4caf50' : '#f44336';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(bx, by, BOX_W, BOX_H, 3); ctx.fill(); ctx.stroke();
+
+      _tlBoxes.push({bx, by, bw: BOX_W, bh: BOX_H, op, nome,
+                     hora: rec.hora, rd: rec.rd, pi: rec.pi,
+                     pf: rec.pf, res: rec.res, cx: rec.cx, above});
+    });
+  });
+
+  ctx.textBaseline = 'alphabetic';
+}
+
+function setupTimelineEvents() {
+  const canvas  = document.getElementById('timeline-chart');
+  const tooltip = document.getElementById('tl-tooltip');
+  if (!canvas || !tooltip) return;
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    let found = null;
+    for (const b of _tlBoxes) {
+      if (mx >= b.bx - 5 && mx <= b.bx + b.bw + 5 &&
+          my >= b.by - 5 && my <= b.by + b.bh + 5) { found = b; break; }
+    }
+    if (found) {
+      const loteHtml = found.lote ? `<div class="tl-row"><span class="tl-key">Lote</span><span class="tl-val">${found.lote}</span></div>` : '';
+      tooltip.innerHTML = `
+        <div class="tl-name">Op. ${found.op} — ${found.nome}</div>
+        <div class="tl-time">${found.hora.substring(0,8)} &middot; ${found.cx}</div>
+        <hr class="tl-hr">
+        <div class="tl-row"><span class="tl-key">Rendimento</span>
+          <span class="${found.above ? 'tl-ok' : 'tl-bad'}">${fmtPct(found.rd)}${found.above ? ' ✓' : ' ✗'}</span></div>
+        <div class="tl-row"><span class="tl-key">Kg Entrada</span><span class="tl-val">${fmtKg(found.pi)}</span></div>
+        <div class="tl-row"><span class="tl-key">Kg Saída</span><span class="tl-val">${fmtKg(found.pf)}</span></div>
+        <div class="tl-row"><span class="tl-key">Resíduo</span><span class="tl-val">${fmtKg(found.res)}</span></div>
+        ${loteHtml}`;
+      tooltip.style.display = 'block';
+      const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+      let tx = e.clientX + 16, ty = e.clientY - 10;
+      if (tx + tw > window.innerWidth  - 8) tx = e.clientX - tw - 16;
+      if (ty + th > window.innerHeight - 8) ty = e.clientY - th + 10;
+      tooltip.style.left = tx + 'px';
+      tooltip.style.top  = ty + 'px';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+  canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+}
+
 /* ── EXPORT CSV ── */
 function exportCSV() {
   const rows = setor==='FIL' ? FIL : REF;
@@ -964,6 +1221,9 @@ function render() {
 
   /* grafico de linha com bolinhas por leitura */
   renderLineChart(rows, setor);
+
+  /* linha do tempo por operador */
+  renderTimeline(rows, setor);
 }
 
 function renderKPI(gs, rows, type, meta) {
@@ -1002,5 +1262,6 @@ window.addEventListener('resize', () => {
 /* ── INIT ── */
 populateFilters();
 render();
+setupTimelineEvents();
 fetchData().then(() => startAutoRefresh());
 </script>
