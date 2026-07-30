@@ -70,6 +70,29 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .kpi-best-op{font-size:18px;font-weight:700;color:var(--orange)}
 .kpi-best-rend{font-size:11px;color:var(--txt2)}
 
+/* ── CHART ── */
+.chart-section{padding:0 16px 12px;border-bottom:1px solid var(--bdr);background:var(--bg)}
+.chart-header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-wrap:wrap;gap:8px}
+.chart-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3)}
+.chart-legend{display:flex;align-items:center;gap:16px;font-size:10px;color:var(--txt3)}
+.chart-legend-item{display:flex;align-items:center;gap:6px}
+.meta-dash{width:16px;height:0;border-top:2px dashed var(--yellow);display:inline-block}
+.above-dot{width:8px;height:8px;border-radius:2px;background:#4caf50;display:inline-block}
+.below-dot{width:8px;height:8px;border-radius:2px;background:#f44336;display:inline-block}
+#rend-chart{display:block;border-radius:4px}
+
+/* ── ALERT PILL ── */
+.alert-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.02em;white-space:nowrap;line-height:1.6}
+.alert-ok  {background:#1b4020;color:#69f0ae;border:1px solid #2e7d32}
+.alert-warn{background:#3e2800;color:#ffb300;border:1px solid #e65100}
+.alert-crit{background:#3b0f0f;color:#ff5252;border:1px solid #c62828;animation:pulse-red 1.5s ease-in-out infinite}
+@keyframes pulse-red{0%,100%{box-shadow:none}50%{box-shadow:0 0 8px rgba(244,67,54,.55)}}
+
+/* ── TREND ── */
+.trend-up  {color:#4caf50;font-weight:700;font-size:12px}
+.trend-down{color:#f44336;font-weight:700;font-size:12px}
+.trend-stab{color:#6e8ca8;font-size:12px}
+
 /* ── RANKING ── */
 .ranking-section{padding:12px 16px}
 .ranking-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
@@ -84,38 +107,38 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .op-info{min-width:0}
 .op-code{font-size:11px;font-weight:600;color:var(--c,#fff);letter-spacing:.04em;opacity:.85}
 .op-name{font-size:14px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.op-rank{font-size:10px;font-weight:700;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:2px 6px;white-space:nowrap;flex-shrink:0}
+.op-rank{font-size:10px;font-weight:700;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.op-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 .op-body{padding:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
-.op-row{display:contents}
 .op-k{font-size:10px;color:var(--txt3);align-self:center}
 .op-v{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--txt);text-align:right;align-self:center}
 .op-v.rend-v{color:var(--c,#fff)}
 .op-footer{padding:7px 12px 9px;border-top:1px solid var(--bdr)}
 .progress-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.progress-bar{flex:1;height:4px;background:var(--surf3);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;border-radius:2px;background:var(--c,#fff);transition:width .4s ease}
+.progress-bar{flex:1;height:5px;background:var(--surf3);border-radius:3px;overflow:hidden;position:relative}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.fill-ok  {background:#4caf50}
+.fill-warn{background:#ff8f00}
+.fill-low {background:#f44336}
 .progress-pct{font-size:10px;color:var(--txt2);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:44px;text-align:right}
 .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:3px;letter-spacing:.04em}
-.badge-otimo {background:#1b4020;color:#69f0ae;border:1px solid #2e7d32}
-.badge-medio {background:#3e2800;color:#ffb300;border:1px solid #e65100}
-.badge-baixo {background:#3b0f0f;color:#ff8a80;border:1px solid #c62828}
+.badge-otimo{background:#1b4020;color:#69f0ae;border:1px solid #2e7d32}
+.badge-medio{background:#3e2800;color:#ffb300;border:1px solid #e65100}
+.badge-baixo{background:#3b0f0f;color:#ff8a80;border:1px solid #c62828}
 
-/* ── EMPTY STATE ── */
+/* ── EMPTY ── */
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
 
-/* ── LIGHT THEME ── */
-@media (prefers-color-scheme:light){
-:root{
+/* ── THEME (force dark) ── */
+@media (prefers-color-scheme:light){:root{
   --bg:#0d1117;--surf:#131b24;--surf2:#192330;--surf3:#1f2c3a;
-  --bdr:#1e2d3f;--bdr2:#26394f;
-  --txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
+  --bdr:#1e2d3f;--bdr2:#26394f;--txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
   --cyan:#00bcd4;--orange:#ff8f00;--yellow:#ffc107;--blue:#2196f3;
   --green:#4caf50;--purple:#9c27b0;--red:#f44336;--silver:#607d8b;--teal:#009688;
 }}
 :root[data-theme=dark]{
   --bg:#0d1117;--surf:#131b24;--surf2:#192330;--surf3:#1f2c3a;
-  --bdr:#1e2d3f;--bdr2:#26394f;
-  --txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
+  --bdr:#1e2d3f;--bdr2:#26394f;--txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
   --cyan:#00bcd4;--orange:#ff8f00;--yellow:#ffc107;--blue:#2196f3;
   --green:#4caf50;--purple:#9c27b0;--red:#f44336;--silver:#607d8b;--teal:#009688;
 }
@@ -135,9 +158,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   </div>
   <div class="top-spacer"></div>
   <div class="top-actions">
-    <button class="btn btn-green" id="btn-atualizar" onclick="refresh()">⟳ Atualizar</button>
-    <button class="btn btn-orange" id="btn-auto" onclick="toggleAuto()">⏱ Auto: 10s</button>
-    <button class="btn btn-gray">⬇ CSV</button>
+    <button class="btn btn-green" id="btn-atualizar" onclick="refresh()">&#8635; Atualizar</button>
+    <button class="btn btn-orange" id="btn-auto" onclick="toggleAuto()">&#9201; Auto: 10s</button>
+    <button class="btn btn-gray" onclick="exportCSV()">&#8595; CSV</button>
   </div>
 </div>
 
@@ -145,8 +168,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 <div class="filterbar">
   <span class="filter-label">Setor</span>
   <div class="tab-group">
-    <button class="tab active-fil" id="tab-fil" onclick="setSetor('FIL')">🔪 Filetagem</button>
-    <button class="tab" id="tab-ref" onclick="setSetor('REF')">✂ Refile</button>
+    <button class="tab active-fil" id="tab-fil" onclick="setSetor('FIL')">&#128298; Filetagem</button>
+    <button class="tab" id="tab-ref" onclick="setSetor('REF')">&#9986; Refile</button>
   </div>
   <div class="filter-sep"></div>
   <span class="filter-label">Operador</span>
@@ -161,8 +184,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   <div class="filter-sep"></div>
   <span class="filter-label">De</span>
   <input type="date" class="fselect" id="dt-de" value="2026-07-30" onchange="render()" style="padding:3px 7px;font-size:12px;color-scheme:dark">
-  <span class="filter-label">Até</span>
+  <span class="filter-label">Ate</span>
   <input type="date" class="fselect" id="dt-ate" value="2026-07-30" onchange="render()" style="padding:3px 7px;font-size:12px;color-scheme:dark">
+  <div class="filter-sep"></div>
+  <span class="filter-label">Meta %</span>
+  <input type="number" class="fselect" id="inp-meta" value="45" min="1" max="150" step="0.5" onchange="render()" style="width:60px;padding:3px 7px">
   <div class="filter-sep"></div>
   <span class="filter-label">Ordenar</span>
   <select class="fselect" id="sel-sort" onchange="render()">
@@ -176,10 +202,23 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 <!-- KPI STRIP -->
 <div class="kpi-strip" id="kpi-strip"></div>
 
+<!-- CHART -->
+<div class="chart-section" id="chart-section" style="display:none">
+  <div class="chart-header">
+    <div class="chart-title">Rendimento por Operador</div>
+    <div class="chart-legend">
+      <div class="chart-legend-item"><span class="meta-dash"></span> Meta</div>
+      <div class="chart-legend-item"><span class="above-dot"></span> Acima</div>
+      <div class="chart-legend-item"><span class="below-dot"></span> Abaixo</div>
+    </div>
+  </div>
+  <canvas id="rend-chart"></canvas>
+</div>
+
 <!-- RANKING -->
 <div class="ranking-section">
   <div class="ranking-header">
-    <div class="ranking-title"><span class="trophy">🏆</span> Ranking por Operador</div>
+    <div class="ranking-title"><span class="trophy">&#127942;</span> Ranking por Operador</div>
     <div class="ranking-count" id="ranking-count"></div>
   </div>
   <div class="op-grid" id="op-grid"></div>
@@ -188,25 +227,23 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 <script>
 const TODAY = '2026-07-30';
 
+/* Metas de rendimento por setor (editavel no filtro "Meta %") */
+const META_DEFAULT = {FIL: 45, REF: 90};
+
 /* ── OPERADORES ── */
-/* Paleta BTJ — cores fixas, cicla para muitos operadores */
 const OP_PALETTE = [
   '#ffc107','#9c27b0','#ff8f00','#009688','#2196f3','#f44336',
   '#00bcd4','#8bc34a','#ff5722','#673ab7','#03a9f4','#e91e63',
   '#4caf50','#ff9800','#607d8b','#795548','#9e9e9e','#3f51b5',
-  '#cddc39','#009688','#f44336','#2196f3',
+  '#cddc39','#00acc1','#ef5350','#42a5f5',
 ];
-function opColor(code) {
-  // hash do código para cor fixa (não muda com reordenação)
-  return OP_PALETTE[code % OP_PALETTE.length];
-}
+function opColor(code) { return OP_PALETTE[code % OP_PALETTE.length]; }
 
-/* Colaboradores reais — Filetagem e Refile */
 const OPS = {
   // FILETAGEM
   833:  {name:'Adalberto Lima'},
   68:   {name:'Alex Yudi'},
-  761:  {name:'Alexandre Gregório'},
+  761:  {name:'Alexandre Gregorio'},
   835:  {name:'Bruno Henrique'},
   860:  {name:'Carlos Rodrigues'},
   1014: {name:'Caua Clemente'},
@@ -250,72 +287,59 @@ const OPS = {
   681:  {name:'Suellen Fernanda'},
   2001: {name:'Eloiza Daniela'},
 };
-// injeta cor em cada operador
 Object.keys(OPS).forEach(k => { OPS[k].color = opColor(Number(k)); });
 
 /* ── CONFIG GRAFANA ── */
-// Quando rodando via proxy local (scripts/proxy.py), usa path relativo.
-// Quando aberto direto (artifact no claude.ai), tenta o IP local.
-const IS_LOCAL    = ['localhost','127.0.0.1'].includes(location.hostname);
+const IS_LOCAL     = ['localhost','127.0.0.1'].includes(location.hostname);
 const GRAFANA_URL  = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
 const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
 const DS_UID       = 'aeal1lruwzif4c';
 
-/* ── DADOS LOCAIS (fallback — colaboradores reais) ── */
+/* ── FALLBACK DATA ── */
 const FIL_FALLBACK = [
   {lote:'LOT-2001',hora:'07:05:22',op:37,  cx:'CX-001',pi:26.4,pf:11.20,res:0.30},
   {lote:'LOT-2001',hora:'07:52:11',op:37,  cx:'CX-002',pi:24.8,pf:10.90,res:0.50},
   {lote:'LOT-2002',hora:'08:47:33',op:37,  cx:'CX-003',pi:28.1,pf:12.30,res:0.40},
   {lote:'LOT-2002',hora:'09:31:08',op:37,  cx:'CX-004',pi:25.6,pf:11.50,res:0.20},
   {lote:'LOT-2003',hora:'10:15:44',op:37,  cx:'CX-005',pi:27.3,pf:12.40,res:0.60},
-
   {lote:'LOT-2004',hora:'07:18:55',op:835, cx:'CX-006',pi:30.2,pf:13.80,res:0.40},
   {lote:'LOT-2004',hora:'08:10:22',op:835, cx:'CX-007',pi:27.5,pf:12.40,res:0.30},
   {lote:'LOT-2005',hora:'09:02:44',op:835, cx:'CX-008',pi:29.8,pf:13.50,res:0.70},
   {lote:'LOT-2005',hora:'09:55:31',op:835, cx:'CX-009',pi:26.4,pf:11.80,res:0.50},
   {lote:'LOT-2006',hora:'10:48:17',op:835, cx:'CX-010',pi:31.2,pf:14.30,res:0.40},
-
   {lote:'LOT-2007',hora:'07:33:10',op:510, cx:'CX-011',pi:25.1,pf:11.40,res:0.20},
   {lote:'LOT-2007',hora:'08:20:45',op:510, cx:'CX-012',pi:28.7,pf:13.00,res:0.50},
   {lote:'LOT-2008',hora:'09:08:22',op:510, cx:'CX-013',pi:26.9,pf:12.20,res:0.30},
   {lote:'LOT-2008',hora:'09:55:00',op:510, cx:'CX-014',pi:30.4,pf:13.50,res:0.80},
   {lote:'LOT-2009',hora:'10:42:18',op:510, cx:'CX-015',pi:27.2,pf:12.60,res:0.40},
-
   {lote:'LOT-2010',hora:'07:42:05',op:1026,cx:'CX-016',pi:24.5,pf:11.50,res:0.30},
   {lote:'LOT-2010',hora:'08:30:40',op:1026,cx:'CX-017',pi:26.8,pf:12.70,res:0.20},
   {lote:'LOT-2011',hora:'09:18:15',op:1026,cx:'CX-018',pi:29.1,pf:13.90,res:0.50},
   {lote:'LOT-2011',hora:'10:05:50',op:1026,cx:'CX-019',pi:25.3,pf:12.10,res:0.40},
   {lote:'LOT-2012',hora:'10:53:25',op:1026,cx:'CX-020',pi:28.6,pf:13.60,res:0.30},
-
   {lote:'LOT-2013',hora:'07:55:32',op:14,  cx:'CX-021',pi:27.4,pf:12.00,res:0.40},
   {lote:'LOT-2013',hora:'08:45:18',op:14,  cx:'CX-022',pi:29.8,pf:13.20,res:0.60},
   {lote:'LOT-2014',hora:'09:35:05',op:14,  cx:'CX-023',pi:26.1,pf:11.70,res:0.30},
   {lote:'LOT-2014',hora:'10:25:41',op:14,  cx:'CX-024',pi:30.5,pf:13.80,res:0.50},
   {lote:'LOT-2015',hora:'11:15:27',op:14,  cx:'CX-025',pi:28.3,pf:12.80,res:0.40},
-
   {lote:'LOT-2016',hora:'08:02:44',op:892, cx:'CX-026',pi:25.8,pf:11.10,res:0.30},
   {lote:'LOT-2016',hora:'08:55:20',op:892, cx:'CX-027',pi:28.2,pf:12.30,res:0.50},
   {lote:'LOT-2017',hora:'09:47:55',op:892, cx:'CX-028',pi:26.9,pf:11.80,res:0.20},
   {lote:'LOT-2017',hora:'10:40:30',op:892, cx:'CX-029',pi:30.1,pf:13.20,res:0.70},
   {lote:'LOT-2018',hora:'11:33:08',op:892, cx:'CX-030',pi:27.5,pf:12.00,res:0.40},
 ];
-
-/* ── DADOS REFILE FALLBACK ── */
 const REF_FALLBACK = [
   {hora:'07:22:15',op:438, cx:'CX-R001',pi:12.4,pf:10.8,res:0.90},
   {hora:'08:15:30',op:438, cx:'CX-R002',pi:15.2,pf:13.1,res:1.40},
   {hora:'09:10:45',op:438, cx:'CX-R003',pi:11.8,pf:10.2,res:1.00},
   {hora:'10:05:00',op:438, cx:'CX-R004',pi:14.6,pf:12.8,res:1.20},
-
   {hora:'07:35:20',op:506, cx:'CX-R005',pi:13.5,pf:12.0,res:0.80},
   {hora:'08:28:45',op:506, cx:'CX-R006',pi:16.1,pf:14.2,res:1.30},
   {hora:'09:22:10',op:506, cx:'CX-R007',pi:12.7,pf:11.3,res:0.90},
   {hora:'10:15:35',op:506, cx:'CX-R008',pi:14.9,pf:13.2,res:1.10},
-
   {hora:'07:48:05',op:502, cx:'CX-R009',pi:11.2,pf:9.80,res:0.80},
   {hora:'08:42:20',op:502, cx:'CX-R010',pi:14.8,pf:13.1,res:1.00},
   {hora:'09:36:35',op:502, cx:'CX-R011',pi:12.5,pf:11.0,res:0.90},
-
   {hora:'08:05:15',op:820, cx:'CX-R012',pi:15.5,pf:13.7,res:1.20},
   {hora:'09:00:30',op:820, cx:'CX-R013',pi:13.2,pf:11.6,res:1.00},
   {hora:'09:55:45',op:820, cx:'CX-R014',pi:16.8,pf:14.9,res:1.30},
@@ -326,11 +350,11 @@ const REF_FALLBACK = [
 let FIL = [...FIL_FALLBACK];
 let REF = [...REF_FALLBACK];
 let setor = 'FIL';
-let dataSource = 'fallback'; // 'grafana' | 'fallback'
+let dataSource = 'fallback';
 
-/* ── GRAFANA FETCH ── */
+/* ── STATUS ── */
 function setStatus(msg, tipo) {
-  const el = document.getElementById('live-status');
+  const el  = document.getElementById('live-status');
   const dot = document.getElementById('live-dot');
   const colors = {ok:'#4caf50', erro:'#f44336', carregando:'#ffc107'};
   el.textContent = msg;
@@ -338,6 +362,7 @@ function setStatus(msg, tipo) {
   if (dot) dot.style.background = colors[tipo] || '#6e8ca8';
 }
 
+/* ── PARSE ── */
 function parseFrame(frame, type) {
   const fields = frame.schema.fields;
   const values = frame.data.values;
@@ -346,12 +371,9 @@ function parseFrame(frame, type) {
   for (let i = 0; i < n; i++) {
     const raw = {};
     fields.forEach((f, j) => { raw[f.name] = values[j][i]; });
-
-    // DataInicio pode vir como timestamp ms — converte para string de hora
     let hora = raw['Ultimo_apontamento'] || '';
     if (typeof hora !== 'string') hora = String(hora);
-    hora = hora.substring(0, 8); // garante HH:MM:SS
-
+    hora = hora.substring(0, 8);
     const row = {
       hora,
       op:  Number(raw['Operador']),
@@ -366,30 +388,18 @@ function parseFrame(frame, type) {
   return rows;
 }
 
+/* ── QUERY ── */
 async function queryGrafana(sql, dtDe, dtAte) {
   const from = new Date(dtDe + 'T00:00:00').getTime();
   const to   = new Date(dtAte + 'T23:59:59').getTime();
-
-  const res = await fetch(`${GRAFANA_URL}/api/ds/query`, {
+  const res  = await fetch(`${GRAFANA_URL}/api/ds/query`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': GRAFANA_AUTH,
-    },
+    headers: {'Content-Type':'application/json','Authorization':GRAFANA_AUTH},
     body: JSON.stringify({
-      queries: [{
-        datasource: {type:'mssql', uid: DS_UID},
-        rawSql: sql,
-        format: 'table',
-        refId: 'A',
-        rawQuery: true,
-        dataset: 'ERP',
-      }],
-      from: String(from),
-      to:   String(to),
+      queries: [{datasource:{type:'mssql',uid:DS_UID},rawSql:sql,format:'table',refId:'A',rawQuery:true,dataset:'ERP'}],
+      from: String(from), to: String(to),
     }),
   });
-
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
   const json = await res.json();
   const frame = json?.results?.A?.frames?.[0];
@@ -397,87 +407,55 @@ async function queryGrafana(sql, dtDe, dtAte) {
   return frame;
 }
 
-const SQL_FIL = `SELECT
-  DataInicio,
-  Lote,
-  CONVERT(varchar(8), HoraFim, 108) AS Ultimo_apontamento,
-  Operador,
-  CodigoCaixa,
-  PesoInicial,
-  PesoFinal,
-  coalesce(PesoResiduo, 0) as PesoResiduo
+const SQL_FIL = `SELECT DataInicio,Lote,
+  CONVERT(varchar(8),HoraFim,108) AS Ultimo_apontamento,
+  Operador,CodigoCaixa,PesoInicial,PesoFinal,coalesce(PesoResiduo,0) as PesoResiduo
 FROM BTJDW.industriafrigo.ApontamentoCaixaFiletagem
-WHERE $__timeFilter(DataInicio)
-  AND situacao = 'F'
-  AND Operador <> 667
-  AND DataInicio > '2026-02-19'`;
+WHERE $__timeFilter(DataInicio) AND situacao='F' AND Operador<>667 AND DataInicio>'2026-02-19'`;
 
-const SQL_REF = `SELECT
-  DataInicio,
-  CONVERT(varchar(8), HoraFim, 108) AS Ultimo_apontamento,
-  Operador,
-  CodigoCaixa,
-  PesoInicial,
-  PesoFinal,
-  coalesce(PesoResiduo, 0) as PesoResiduo
+const SQL_REF = `SELECT DataInicio,
+  CONVERT(varchar(8),HoraFim,108) AS Ultimo_apontamento,
+  Operador,CodigoCaixa,PesoInicial,PesoFinal,coalesce(PesoResiduo,0) as PesoResiduo
 FROM BTJDW.industriafrigo.ApontamentoCaixaRefile
-WHERE $__timeFilter(DataInicio)
-  AND situacao = 'F'
-  AND Operador <> 667
-  AND DataInicio > '2026-02-19'`;
+WHERE $__timeFilter(DataInicio) AND situacao='F' AND Operador<>667 AND DataInicio>'2026-02-19'`;
 
 /* ── AUTO-REFRESH ── */
-let autoInterval  = null;
-let autoSecs      = 10;
-let countdownSecs = autoSecs;
-let countdownTmr  = null;
-let autoEnabled   = true;
+let countdownTmr = null;
+let autoEnabled  = true;
+let countdownSecs = 10;
+const autoSecs    = 10;
 
 function startAutoRefresh() {
   stopAutoRefresh();
   autoEnabled = true;
-  updateAutoBtn();
   countdownSecs = autoSecs;
+  updateAutoBtn();
   countdownTmr = setInterval(() => {
     countdownSecs--;
     updateAutoBtn();
-    if (countdownSecs <= 0) {
-      countdownSecs = autoSecs;
-      fetchData();
-    }
+    if (countdownSecs <= 0) { countdownSecs = autoSecs; fetchData(); }
   }, 1000);
 }
-
 function stopAutoRefresh() {
   autoEnabled = false;
   clearInterval(countdownTmr);
   countdownTmr = null;
   updateAutoBtn();
 }
-
-function toggleAuto() {
-  autoEnabled ? stopAutoRefresh() : startAutoRefresh();
-}
-
+function toggleAuto() { autoEnabled ? stopAutoRefresh() : startAutoRefresh(); }
 function updateAutoBtn() {
   const btn = document.getElementById('btn-auto');
   if (!btn) return;
-  if (autoEnabled) {
-    btn.textContent = `⏱ Auto: ${countdownSecs}s`;
-    btn.style.opacity = '1';
-  } else {
-    btn.textContent = '⏱ Auto: OFF';
-    btn.style.opacity = '.5';
-  }
+  btn.textContent = autoEnabled ? `⏱ Auto: ${countdownSecs}s` : '⏱ Auto: OFF';
+  btn.style.opacity = autoEnabled ? '1' : '.5';
 }
 
-/* ── FETCH DATA ── */
+/* ── FETCH ── */
 async function fetchData() {
-  const dtDe  = document.getElementById('dt-de').value;
+  const dtDe = document.getElementById('dt-de').value;
   const dtAte = document.getElementById('dt-ate').value;
   setStatus('Carregando...', 'carregando');
   document.getElementById('btn-atualizar').disabled = true;
-
   try {
     const [frameFil, frameRef] = await Promise.all([
       queryGrafana(SQL_FIL, dtDe, dtAte),
@@ -493,39 +471,32 @@ async function fetchData() {
     REF = [...REF_FALLBACK];
     dataSource = 'fallback';
     const msg = e.message.includes('Failed to fetch')
-      ? 'Sem acesso à rede local — execute scripts/proxy.py'
-      : `Erro: ${e.message} — dados de exemplo`;
+      ? 'Sem acesso a rede local -- execute scripts/proxy.py'
+      : `Erro: ${e.message} -- dados de exemplo`;
     setStatus(msg, 'erro');
   } finally {
     document.getElementById('btn-atualizar').disabled = false;
   }
-
   populateFilters();
   render();
 }
 
 /* ── HELPERS ── */
-
 function toMins(h) {
+  if (!h || typeof h !== 'string') return 0;
   const [hh, mm, ss] = h.split(':').map(Number);
-  return hh * 60 + mm + (ss || 0) / 60;
+  return (hh||0)*60 + (mm||0) + (ss||0)/60;
 }
 function rend(r, type) {
   return type === 'FIL'
-    ? (r.pf / (r.pi - r.res)) * 100
-    : ((r.pf + r.res) / r.pi) * 100;
+    ? (r.pf / Math.max(0.01, r.pi - r.res)) * 100
+    : ((r.pf + r.res) / Math.max(0.01, r.pi)) * 100;
 }
-function fmtKg(v) {
-  return v.toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1}) + ' kg';
-}
-function fmtPct(v) {
-  return v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%';
-}
-function fmtMins(m) {
-  if (m < 60) return m.toFixed(1) + 'min';
-  return (m/60).toFixed(1) + 'h';
-}
+function fmtKg(v)  { return v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' kg'; }
+function fmtPct(v) { return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'; }
+function fmtMins(m){ return m < 60 ? m.toFixed(1)+'min' : (m/60).toFixed(1)+'h'; }
 
+/* ── OP STATS (inclui trend e lag) ── */
 function opStats(rows, type) {
   const byOp = {};
   rows.forEach(r => {
@@ -534,18 +505,29 @@ function opStats(rows, type) {
   });
   return Object.entries(byOp).map(([op, cx]) => {
     cx.sort((a,b) => a.mins - b.mins);
-    const n = cx.length;
-    const sumPi = cx.reduce((s,r)=>s+r.pi, 0);
-    const sumPf = cx.reduce((s,r)=>s+r.pf, 0);
+    const n      = cx.length;
+    const sumPi  = cx.reduce((s,r)=>s+r.pi, 0);
+    const sumPf  = cx.reduce((s,r)=>s+r.pf, 0);
     const sumRes = cx.reduce((s,r)=>s+r.res, 0);
-    const avgRd = cx.reduce((s,r)=>s+r.rd, 0) / n;
+    const avgRd  = cx.reduce((s,r)=>s+r.rd, 0) / n;
     let intvlSum = 0;
     for (let i=1;i<n;i++) intvlSum += cx[i].mins - cx[i-1].mins;
-    const avgIntvl = n > 1 ? intvlSum / (n-1) : 0;
-    const span = cx[n-1].mins - cx[0].mins;
-    const cxh = span > 0 ? (n / (span/60)) : 0;
+    const avgIntvl = n>1 ? intvlSum/(n-1) : 0;
+    const span     = cx[n-1].mins - cx[0].mins;
+    const cxh      = span>0 ? (n/(span/60)) : 0;
+
+    /* tendencia: compara primeira metade vs segunda metade do turno */
+    let trend = 'n/a';
+    if (n >= 4) {
+      const mid    = Math.floor(n/2);
+      const rdFirst = cx.slice(0,mid).reduce((s,r)=>s+r.rd,0)/mid;
+      const rdLast  = cx.slice(mid).reduce((s,r)=>s+r.rd,0)/(n-mid);
+      const diff    = rdLast - rdFirst;
+      trend = diff > 1.5 ? 'up' : diff < -1.5 ? 'down' : 'stable';
+    }
+
     return {op:Number(op), caixas:n, sumPi, sumPf, sumRes, avgRd, avgIntvl, cxh,
-            firstHora:cx[0].hora, lastHora:cx[n-1].hora};
+            firstHora:cx[0].hora, lastHora:cx[n-1].hora, trend};
   });
 }
 
@@ -553,25 +535,141 @@ function globalStats(rows, type) {
   const sumPi  = rows.reduce((s,r)=>s+r.pi, 0);
   const sumPf  = rows.reduce((s,r)=>s+r.pf, 0);
   const sumRes = rows.reduce((s,r)=>s+r.res, 0);
-  const ovRd   = type==='FIL' ? (sumPf/(sumPi-sumRes))*100 : ((sumPf+sumRes)/sumPi)*100;
+  const ovRd   = type==='FIL' ? (sumPf/Math.max(.01,sumPi-sumRes))*100 : ((sumPf+sumRes)/Math.max(.01,sumPi))*100;
   const ops    = [...new Set(rows.map(r=>r.op))].length;
   const sorted = [...rows].sort((a,b)=>toMins(a.hora)-toMins(b.hora));
   let iSum=0;
   for(let i=1;i<sorted.length;i++) iSum+=toMins(sorted[i].hora)-toMins(sorted[i-1].hora);
-  const avgI   = sorted.length>1 ? iSum/(sorted.length-1) : 0;
-  const span   = toMins(sorted[sorted.length-1].hora)-toMins(sorted[0].hora);
-  const cxh    = span>0 ? rows.length/(span/60) : 0;
+  const avgI = sorted.length>1 ? iSum/(sorted.length-1) : 0;
+  const span  = sorted.length>1 ? toMins(sorted[sorted.length-1].hora)-toMins(sorted[0].hora) : 0;
+  const cxh   = span>0 ? rows.length/(span/60) : 0;
   return {total:rows.length, ops, sumPi, sumPf, sumRes, ovRd, avgI, cxh};
 }
 
-/* ── SETOR TOGGLE ── */
+/* ── RENDER CHART (canvas) ── */
+function renderChart(sorted, type, meta) {
+  const section = document.getElementById('chart-section');
+  const canvas  = document.getElementById('rend-chart');
+  if (!sorted.length || !canvas) { section.style.display='none'; return; }
+  section.style.display = 'block';
+
+  const dpr   = window.devicePixelRatio || 1;
+  const cssW  = section.clientWidth - 32;
+  const ROW   = 32;
+  const PAD   = {top:20, right:76, bottom:24, left:138};
+  const cssH  = sorted.length * ROW + PAD.top + PAD.bottom;
+
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const vals = sorted.map(s=>s.avgRd);
+  const xMin = Math.max(0, Math.floor(Math.min(...vals, meta)) - 3);
+  const xMax = Math.ceil(Math.max(...vals, meta)) + 5;
+  const plotW = cssW - PAD.left - PAD.right;
+  const xS = v => PAD.left + (v - xMin) / (xMax - xMin) * plotW;
+
+  /* background */
+  ctx.fillStyle = '#131b24';
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  /* grid */
+  const step = Math.max(1, Math.ceil((xMax - xMin) / 5));
+  for (let v = Math.ceil(xMin/step)*step; v <= xMax; v += step) {
+    const x = xS(v);
+    ctx.strokeStyle = '#1e2d3f'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, cssH-PAD.bottom); ctx.stroke();
+    ctx.fillStyle = '#384f63';
+    ctx.font = '9px system-ui,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(v+'%', x, cssH - PAD.bottom + 14);
+  }
+
+  /* bars */
+  sorted.forEach((s, i) => {
+    const op   = OPS[s.op] || {name:`Op.${s.op}`, color:'#78909c'};
+    const barY = PAD.top + i*ROW + 5;
+    const barH = ROW - 10;
+    const x0   = xS(xMin);
+    const barW = Math.max(2, xS(s.avgRd) - x0);
+    const above = s.avgRd >= meta;
+
+    /* track */
+    ctx.fillStyle = 'rgba(30,45,63,0.7)';
+    ctx.fillRect(PAD.left, barY, plotW, barH);
+
+    /* fill */
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    ctx.fillStyle = above ? '#4caf50' : '#f44336';
+    ctx.fillRect(x0, barY, barW, barH);
+    /* color accent stripe */
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = op.color;
+    ctx.fillRect(x0, barY, barW, barH);
+    ctx.restore();
+
+    /* name */
+    const name = op.name.length > 19 ? op.name.slice(0,18)+'…' : op.name;
+    ctx.fillStyle = '#ccd6e0';
+    ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(name, PAD.left - 8, barY + barH/2 + 4);
+
+    /* value */
+    ctx.fillStyle = above ? '#69f0ae' : '#ff8a80';
+    ctx.font = 'bold 11px system-ui,sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(s.avgRd.toFixed(1)+'%', PAD.left + plotW + 7, barY + barH/2 + 4);
+  });
+
+  /* meta line */
+  const mx = xS(meta);
+  ctx.strokeStyle = '#ffc107'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(mx, PAD.top - 4); ctx.lineTo(mx, cssH - PAD.bottom); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffc107';
+  ctx.font = 'bold 9px system-ui,sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('META', mx, PAD.top - 7);
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  const rows = setor==='FIL' ? FIL : REF;
+  if (!rows.length) return;
+  const hdr = setor==='FIL'
+    ? ['Hora','Lote','Operador','Nome','Caixa','Kg Entrada','Kg Saida','Residuo','Rendimento %']
+    : ['Hora','Operador','Nome','Caixa','Kg Entrada','Kg Saida','Residuo','Rendimento %'];
+  const lines = [hdr.join(';')];
+  rows.forEach(r => {
+    const rd   = rend(r, setor).toFixed(2);
+    const nome = OPS[r.op]?.name || r.op;
+    const line = setor==='FIL'
+      ? [r.hora,r.lote,r.op,nome,r.cx,r.pi.toFixed(1),r.pf.toFixed(1),r.res.toFixed(1),rd]
+      : [r.hora,r.op,nome,r.cx,r.pi.toFixed(1),r.pf.toFixed(1),r.res.toFixed(1),rd];
+    lines.push(line.join(';'));
+  });
+  const blob = new Blob(['﻿'+lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href: url,
+    download: `apontamentos-${setor.toLowerCase()}-${TODAY}.csv`
+  });
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+/* ── SETOR ── */
 function setSetor(s) {
   setor = s;
-  document.getElementById('tab-fil').className = 'tab' + (s==='FIL' ? ' active-fil' : '');
-  document.getElementById('tab-ref').className = 'tab' + (s==='REF' ? ' active-ref' : '');
+  document.getElementById('tab-fil').className = 'tab'+(s==='FIL'?' active-fil':'');
+  document.getElementById('tab-ref').className = 'tab'+(s==='REF'?' active-ref':'');
   document.getElementById('brand-sec').textContent = s==='FIL' ? 'Filetagem' : 'Refile';
   document.getElementById('brand-sec').style.color = s==='FIL' ? 'var(--orange)' : 'var(--cyan)';
   document.getElementById('lote-label').style.opacity = s==='FIL' ? '1' : '.4';
+  document.getElementById('inp-meta').value = META_DEFAULT[s];
   populateFilters();
   render();
 }
@@ -584,13 +682,12 @@ function populateFilters() {
   const opSel = document.getElementById('sel-op');
   const opVal = opSel.value;
   opSel.innerHTML = '<option value="">Todos</option>';
-  [...new Set(rows.map(r=>r.op))].sort().forEach(op => {
+  [...new Set(rows.map(r=>r.op))].sort((a,b)=>a-b).forEach(op => {
     const o = document.createElement('option');
     o.value = op; o.textContent = `Op. ${op} — ${OPS[op]?.name||op}`;
     if (String(op)===opVal) o.selected = true;
     opSel.appendChild(o);
   });
-
   const loteSel = document.getElementById('sel-lote');
   const loteVal = loteSel.value;
   loteSel.innerHTML = '<option value="">Todos</option>';
@@ -607,46 +704,70 @@ function populateFilters() {
 
 /* ── RENDER ── */
 function render() {
-  const rawRows = setor==='FIL' ? FIL : REF;
+  const rawRows    = setor==='FIL' ? FIL : REF;
   const opFilter   = document.getElementById('sel-op').value;
   const loteFilter = document.getElementById('sel-lote').value;
   const sortBy     = document.getElementById('sel-sort').value;
+  const meta       = Number(document.getElementById('inp-meta').value) || META_DEFAULT[setor];
 
   let rows = rawRows.filter(r => {
-    if (opFilter && String(r.op)!==opFilter) return false;
-    if (loteFilter && r.lote!==loteFilter) return false;
+    if (opFilter   && String(r.op)!==opFilter)   return false;
+    if (loteFilter && r.lote!==loteFilter)         return false;
     return true;
   });
 
   document.getElementById('top-count').textContent = rows.length;
-
   const gs = globalStats(rows, setor);
-  renderKPI(gs, rows, setor);
+  renderKPI(gs, rows, setor, meta);
 
-  const stats = opStats(rows, setor);
+  const stats  = opStats(rows, setor);
   const sorted = [...stats].sort((a,b)=>{
-    if (sortBy==='rend')     return b.avgRd - a.avgRd;
-    if (sortBy==='cxhora')   return b.cxh - a.cxh;
-    if (sortBy==='kgentrada')return b.sumPi - a.sumPi;
+    if (sortBy==='rend')      return b.avgRd - a.avgRd;
+    if (sortBy==='cxhora')    return b.cxh   - a.cxh;
+    if (sortBy==='kgentrada') return b.sumPi  - a.sumPi;
     return b.caixas - a.caixas;
   });
 
-  const maxRd = Math.max(...sorted.map(s=>s.avgRd));
-  const minRd = Math.min(...sorted.map(s=>s.avgRd));
-  const p75rd = sorted.length ? sorted[Math.floor(sorted.length*0.25)].avgRd : 0;
-  const p25rd = sorted.length ? sorted[Math.floor(sorted.length*0.75)].avgRd : 0;
+  /* lag relativo ao operador mais recente no dataset */
+  const maxLastMins = sorted.length ? Math.max(...sorted.map(s=>toMins(s.lastHora))) : 0;
 
-  document.getElementById('ranking-count').textContent = `${sorted.length} operador${sorted.length!==1?'es':''}`;
+  document.getElementById('ranking-count').textContent =
+    `${sorted.length} operador${sorted.length!==1?'es':''}`;
+
+  renderChart(sorted, setor, meta);
 
   const grid = document.getElementById('op-grid');
-  if (!sorted.length) { grid.innerHTML='<div class="empty">Nenhum dado para o filtro selecionado.</div>'; return; }
+  if (!sorted.length) {
+    grid.innerHTML = '<div class="empty">Nenhum dado para o filtro selecionado.</div>';
+    return;
+  }
 
   grid.innerHTML = sorted.map((s, i) => {
-    const op = OPS[s.op] || {name:`Op. ${s.op}`, color:'#78909c'};
+    const op  = OPS[s.op] || {name:`Op. ${s.op}`, color:'#78909c'};
     const col = op.color;
-    const ritmo = s.avgRd >= p75rd ? 'otimo' : s.avgRd <= p25rd ? 'baixo' : 'medio';
-    const rlabel = ritmo==='otimo'?'✓ Ritmo ótimo':ritmo==='medio'?'⚡ Ritmo médio':'↓ Ritmo baixo';
-    const pct = maxRd > minRd ? ((s.avgRd - minRd)/(maxRd - minRd))*100 : 50;
+
+    /* alerta de inatividade */
+    const lagMins = maxLastMins - toMins(s.lastHora);
+    let alertCls, alertLabel;
+    if      (lagMins <= 5)  { alertCls='alert-ok';   alertLabel='Ativo'; }
+    else if (lagMins <= 30) { alertCls='alert-ok';   alertLabel=`Ha ${Math.round(lagMins)}min`; }
+    else if (lagMins <= 60) { alertCls='alert-warn'; alertLabel=`Ha ${Math.round(lagMins)}min`; }
+    else                    { alertCls='alert-crit'; alertLabel=`Ha ${(lagMins/60).toFixed(1)}h`; }
+
+    /* tendencia */
+    const trendSymbol = s.trend==='up' ? '↑' : s.trend==='down' ? '↓' : '→';
+    const trendCls    = s.trend==='up' ? 'trend-up' : s.trend==='down' ? 'trend-down' : 'trend-stab';
+
+    /* progresso vs meta */
+    const pct     = Math.min(100, (s.avgRd / meta) * 100);
+    const fillCls = s.avgRd >= meta ? 'fill-ok' : s.avgRd >= meta*0.92 ? 'fill-warn' : 'fill-low';
+    const ritmo   = s.avgRd >= meta ? 'otimo' : s.avgRd >= meta*0.92 ? 'medio' : 'baixo';
+    const rlabel  = ritmo==='otimo'
+      ? `✓ Acima da meta (${meta}%)`
+      : ritmo==='medio'
+      ? `⚡ Proximo da meta`
+      : `↓ Abaixo da meta (${meta}%)`;
+
     return `
     <div class="op-card" style="--c:${col}">
       <div class="op-card-head">
@@ -654,21 +775,26 @@ function render() {
           <div class="op-code">Op. ${s.op}</div>
           <div class="op-name">${op.name}</div>
         </div>
-        <div class="op-rank">#${i+1}</div>
+        <div class="op-card-right">
+          <div class="op-rank">#${i+1}</div>
+          <span class="alert-pill ${alertCls}">${alertLabel}</span>
+        </div>
       </div>
       <div class="op-body">
-        <div class="op-k">Caixas</div>        <div class="op-v">${s.caixas}</div>
-        <div class="op-k">Rend. médio</div>   <div class="op-v rend-v">${fmtPct(s.avgRd)}</div>
-        <div class="op-k">Intervalo</div>     <div class="op-v">${fmtMins(s.avgIntvl)}</div>
-        <div class="op-k">Cx/Hora</div>       <div class="op-v">${s.cxh.toFixed(1)}</div>
-        <div class="op-k">Kg entrada</div>    <div class="op-v">${fmtKg(s.sumPi)}</div>
-        <div class="op-k">Kg saída</div>      <div class="op-v">${fmtKg(s.sumPf)}</div>
-        <div class="op-k">Resíduo</div>       <div class="op-v">${fmtKg(s.sumRes)}</div>
-        <div class="op-k">Últ. apont.</div>   <div class="op-v">${s.lastHora}</div>
+        <div class="op-k">Caixas</div>       <div class="op-v">${s.caixas}</div>
+        <div class="op-k">Rendimento</div>   <div class="op-v rend-v">${fmtPct(s.avgRd)}&nbsp;<span class="${trendCls}">${trendSymbol}</span></div>
+        <div class="op-k">Intervalo</div>    <div class="op-v">${fmtMins(s.avgIntvl)}</div>
+        <div class="op-k">Cx/Hora</div>      <div class="op-v">${s.cxh.toFixed(1)}</div>
+        <div class="op-k">Kg entrada</div>   <div class="op-v">${fmtKg(s.sumPi)}</div>
+        <div class="op-k">Kg saida</div>     <div class="op-v">${fmtKg(s.sumPf)}</div>
+        <div class="op-k">Residuo</div>      <div class="op-v">${fmtKg(s.sumRes)}</div>
+        <div class="op-k">Ult. apont.</div>  <div class="op-v">${s.lastHora}</div>
       </div>
       <div class="op-footer">
         <div class="progress-wrap">
-          <div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div>
+          <div class="progress-bar">
+            <div class="progress-fill ${fillCls}" style="width:${pct.toFixed(1)}%"></div>
+          </div>
           <span class="progress-pct">${fmtPct(s.avgRd)}</span>
         </div>
         <span class="badge badge-${ritmo}">${rlabel}</span>
@@ -677,34 +803,41 @@ function render() {
   }).join('');
 }
 
-function renderKPI(gs, rows, type) {
-  // best operator
+function renderKPI(gs, rows, type, meta) {
   const stats = opStats(rows, type);
-  const best = stats.length ? [...stats].sort((a,b)=>b.avgRd-a.avgRd)[0] : null;
-
+  const best  = stats.length ? [...stats].sort((a,b)=>b.avgRd-a.avgRd)[0] : null;
+  const aboveMeta = stats.filter(s=>s.avgRd>=meta).length;
   const strip = document.getElementById('kpi-strip');
-  const kpis = [
-    {label:'Total Caixas', val:`<span class="kv-blue" style="font-size:28px">${gs.total}</span>`, sub:'caixas'},
-    {label:'Operadores', val:`<span class="kv-purple" style="font-size:28px">${gs.ops}</span>`, sub:'ativos'},
-    {label:'Peso Entrada', val:`<span class="kv-blue">${fmtKg(gs.sumPi)}</span>`, sub:'total bruto'},
-    {label:'Peso Saída', val:`<span class="kv-orange">${fmtKg(gs.sumPf)}</span>`, sub:'total líquido'},
-    {label:'Resíduo', val:`<span class="kv-cyan">${fmtKg(gs.sumRes)}</span>`, sub:'total'},
-    {label:'Rendimento', val:`<span class="kv-yellow">${fmtPct(gs.ovRd)}</span>`, sub:'geral'},
-    {label:'Intervalo Médio', val:`<span class="kv-orange">${fmtMins(gs.avgI)}</span>`, sub:'entre caixas'},
-    {label:'Cx/Hora Médio', val:`<span class="kv-blue">${gs.cxh.toFixed(1)}</span>`, sub:'cxs/h'},
-    best ? {label:'Melhor Op.', val:`<div class="kpi-best"><div class="kpi-best-op">Op. ${best.op}</div><div class="kpi-best-rend">${fmtPct(best.avgRd)} rend.</div></div>`, sub:OPS[best.op]?.name||''} : null,
+  const kpis  = [
+    {label:'Total Caixas',  val:`<span class="kv-blue" style="font-size:28px">${gs.total}</span>`,   sub:'caixas'},
+    {label:'Operadores',    val:`<span class="kv-purple" style="font-size:28px">${gs.ops}</span>`,    sub:'ativos'},
+    {label:'Acima da Meta', val:`<span style="font-size:26px;color:${aboveMeta===gs.ops?'#4caf50':'#ff8f00'}">${aboveMeta}/${gs.ops}</span>`, sub:`meta ${meta}%`},
+    {label:'Rendimento',    val:`<span class="kv-yellow">${fmtPct(gs.ovRd)}</span>`,                  sub:'geral'},
+    {label:'Peso Entrada',  val:`<span class="kv-blue">${fmtKg(gs.sumPi)}</span>`,                   sub:'total bruto'},
+    {label:'Peso Saida',    val:`<span class="kv-orange">${fmtKg(gs.sumPf)}</span>`,                  sub:'total liquido'},
+    {label:'Residuo',       val:`<span class="kv-cyan">${fmtKg(gs.sumRes)}</span>`,                   sub:'total'},
+    {label:'Intervalo Med', val:`<span class="kv-orange">${fmtMins(gs.avgI)}</span>`,                 sub:'entre caixas'},
+    {label:'Cx/Hora',       val:`<span class="kv-blue">${gs.cxh.toFixed(1)}</span>`,                  sub:'media geral'},
+    best ? {label:'Melhor Op.',val:`<div class="kpi-best"><div class="kpi-best-op">Op.${best.op}</div><div class="kpi-best-rend">${fmtPct(best.avgRd)}</div></div>`,sub:OPS[best.op]?.name||''} : null,
   ].filter(Boolean);
 
   strip.innerHTML = kpis.map(k=>`
     <div class="kpi">
       <div class="kpi-label">${k.label}</div>
       <div class="kpi-val">${k.val}</div>
-      ${k.sub ? `<div class="kpi-sub">${k.sub}</div>` : ''}
+      ${k.sub?`<div class="kpi-sub">${k.sub}</div>`:''}
     </div>`).join('');
 }
+
+/* resize */
+let resizeTmr;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTmr);
+  resizeTmr = setTimeout(render, 180);
+});
 
 /* ── INIT ── */
 populateFilters();
 render();
-fetchData().then(() => startAutoRefresh()); // busca dados e liga auto-refresh
+fetchData().then(() => startAutoRefresh());
 </script>
