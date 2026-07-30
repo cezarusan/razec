@@ -1,4 +1,4 @@
-# Dashboard de Apontamentos Geral — Inicialização via PowerShell
+# Dashboard de Apontamentos Geral -- Inicializacao via PowerShell
 # Uso: clique direito -> "Executar com PowerShell"
 
 $ErrorActionPreference = "Stop"

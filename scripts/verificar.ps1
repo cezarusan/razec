@@ -1,4 +1,4 @@
-# Verificacao de pre-requisitos — Dashboard de Apontamentos Geral
+# Verificacao de pre-requisitos -- Dashboard de Apontamentos Geral
 # Clique direito -> "Executar com PowerShell"
 
 $ok  = "[OK]"
@@ -8,7 +8,7 @@ $tudo_ok = $true
 
 Write-Host ""
 Write-Host "  Verificando pre-requisitos..." -ForegroundColor Cyan
-Write-Host "  ─────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  -----------------------------------------" -ForegroundColor DarkGray
 Write-Host ""
 
 # 1. Python
@@ -48,13 +48,13 @@ $proxy = Join-Path $PSScriptRoot "proxy.py"
 if (Test-Path $proxy) {
     Write-Host "  $ok  proxy.py encontrado" -ForegroundColor Green
 } else {
-    Write-Host "  $err proxy.py nao encontrado — baixe o repositorio completo" -ForegroundColor Red
+    Write-Host "  $err proxy.py nao encontrado -- baixe o repositorio completo" -ForegroundColor Red
     $tudo_ok = $false
 }
 
 # Resultado final
 Write-Host ""
-Write-Host "  ─────────────────────────────────────────" -ForegroundColor DarkGray
+Write-Host "  -----------------------------------------" -ForegroundColor DarkGray
 if ($tudo_ok) {
     Write-Host "  Tudo pronto! Execute iniciar.ps1 para abrir o dashboard." -ForegroundColor Green
 } else {
