@@ -1,0 +1,1098 @@
+<title>NC Refile — Não Conformidades · BTJ</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:     #0c0c0b;
+  --surf:   #161614;
+  --surf2:  #1d1d1b;
+  --surf3:  #252523;
+  --bdr:    #2a2a27;
+  --bdr2:   #363633;
+  --txt:    #f0efe8;
+  --txt2:   #b8b6ac;
+  --txt3:   #787670;
+  --crit:   #d03b3b;
+  --warn:   #e8960a;
+  --ok:     #1aab1a;
+  --info:   #2a78d6;
+  --c1:     #d03b3b;   /* osso / critico */
+  --c2:     #e8960a;   /* aparência / atenção */
+  --c3:     #eda100;   /* gordura */
+  --c4:     #2a78d6;   /* nervoso */
+  --c5:     #787670;   /* outro */
+  --grid:   rgba(255,255,255,.04);
+  --axis:   rgba(255,255,255,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:13px;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:12px;padding:0 18px;height:50px;
+  background:var(--surf);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-icon{font-size:20px;line-height:1}
+.brand-text{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--txt)}
+.brand-text em{color:var(--crit);font-style:normal}
+.brand-sep{color:var(--bdr2);margin:0 2px}
+.brand-sub{font-size:11px;font-weight:400;color:var(--txt3)}
+.top-spacer{flex:1}
+.status-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  border-radius:4px;border:1px solid var(--bdr2);font-size:11px;color:var(--txt3);background:var(--surf2)}
+.live-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--warn)}
+.live-dot.ok{background:var(--ok);animation:pulse 2.5s ease-in-out infinite}
+.live-dot.err{background:var(--crit)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:4px;
+  border:1px solid var(--bdr2);font-size:11px;font-weight:600;cursor:pointer;
+  background:var(--surf2);color:var(--txt2);transition:background .15s,color .15s;
+  letter-spacing:.02em}
+.btn:hover{background:var(--surf3);color:var(--txt)}
+.btn-danger{background:#1e0808;color:#ff8a8a;border-color:#4a1010}
+.btn-danger:hover{background:#280a0a}
+
+/* ── ALERT RIBBON ── */
+#alert-ribbon{display:none;position:sticky;top:50px;z-index:90;
+  background:#160404;border-bottom:2px solid var(--crit)}
+.ribbon-inner{max-width:1440px;margin:0 auto;padding:0 18px}
+.ribbon-header{display:flex;align-items:center;gap:10px;padding:9px 0;cursor:pointer;user-select:none}
+.ribbon-siren{font-size:16px;animation:siren .9s ease-in-out infinite alternate}
+@keyframes siren{from{opacity:1}to{opacity:.4}}
+.ribbon-title{font-weight:700;color:#ff6b6b;font-size:12px;letter-spacing:.03em}
+.ribbon-badge{display:inline-flex;align-items:center;justify-content:center;
+  min-width:20px;height:20px;padding:0 6px;border-radius:10px;
+  background:var(--crit);color:#fff;font-size:10px;font-weight:700}
+.ribbon-sub{font-size:10px;color:#c07070;margin-left:4px}
+.ribbon-toggle{margin-left:auto;font-size:10px;color:#c07070;opacity:.7}
+.ribbon-cards{display:none;padding-bottom:12px}
+.ribbon-cards.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.rcrd{background:#1c0606;border:1px solid rgba(208,59,59,.4);border-left:3px solid var(--crit);
+  border-radius:5px;padding:10px 12px}
+.rcrd-cx{font-size:12px;font-weight:700;color:#ff7070;letter-spacing:.02em}
+.rcrd-op{font-size:10px;color:var(--txt3);margin-top:2px}
+.rcrd-pct{font-size:20px;font-weight:700;color:#ff3333;font-variant-numeric:tabular-nums}
+.rcrd-bar{height:3px;border-radius:2px;background:#2c0a0a;margin:6px 0}
+.rcrd-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#d03b3b,#ff4444)}
+.rcrd-row{display:flex;justify-content:space-between;font-size:10px;margin-top:3px}
+.rcrd-key{color:var(--txt3)}
+.rcrd-val{color:var(--txt2)}
+.anim-new{animation:flash .7s ease-out 3}
+@keyframes flash{0%,100%{background:#1c0606}50%{background:#2e0a0a}}
+
+/* ── FILTERBAR ── */
+.filterbar{display:flex;align-items:center;gap:10px;padding:7px 18px;
+  background:var(--surf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.fl{font-size:10px;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.fsel{background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt2);
+  border-radius:4px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:inherit}
+.fsel:focus{outline:1px solid var(--info)}
+input[type=date].fsel{color-scheme:dark}
+.fsep{width:1px;height:18px;background:var(--bdr2);flex-shrink:0}
+.thresh-row{display:flex;align-items:center;gap:6px}
+.thresh-lbl{font-size:11px;color:#ff8a8a;font-weight:600}
+
+/* ── PAGE ── */
+.page{max-width:1440px;margin:0 auto;padding:16px 18px 48px}
+
+/* ── SECTION TITLE ── */
+.stitle{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.sec{margin-bottom:22px}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-top:2px solid var(--kc,var(--bdr2));
+  border-radius:5px;padding:12px 14px}
+.kpi-lbl{font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--txt3);font-weight:700;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;
+  line-height:1;letter-spacing:-.03em;color:var(--kc,var(--txt))}
+.kpi-sub{font-size:10px;color:var(--txt3);margin-top:3px}
+
+/* ── CHART GRIDS ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.grid-wide{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:16px}
+@media(max-width:860px){.grid2,.grid3,.grid-wide{grid-template-columns:1fr}}
+
+/* ── CHART CARD ── */
+.ccard{background:var(--surf);border:1px solid var(--bdr);border-radius:5px;overflow:hidden}
+.ccard-head{padding:11px 14px 7px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.ccard-title{font-size:12px;font-weight:700;color:var(--txt)}
+.ccard-sub{font-size:10px;color:var(--txt3);margin-top:1px}
+.ccard-body{padding:0 10px 10px}
+canvas{display:block}
+
+/* ── LEGEND ── */
+.leg{display:flex;align-items:center;gap:12px;font-size:10px;color:var(--txt3);flex-wrap:wrap}
+.leg-i{display:flex;align-items:center;gap:4px}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
+.leg-sq{width:12px;height:4px;border-radius:2px;flex-shrink:0;display:inline-block}
+.leg-dash{width:16px;border-top:2px dashed;display:inline-block}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:700px}
+.tbl th{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);
+  padding:9px 10px;border-bottom:1px solid var(--bdr);font-weight:700;text-align:left;white-space:nowrap;
+  position:sticky;top:0;background:var(--surf)}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surf2)}
+.tbl-card{background:var(--surf);border:1px solid var(--bdr);border-radius:5px;overflow:hidden}
+.tbl-head-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px 9px}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;
+  font-size:9px;font-weight:700;white-space:nowrap;letter-spacing:.02em}
+.p-osso    {background:rgba(208,59,59,.15);color:#ff8a8a;border:1px solid rgba(208,59,59,.3)}
+.p-aparenc {background:rgba(232,150,10,.13);color:#e8960a;border:1px solid rgba(232,150,10,.28)}
+.p-gordura {background:rgba(237,161,0,.12);color:#eda100;border:1px solid rgba(237,161,0,.25)}
+.p-nervoso {background:rgba(42,120,214,.13);color:#7bb8f5;border:1px solid rgba(42,120,214,.25)}
+.p-outro   {background:rgba(120,118,112,.12);color:#9e9c96;border:1px solid rgba(120,118,112,.25)}
+.p-desc    {background:rgba(208,59,59,.12);color:#ff7a7a;border:1px solid rgba(208,59,59,.25)}
+.p-rep     {background:rgba(232,150,10,.12);color:#e8960a;border:1px solid rgba(232,150,10,.25)}
+.p-lib     {background:rgba(26,171,26,.10);color:#5ae05a;border:1px solid rgba(26,171,26,.22)}
+
+/* ── TOOLTIP ── */
+.tip{position:fixed;pointer-events:none;background:#111;border:1px solid var(--bdr2);
+  border-radius:6px;padding:10px 13px;font-size:11px;line-height:1.7;color:var(--txt2);
+  z-index:400;min-width:185px;max-width:270px;box-shadow:0 8px 32px rgba(0,0,0,.8);display:none}
+.tip-title{font-weight:700;color:var(--txt);font-size:12px;margin-bottom:4px}
+.tip-row{display:flex;justify-content:space-between;gap:14px}
+.tip-k{color:var(--txt3)}
+.tip-v{color:var(--txt);font-weight:600;text-align:right}
+
+/* ── EMPTY ── */
+.empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
+</style>
+
+<!-- ALERT RIBBON -->
+<div id="alert-ribbon">
+  <div class="ribbon-inner">
+    <div class="ribbon-header" onclick="toggleRibbon()">
+      <span class="ribbon-siren">🚨</span>
+      <span class="ribbon-title">CAIXAS COM NC ACIMA DE</span>
+      <span id="thresh-display" class="ribbon-title" style="color:#ffaaaa">10%</span>
+      <span class="ribbon-badge" id="ribbon-count">0</span>
+      <span class="ribbon-sub">caixas em alerta</span>
+      <span class="ribbon-toggle" id="ribbon-toggle-lbl">▼ ver</span>
+    </div>
+    <div class="ribbon-cards" id="ribbon-cards"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-icon">⚠</span>
+    <span class="brand-text"><em>NC</em><span class="brand-sep"> — </span><span class="brand-sub">Não Conformidades · Refile · BTJ</span></span>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="status-chip">
+    <span class="live-dot" id="live-dot"></span>
+    <span id="live-lbl">Conectando…</span>
+    <span style="color:var(--bdr2)">·</span>
+    <span id="reg-count" style="font-variant-numeric:tabular-nums">—</span>
+  </div>
+  <button class="btn" id="btn-auto" onclick="toggleAuto()">⏱ Auto: 10s</button>
+  <button class="btn" onclick="exportCSV()">↓ CSV</button>
+  <button class="btn" onclick="window.open('analise-gerencial.html','_blank')">↗ Gerencial</button>
+</div>
+
+<!-- FILTERBAR -->
+<div class="filterbar">
+  <span class="fl">Período</span>
+  <input type="date" class="fsel" id="dt-de"  value="2026-07-30" onchange="fetchAll()">
+  <span class="fl" style="margin:0 2px">até</span>
+  <input type="date" class="fsel" id="dt-ate" value="2026-07-30" onchange="fetchAll()">
+  <div class="fsep"></div>
+  <span class="fl">Operadora</span>
+  <select class="fsel" id="sel-op" onchange="render()"><option value="">Todas</option></select>
+  <div class="fsep"></div>
+  <span class="fl">Tipo NC</span>
+  <select class="fsel" id="sel-tipo" onchange="render()"><option value="">Todos</option></select>
+  <div class="fsep"></div>
+  <span class="fl">Destino</span>
+  <select class="fsel" id="sel-dest" onchange="render()"><option value="">Todos</option></select>
+  <div class="fsep"></div>
+  <div class="thresh-row">
+    <span class="fl">Alerta</span>
+    <input type="number" class="fsel" id="inp-thresh" value="10" min="1" max="100" step="1"
+      style="width:52px" onchange="render()">
+    <span class="thresh-lbl">%</span>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- KPIs -->
+  <div class="sec">
+    <div class="stitle">Resumo do Período</div>
+    <div class="kpi-strip" id="kpi-strip">
+      <div class="kpi" style="--kc:var(--crit)"><div class="kpi-lbl">Total NCs</div><div class="kpi-val" id="k-total">—</div><div class="kpi-sub">registros</div></div>
+      <div class="kpi" style="--kc:var(--warn)"><div class="kpi-lbl">Operadoras c/ NC</div><div class="kpi-val" id="k-ops">—</div><div class="kpi-sub" id="k-ops-sub">—</div></div>
+      <div class="kpi" style="--kc:var(--info)"><div class="kpi-lbl">Caixas afetadas</div><div class="kpi-val" id="k-cx">—</div><div class="kpi-sub">caixas únicas</div></div>
+      <div class="kpi" style="--kc:#d03b3b"><div class="kpi-lbl">Descarte</div><div class="kpi-val" id="k-desc" style="color:#ff7a7a">—</div><div class="kpi-sub" id="k-desc-sub">—</div></div>
+      <div class="kpi" style="--kc:var(--warn)"><div class="kpi-lbl">Reprocesso</div><div class="kpi-val" id="k-rep" style="color:#e8960a">—</div><div class="kpi-sub" id="k-rep-sub">—</div></div>
+      <div class="kpi" style="--kc:var(--ok)"><div class="kpi-lbl">Liberado</div><div class="kpi-val" id="k-lib" style="color:#5ae05a">—</div><div class="kpi-sub">aprovadas</div></div>
+      <div class="kpi" style="--kc:var(--c3)"><div class="kpi-lbl">Tipo Principal</div><div class="kpi-val" id="k-tipo" style="font-size:14px;color:var(--c3)">—</div><div class="kpi-sub" id="k-tipo-sub">—</div></div>
+      <div class="kpi" style="--kc:var(--crit)"><div class="kpi-lbl">Cx > Alerta</div><div class="kpi-val" id="k-alert" style="color:#ff4444">—</div><div class="kpi-sub" id="k-alert-sub">acima do limite</div></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="sec">
+    <div class="stitle">Distribuição por Tipo e Destino</div>
+    <div class="grid3">
+      <div class="ccard">
+        <div class="ccard-head"><div><div class="ccard-title">NCs por Tipo</div><div class="ccard-sub">Frequência de cada categoria de defeito</div></div></div>
+        <div class="ccard-body"><canvas id="c-tipo"></canvas></div>
+      </div>
+      <div class="ccard">
+        <div class="ccard-head"><div><div class="ccard-title">Destino das NCs</div><div class="ccard-sub">Descarte · Reprocesso · Liberado</div></div></div>
+        <div class="ccard-body"><canvas id="c-destino"></canvas></div>
+      </div>
+      <div class="ccard">
+        <div class="ccard-head"><div><div class="ccard-title">Evolução no Turno</div><div class="ccard-sub">NCs por hora — empilhado por destino</div></div>
+          <div class="leg">
+            <div class="leg-i"><span class="leg-dot" style="background:var(--crit)"></span>Desc.</div>
+            <div class="leg-i"><span class="leg-dot" style="background:var(--warn)"></span>Rep.</div>
+            <div class="leg-i"><span class="leg-dot" style="background:var(--ok)"></span>Lib.</div>
+          </div>
+        </div>
+        <div class="ccard-body"><canvas id="c-hora"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="sec">
+    <div class="stitle">Ranking de Operadoras</div>
+    <div class="grid-wide">
+      <div class="ccard">
+        <div class="ccard-head"><div><div class="ccard-title">NCs por Operadora — Empilhado por Tipo</div><div class="ccard-sub">Total de ocorrências por refiladora, detalhado por defeito</div></div></div>
+        <div class="ccard-body"><canvas id="c-op-tipo"></canvas></div>
+      </div>
+      <div class="ccard">
+        <div class="ccard-head"><div><div class="ccard-title">% NC por Caixa — Top 15</div><div class="ccard-sub">Caixas com maior taxa de NC (acima do limite = vermelho)</div></div></div>
+        <div class="ccard-body"><canvas id="c-cx-pct"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO DETALHADO -->
+  <div class="sec">
+    <div class="stitle">Registro Detalhado</div>
+    <div class="tbl-card">
+      <div class="tbl-head-row">
+        <span style="font-size:11px;font-weight:700;color:var(--txt)">Todos os registros do período</span>
+        <span id="tbl-count" style="font-size:10px;color:var(--txt3)"></span>
+      </div>
+      <div class="tbl-wrap" style="max-height:420px;overflow-y:auto">
+        <table class="tbl">
+          <thead><tr>
+            <th>Hora</th><th>Operadora</th><th>Caixa / Lote</th><th>Produto</th>
+            <th>Tipo NC</th><th>Motivo</th><th>Qtd / Peso</th><th>% NC cx</th><th>Destino</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+<div class="tip" id="tip"></div>
+
+<script>
+/* ══════════════════════════════════════
+   CONFIG GRAFANA
+══════════════════════════════════════ */
+const IS_LOCAL     = ['localhost','127.0.0.1'].includes(location.hostname);
+const GRAFANA_URL  = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
+const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
+const DS_UID       = 'aeal1lruwzif4c';
+const NC_DASH_UID  = 'cftl1brhqyc5ce';
+
+/* ══════════════════════════════════════
+   OPERADORAS
+══════════════════════════════════════ */
+const OPS = {
+  438:{n:'Aline Kaori'},820:{n:'Ana Paula'},506:{n:'Brislane Lima'},
+  331:{n:'Claudeane Santos'},701:{n:'Claudia Leite'},266:{n:'Edimara Netto'},
+  823:{n:'Edvaneide Ferreira'},212:{n:'Elizangela Sousa'},635:{n:'Gisele Valentim'},
+  451:{n:'Janaina Silva'},750:{n:'Jessica Paixao'},234:{n:'Jocelia Jesus'},
+  357:{n:'Laislaine Cruz'},828:{n:'Maria Eduarda'},769:{n:'Maria Selma'},
+  742:{n:'Marineide Aparecida'},528:{n:'Noeuzi Santana'},170:{n:'Rayane Eduarda'},
+  502:{n:'Roseni Aparecida'},687:{n:'Rosimeire Oliveira'},681:{n:'Suellen Fernanda'},
+  2001:{n:'Eloiza Daniela'},
+};
+const opName = op => OPS[op]?.n || OPS[Number(op)]?.n || `Op. ${op}`;
+
+/* ══════════════════════════════════════
+   FALLBACK DATA
+══════════════════════════════════════ */
+const FALLBACK = [
+  {hora:'06:58',op:438,produto:'FILE TILAPIA',lote:'L-3101',cx:'CX-R001',tipo:'Osso',motivo:'Espinha dorsal',qtd:1,peso:0.28,destino:'Descarte'},
+  {hora:'07:14',op:506,produto:'FILE TILAPIA',lote:'L-3101',cx:'CX-R005',tipo:'Aparência',motivo:'Coloração irregular',qtd:1,peso:0.41,destino:'Reprocesso'},
+  {hora:'07:31',op:438,produto:'FILE TILAPIA',lote:'L-3102',cx:'CX-R002',tipo:'Gordura',motivo:'Excesso subcutâneo',qtd:2,peso:0.76,destino:'Reprocesso'},
+  {hora:'07:45',op:820,produto:'FILE TILAPIA',lote:'L-3102',cx:'CX-R012',tipo:'Nervoso',motivo:'Filamento visível',qtd:1,peso:0.18,destino:'Liberado'},
+  {hora:'08:03',op:502,produto:'FILE TILAPIA',lote:'L-3103',cx:'CX-R009',tipo:'Osso',motivo:'Costela',qtd:1,peso:0.22,destino:'Descarte'},
+  {hora:'08:19',op:506,produto:'FILE TILAPIA',lote:'L-3103',cx:'CX-R006',tipo:'Aparência',motivo:'Mancha hemorrágica',qtd:1,peso:0.35,destino:'Descarte'},
+  {hora:'08:38',op:820,produto:'FILE TILAPIA',lote:'L-3104',cx:'CX-R013',tipo:'Gordura',motivo:'Gordura visceral',qtd:3,peso:1.05,destino:'Reprocesso'},
+  {hora:'08:54',op:438,produto:'FILE TILAPIA',lote:'L-3104',cx:'CX-R003',tipo:'Nervoso',motivo:'Nervo peitoral',qtd:1,peso:0.13,destino:'Liberado'},
+  {hora:'09:10',op:502,produto:'FILE TILAPIA',lote:'L-3105',cx:'CX-R010',tipo:'Aparência',motivo:'Corte irregular',qtd:2,peso:0.62,destino:'Reprocesso'},
+  {hora:'09:27',op:506,produto:'FILE TILAPIA',lote:'L-3105',cx:'CX-R007',tipo:'Osso',motivo:'Osso costal',qtd:1,peso:0.25,destino:'Descarte'},
+  {hora:'09:44',op:820,produto:'FILE TILAPIA',lote:'L-3106',cx:'CX-R014',tipo:'Outro',motivo:'Contaminação',qtd:1,peso:0.40,destino:'Descarte'},
+  {hora:'10:02',op:438,produto:'FILE TILAPIA',lote:'L-3106',cx:'CX-R004',tipo:'Gordura',motivo:'Lâmina gorda',qtd:2,peso:0.85,destino:'Reprocesso'},
+  {hora:'10:18',op:502,produto:'FILE TILAPIA',lote:'L-3107',cx:'CX-R011',tipo:'Aparência',motivo:'Escama residual',qtd:1,peso:0.19,destino:'Liberado'},
+  {hora:'10:35',op:820,produto:'FILE TILAPIA',lote:'L-3107',cx:'CX-R015',tipo:'Osso',motivo:'Espinha lateral',qtd:1,peso:0.31,destino:'Descarte'},
+  {hora:'10:52',op:506,produto:'FILE TILAPIA',lote:'L-3108',cx:'CX-R008',tipo:'Nervoso',motivo:'Nervo axial',qtd:1,peso:0.16,destino:'Liberado'},
+  {hora:'11:09',op:438,produto:'FILE TILAPIA',lote:'L-3108',cx:'CX-R001',tipo:'Gordura',motivo:'Gordura intramuscular',qtd:2,peso:0.73,destino:'Reprocesso'},
+  {hora:'11:25',op:502,produto:'FILE TILAPIA',lote:'L-3109',cx:'CX-R009',tipo:'Osso',motivo:'Costela falsa',qtd:1,peso:0.24,destino:'Descarte'},
+  {hora:'11:42',op:820,produto:'FILE TILAPIA',lote:'L-3109',cx:'CX-R012',tipo:'Aparência',motivo:'Textura anormal',qtd:1,peso:0.38,destino:'Reprocesso'},
+];
+
+/* cx → PesoInicial (dados de apontamento Refile) para calcular % NC */
+const CX_PESO_ENTRADA = {
+  'CX-R001':14.2,'CX-R002':15.8,'CX-R003':13.5,'CX-R004':16.1,
+  'CX-R005':14.9,'CX-R006':15.3,'CX-R007':13.8,'CX-R008':16.5,
+  'CX-R009':14.6,'CX-R010':15.1,'CX-R011':13.9,'CX-R012':16.3,
+  'CX-R013':14.4,'CX-R014':15.7,'CX-R015':14.0,
+};
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let DATA = [...FALLBACK];
+let DASH_SQLS  = [];
+let _prevAlerts = new Set();
+let _ribbonOpen = false;
+let autoOn = true, autoSecs = 10, autoTimer = null;
+/* peso entrada por caixa (enriquecido ao buscar apontamentos de refile) */
+let CX_PI = {...CX_PESO_ENTRADA};
+
+/* ══════════════════════════════════════
+   HELPERS
+══════════════════════════════════════ */
+function fKg(v){ return v.toFixed(2)+' kg'; }
+function fPct(v){ return v.toFixed(1)+'%'; }
+function toMins(h){ const p=(h||'').split(':').map(Number); return (p[0]||0)*60+(p[1]||0)+(p[2]||0)/60; }
+function tipoCls(t){
+  t=(t||'').toLowerCase();
+  if(/osso/.test(t))   return 'p-osso';
+  if(/aparen/.test(t)) return 'p-aparenc';
+  if(/gordu/.test(t))  return 'p-gordura';
+  if(/nerv/.test(t))   return 'p-nervoso';
+  return 'p-outro';
+}
+function destCls(d){
+  d=(d||'').toLowerCase();
+  if(/descarte/.test(d)) return 'p-desc';
+  if(/reprocess/.test(d)) return 'p-rep';
+  return 'p-lib';
+}
+function destIcon(d){
+  d=(d||'').toLowerCase();
+  if(/descarte/.test(d)) return '🗑';
+  if(/reprocess/.test(d)) return '♻';
+  return '✓';
+}
+const TIPO_COLS = {
+  'Osso':'#d03b3b','Aparência':'#e8960a','Gordura':'#eda100',
+  'Nervoso':'#2a78d6','Outro':'#787670',
+};
+function tipoColor(t){
+  for(const [k,c] of Object.entries(TIPO_COLS))
+    if(t.toLowerCase().includes(k.toLowerCase())) return c;
+  return '#787670';
+}
+
+/* ══════════════════════════════════════
+   TOOLTIP
+══════════════════════════════════════ */
+const TIP = document.getElementById('tip');
+function showTip(html, e){ TIP.innerHTML=html; TIP.style.display='block'; moveTip(e); }
+function moveTip(e){
+  const x=e.clientX+14, y=e.clientY-10;
+  const r=TIP.getBoundingClientRect();
+  TIP.style.left=(x+r.width>innerWidth?x-r.width-28:x)+'px';
+  TIP.style.top=Math.max(4,Math.min(y,innerHeight-r.height-4))+'px';
+}
+function hideTip(){ TIP.style.display='none'; }
+
+/* ══════════════════════════════════════
+   STATUS
+══════════════════════════════════════ */
+function setStatus(msg, type){
+  const d=document.getElementById('live-dot');
+  const l=document.getElementById('live-lbl');
+  l.textContent=msg;
+  d.className='live-dot'+(type==='ok'?' ok':type==='err'?' err':'');
+}
+
+/* ══════════════════════════════════════
+   CANVAS SETUP
+══════════════════════════════════════ */
+function setupCanvas(id, w, h){
+  const c=document.getElementById(id);
+  const dpr=devicePixelRatio||1;
+  c.style.width=w+'px'; c.style.height=h+'px';
+  c.width=Math.round(w*dpr); c.height=Math.round(h*dpr);
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  return {c,ctx,w,h};
+}
+
+/* ══════════════════════════════════════
+   GRAFANA — auto-discovery
+══════════════════════════════════════ */
+async function fetchDashboardSqls(){
+  const r=await fetch(`${GRAFANA_URL}/api/dashboards/uid/${NC_DASH_UID}`,
+    {headers:{Authorization:GRAFANA_AUTH}});
+  if(!r.ok) throw new Error(`dashboard HTTP ${r.status}`);
+  const j=await r.json();
+  const sqls=[];
+  for(const panel of(j.dashboard?.panels||[])){
+    for(const t of(panel.targets||[])){
+      if(t.rawSql?.trim()) sqls.push({title:panel.title||'',sql:t.rawSql});
+    }
+  }
+  return sqls;
+}
+
+async function runSql(sql, dtDe, dtAte){
+  const from=new Date(dtDe+'T00:00:00').getTime();
+  const to  =new Date(dtAte+'T23:59:59').getTime();
+  const finalSql=sql.replace(/\$__timeFilter\(([^)]+)\)/g,
+    (_,col)=>`${col} BETWEEN '${dtDe}' AND '${dtAte}'`);
+  const r=await fetch(`${GRAFANA_URL}/api/ds/query`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':GRAFANA_AUTH},
+    body:JSON.stringify({
+      queries:[{datasource:{type:'mssql',uid:DS_UID},rawSql:finalSql,
+                format:'table',refId:'A',rawQuery:true,dataset:'ERP'}],
+      from:String(from),to:String(to),
+    }),
+  });
+  if(!r.ok) return [];
+  const j=await r.json();
+  const frame=j?.results?.A?.frames?.[0];
+  if(!frame) return [];
+  const fields=frame.schema.fields, vals=frame.data.values;
+  const n=vals[0]?.length||0;
+  const rows=[];
+  for(let i=0;i<n;i++){
+    const raw={};
+    fields.forEach((f,k)=>{ raw[f.name]=vals[k][i]; });
+    rows.push(raw);
+  }
+  return rows;
+}
+
+/* normaliza linha bruta → formato interno */
+function normalizeRow(raw){
+  const pick=(...keys)=>{
+    for(const k of keys){
+      const v=raw[k]??raw[k.toLowerCase()]??raw[k.toUpperCase()];
+      if(v!=null) return v;
+    }
+    return null;
+  };
+  let hora=pick('Hora','HoraNC','HoraFim','hora_nc')||'';
+  if(typeof hora!=='string') hora=String(hora);
+  hora=hora.substring(0,5);
+  return{
+    hora,
+    op:     Number(pick('Operador','operador','OperadorId')||0),
+    produto:pick('Produto','produto','NomeProduto')||'—',
+    lote:   pick('Lote','lote','NumeroLote')||'—',
+    cx:     pick('CodigoCaixa','Caixa','caixa','codigo_caixa')||'—',
+    tipo:   pick('TipoNC','Tipo','tipo','TipoNaoConformidade')||'Outro',
+    motivo: pick('Motivo','motivo','DescricaoNC','Descricao')||'—',
+    qtd:    Number(pick('Quantidade','qtd','Qtd')||1),
+    peso:   Number(pick('Peso','peso','PesoNC')||0),
+    destino:pick('Destino','destino','DestinoNC')||'—',
+  };
+}
+
+/* ══════════════════════════════════════
+   MAIN FETCH
+══════════════════════════════════════ */
+async function fetchAll(){
+  const dtDe=document.getElementById('dt-de').value;
+  const dtAte=document.getElementById('dt-ate').value;
+  setStatus('Carregando…','load');
+  try{
+    if(!DASH_SQLS.length) DASH_SQLS=await fetchDashboardSqls();
+    const rawRows=[];
+    for(const {sql} of DASH_SQLS){
+      const r=await runSql(sql,dtDe,dtAte);
+      rawRows.push(...r);
+    }
+    DATA=rawRows.length ? rawRows.map(normalizeRow) : [...FALLBACK];
+    const now=new Date().toLocaleTimeString('pt-BR');
+    setStatus(`${DATA.length} registros · ${now}`,'ok');
+    document.getElementById('reg-count').textContent=DATA.length+' registros';
+  }catch(e){
+    DATA=[...FALLBACK];
+    setStatus('Demo (sem conexão)','err');
+    document.getElementById('reg-count').textContent=DATA.length+' (demo)';
+  }
+  populateFilters();
+  render();
+}
+
+/* ══════════════════════════════════════
+   FILTERS
+══════════════════════════════════════ */
+function populateFilters(){
+  const ops  =[...new Set(DATA.map(r=>r.op))].sort();
+  const tipos=[...new Set(DATA.map(r=>r.tipo))].sort();
+  const dests=[...new Set(DATA.map(r=>r.destino))].sort();
+  const fill=(id,vals)=>{
+    const sel=document.getElementById(id);
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Todos</option>';
+    vals.forEach(v=>{
+      const o=document.createElement('option');
+      o.value=v; o.textContent=id==='sel-op'?opName(v):v;
+      sel.appendChild(o);
+    });
+    sel.value=cur;
+  };
+  fill('sel-op',ops); fill('sel-tipo',tipos); fill('sel-dest',dests);
+}
+
+function filteredData(){
+  const op  =document.getElementById('sel-op').value;
+  const tipo=document.getElementById('sel-tipo').value;
+  const dest=document.getElementById('sel-dest').value;
+  return DATA.filter(r=>
+    (!op   || String(r.op)===String(op)) &&
+    (!tipo || r.tipo===tipo) &&
+    (!dest || r.destino===dest)
+  );
+}
+
+/* ══════════════════════════════════════
+   KPIs
+══════════════════════════════════════ */
+function renderKPIs(rows, thresh){
+  const g=id=>document.getElementById(id);
+  g('k-total').textContent=rows.length;
+  const ops=[...new Set(rows.map(r=>r.op))];
+  g('k-ops').textContent=ops.length;
+  g('k-ops-sub').textContent='refiladoras';
+  const cxs=[...new Set(rows.map(r=>r.cx).filter(c=>c&&c!=='—'))];
+  g('k-cx').textContent=cxs.length;
+  const desc=rows.filter(r=>/descarte/i.test(r.destino));
+  const rep =rows.filter(r=>/reprocess/i.test(r.destino));
+  const lib =rows.filter(r=>/liber|aprov/i.test(r.destino));
+  const pesoDesc=desc.reduce((s,r)=>s+r.peso,0);
+  g('k-desc').textContent=desc.length;
+  g('k-desc-sub').textContent=pesoDesc>0?fKg(pesoDesc):'—';
+  g('k-rep').textContent=rep.length;
+  g('k-rep-sub').textContent=rows.length?((rep.length/rows.length)*100).toFixed(0)+'%':'—';
+  g('k-lib').textContent=lib.length;
+  const tipoMap={};
+  rows.forEach(r=>{ tipoMap[r.tipo]=(tipoMap[r.tipo]||0)+1; });
+  const topTipo=Object.entries(tipoMap).sort((a,b)=>b[1]-a[1])[0];
+  if(topTipo){ g('k-tipo').textContent=topTipo[0]; g('k-tipo-sub').textContent=topTipo[1]+' casos'; }
+
+  /* caixas acima do limiar */
+  const cxAlert=calcCxAlert(rows,thresh);
+  g('k-alert').textContent=cxAlert.length;
+  g('k-alert-sub').textContent=`> ${thresh}% NC`;
+  g('thresh-display').textContent=thresh+'%';
+}
+
+/* ══════════════════════════════════════
+   ALERTA POR CAIXA
+══════════════════════════════════════ */
+function calcCxAlert(rows, thresh){
+  const byCx={};
+  rows.forEach(r=>{
+    if(!r.cx||r.cx==='—') return;
+    if(!byCx[r.cx]) byCx[r.cx]={ncPeso:0,ncQtd:0,op:r.op,hora:r.hora,ncs:[]};
+    byCx[r.cx].ncPeso+=r.peso||0;
+    byCx[r.cx].ncQtd +=r.qtd ||1;
+    byCx[r.cx].ncs.push(r);
+  });
+  const alerts=[];
+  Object.entries(byCx).forEach(([cx,d])=>{
+    const pi=CX_PI[cx]||0;
+    const pct= pi>0&&d.ncPeso>0 ? d.ncPeso/pi : d.ncQtd/10;   /* fallback proporcional */
+    if(pct*100>=thresh) alerts.push({cx,pct,pi,...d});
+  });
+  return alerts.sort((a,b)=>b.pct-a.pct);
+}
+
+function renderAlertRibbon(rows, thresh){
+  const alerts=calcCxAlert(rows,thresh);
+  const ribbon=document.getElementById('alert-ribbon');
+  const cards =document.getElementById('ribbon-cards');
+  const cnt   =document.getElementById('ribbon-count');
+  if(!alerts.length){ ribbon.style.display='none'; return; }
+  ribbon.style.display='block';
+  cnt.textContent=alerts.length;
+
+  const curSet=new Set(alerts.map(a=>a.cx));
+  const novas=[...curSet].filter(c=>!_prevAlerts.has(c));
+  _prevAlerts=curSet;
+  if(novas.length) fireNotif(novas[0],alerts.find(a=>a.cx===novas[0]),thresh);
+
+  cards.innerHTML=alerts.map(a=>{
+    const pctStr=(a.pct*100).toFixed(1)+'%';
+    const bw=Math.min(100,a.pct*100).toFixed(1);
+    const tipos=[...new Set(a.ncs.map(n=>n.tipo))].join(', ')||'—';
+    const desc=a.ncs.filter(n=>/descarte/i.test(n.destino)).length;
+    const isNew=novas.includes(a.cx);
+    return `<div class="rcrd${isNew?' anim-new':''}">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div><div class="rcrd-cx">📦 ${a.cx}</div>
+          <div class="rcrd-op">${opName(a.op)} · ${a.hora||'—'}</div></div>
+        <div class="rcrd-pct">${pctStr}</div>
+      </div>
+      <div class="rcrd-bar"><div class="rcrd-bar-fill" style="width:${bw}%"></div></div>
+      <div class="rcrd-row"><span class="rcrd-key">Tipo(s)</span><span class="rcrd-val">${tipos}</span></div>
+      <div class="rcrd-row"><span class="rcrd-key">NC / Entrada</span>
+        <span class="rcrd-val">${a.ncPeso>0?fKg(a.ncPeso)+' / '+(a.pi>0?fKg(a.pi):'—'):'—'}</span></div>
+      ${desc?`<div class="rcrd-row"><span class="rcrd-key">Descarte</span>
+        <span class="rcrd-val" style="color:#ff7a7a;font-weight:700">${desc} item(s)</span></div>`:''}
+    </div>`;
+  }).join('');
+  if(_ribbonOpen) cards.classList.add('open');
+}
+
+function toggleRibbon(){
+  _ribbonOpen=!_ribbonOpen;
+  document.getElementById('ribbon-cards').classList.toggle('open',_ribbonOpen);
+  document.getElementById('ribbon-toggle-lbl').textContent=_ribbonOpen?'▲ recolher':'▼ ver';
+}
+
+/* notificação desktop */
+(async()=>{
+  if('Notification' in window && Notification.permission==='default')
+    await Notification.requestPermission();
+})();
+function fireNotif(cx, a, thresh){
+  if(!a||Notification.permission!=='granted') return;
+  try{
+    const n=new Notification(`⚠ BTJ NC — ${cx}`,{
+      body:`${opName(a.op)}: ${(a.pct*100).toFixed(1)}% de NC (limite ${thresh}%)`,
+      tag:'btj-nc-cx',requireInteraction:true,
+    });
+    n.onclick=()=>{window.focus();n.close();};
+  }catch(_){}
+}
+
+/* ══════════════════════════════════════
+   CHART — NC POR TIPO (barras horiz.)
+══════════════════════════════════════ */
+function chartTipo(rows){
+  const card=document.getElementById('c-tipo').parentElement;
+  const cssW=card.clientWidth-20;
+  const tipos={};
+  rows.forEach(r=>{tipos[r.tipo]=(tipos[r.tipo]||0)+1;});
+  const entries=Object.entries(tipos).sort((a,b)=>b[1]-a[1]);
+  const ROW=28,PAD={t:12,r:46,b:12,l:88};
+  const cssH=Math.max(120,entries.length*ROW+PAD.t+PAD.b);
+  const {c,ctx}=setupCanvas('c-tipo',cssW,cssH);
+  const maxV=Math.max(...entries.map(e=>e[1]),1);
+  const plotW=cssW-PAD.l-PAD.r;
+
+  ctx.fillStyle='#161614'; ctx.fillRect(0,0,cssW,cssH);
+
+  entries.forEach(([tipo,cnt],i)=>{
+    const y0=PAD.t+i*ROW+4, bh=ROW-8;
+    const bw=cnt/maxV*plotW;
+    const col=tipoColor(tipo);
+    ctx.fillStyle='#1d1d1b'; ctx.fillRect(PAD.l,y0,plotW,bh);
+    ctx.fillStyle=col; ctx.globalAlpha=0.85;
+    ctx.fillRect(PAD.l,y0,Math.max(2,bw),bh);
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#b8b6ac'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(tipo,PAD.l-6,y0+bh/2);
+    ctx.fillStyle=col; ctx.font='bold 10px system-ui,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText(cnt,PAD.l+plotW+5,y0+bh/2);
+  });
+  if(!entries.length){ ctx.fillStyle='#787670'; ctx.font='11px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('Sem dados',cssW/2,cssH/2); }
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect();
+    const my=(e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx=Math.floor((my/c.height*cssH-PAD.t)/ROW);
+    if(idx<0||idx>=entries.length){hideTip();return;}
+    const [t,cnt]=entries[idx];
+    const pct=rows.length?(cnt/rows.length*100).toFixed(1)+'%':'—';
+    showTip(`<div class="tip-title">${t}</div>
+      <div class="tip-row"><span class="tip-k">Ocorrências</span><span class="tip-v">${cnt}</span></div>
+      <div class="tip-row"><span class="tip-k">% do total</span><span class="tip-v">${pct}</span></div>`,e);
+  };
+  c.onmouseleave=hideTip;
+}
+
+/* ══════════════════════════════════════
+   CHART — DESTINO (donut-ish bars)
+══════════════════════════════════════ */
+function chartDestino(rows){
+  const card=document.getElementById('c-destino').parentElement;
+  const cssW=card.clientWidth-20;
+  const map={};
+  rows.forEach(r=>{map[r.destino]=(map[r.destino]||0)+1;});
+  const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const cols={'Descarte':'#d03b3b','Reprocesso':'#e8960a','Liberado':'#1aab1a'};
+  const ROW=30,PAD={t:12,r:50,b:12,l:100};
+  const cssH=Math.max(110,entries.length*ROW+PAD.t+PAD.b);
+  const {c,ctx}=setupCanvas('c-destino',cssW,cssH);
+  const total=rows.length||1;
+  const plotW=cssW-PAD.l-PAD.r;
+  ctx.fillStyle='#161614'; ctx.fillRect(0,0,cssW,cssH);
+  entries.forEach(([dest,cnt],i)=>{
+    const y0=PAD.t+i*ROW+4, bh=ROW-8;
+    const bw=cnt/total*plotW;
+    const col=Object.entries(cols).find(([k])=>dest.toLowerCase().includes(k.toLowerCase()))?.[1]||'#787670';
+    ctx.fillStyle='#1d1d1b'; ctx.fillRect(PAD.l,y0,plotW,bh);
+    ctx.fillStyle=col; ctx.globalAlpha=0.85;
+    ctx.fillRect(PAD.l,y0,Math.max(2,bw),bh);
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#b8b6ac'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(dest,PAD.l-6,y0+bh/2);
+    ctx.fillStyle=col; ctx.font='bold 10px system-ui,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(`${cnt} (${(cnt/total*100).toFixed(0)}%)`,PAD.l+plotW+5,y0+bh/2);
+  });
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect();
+    const my=(e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx=Math.floor((my/c.height*cssH-PAD.t)/ROW);
+    if(idx<0||idx>=entries.length){hideTip();return;}
+    const [d,cnt]=entries[idx];
+    const pesoTotal=rows.filter(r=>r.destino===d).reduce((s,r)=>s+r.peso,0);
+    showTip(`<div class="tip-title">${d}</div>
+      <div class="tip-row"><span class="tip-k">Itens</span><span class="tip-v">${cnt}</span></div>
+      <div class="tip-row"><span class="tip-k">% do total</span><span class="tip-v">${(cnt/total*100).toFixed(1)}%</span></div>
+      ${pesoTotal>0?`<div class="tip-row"><span class="tip-k">Peso total</span><span class="tip-v">${fKg(pesoTotal)}</span></div>`:''}`,e);
+  };
+  c.onmouseleave=hideTip;
+}
+
+/* ══════════════════════════════════════
+   CHART — EVOLUÇÃO POR HORA
+══════════════════════════════════════ */
+function chartHora(rows){
+  const card=document.getElementById('c-hora').parentElement;
+  const cssW=card.clientWidth-20, cssH=210;
+  const PAD={t:22,r:18,b:32,l:32};
+  const {c,ctx}=setupCanvas('c-hora',cssW,cssH);
+
+  const byH={};
+  rows.forEach(r=>{
+    const h=(r.hora||'00:00').substring(0,2)+':00';
+    if(!byH[h]) byH[h]={d:0,rep:0,lib:0};
+    if(/descarte/i.test(r.destino))      byH[h].d++;
+    else if(/reprocess/i.test(r.destino))byH[h].rep++;
+    else byH[h].lib++;
+  });
+  const horas=Object.keys(byH).sort();
+  ctx.fillStyle='#161614'; ctx.fillRect(0,0,cssW,cssH);
+  if(!horas.length) return;
+
+  const plotW=cssW-PAD.l-PAD.r, plotH=cssH-PAD.t-PAD.b;
+  const maxV=Math.max(...horas.map(h=>byH[h].d+byH[h].rep+byH[h].lib),1);
+  const bw=plotW/horas.length;
+
+  for(let i=0;i<=4;i++){
+    const v=maxV*i/4, y=PAD.t+plotH*(1-v/maxV);
+    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(PAD.l+plotW,y); ctx.stroke();
+    ctx.fillStyle='#787670'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.round(v),PAD.l-3,y);
+  }
+
+  horas.forEach((h,i)=>{
+    const x=PAD.l+i*bw, base=PAD.t+plotH, bwi=bw-2;
+    let cum=0;
+    [[byH[h].lib,'#1aab1a'],[byH[h].rep,'#e8960a'],[byH[h].d,'#d03b3b']].forEach(([v,col])=>{
+      if(!v) return;
+      const bh2=v/maxV*plotH;
+      ctx.fillStyle=col; ctx.globalAlpha=.82;
+      ctx.fillRect(x+1,base-cum-bh2,bwi,bh2);
+      ctx.globalAlpha=1; cum+=bh2;
+    });
+    ctx.fillStyle='#787670'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(h,x+bw/2,PAD.t+plotH+5);
+  });
+  ctx.strokeStyle='#363633'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+plotH); ctx.lineTo(PAD.l+plotW,PAD.t+plotH); ctx.stroke();
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(c.width/c.clientWidth);
+    const idx=Math.floor((mx/c.width*cssW-PAD.l)/bw);
+    if(idx<0||idx>=horas.length){hideTip();return;}
+    const h=horas[idx],d=byH[h];
+    showTip(`<div class="tip-title">${h}</div>
+      <div class="tip-row"><span class="tip-k">Descarte</span><span class="tip-v" style="color:#ff8a8a">${d.d}</span></div>
+      <div class="tip-row"><span class="tip-k">Reprocesso</span><span class="tip-v" style="color:#e8960a">${d.rep}</span></div>
+      <div class="tip-row"><span class="tip-k">Liberado</span><span class="tip-v" style="color:#5ae05a">${d.lib}</span></div>
+      <div class="tip-row"><span class="tip-k">Total</span><span class="tip-v">${d.d+d.rep+d.lib}</span></div>`,e);
+  };
+  c.onmouseleave=hideTip;
+}
+
+/* ══════════════════════════════════════
+   CHART — OP × TIPO (empilhado)
+══════════════════════════════════════ */
+function chartOpTipo(rows){
+  const card=document.getElementById('c-op-tipo').parentElement;
+  const cssW=card.clientWidth-20;
+  const tipos=[...new Set(rows.map(r=>r.tipo))].sort();
+  const byOp={};
+  rows.forEach(r=>{
+    if(!byOp[r.op]) byOp[r.op]={};
+    byOp[r.op][r.tipo]=(byOp[r.op][r.tipo]||0)+1;
+  });
+  const opList=Object.keys(byOp)
+    .sort((a,b)=>Object.values(byOp[b]).reduce((s,v)=>s+v,0)-Object.values(byOp[a]).reduce((s,v)=>s+v,0))
+    .slice(0,12);
+
+  const ROW=28, PAD={t:14,r:20,b:14,l:120};
+  const cssH=Math.max(120,opList.length*ROW+PAD.t+PAD.b);
+  const {c,ctx}=setupCanvas('c-op-tipo',cssW,cssH);
+  const maxV=Math.max(...opList.map(op=>Object.values(byOp[op]).reduce((s,v)=>s+v,0)),1);
+  const plotW=cssW-PAD.l-PAD.r;
+
+  ctx.fillStyle='#161614'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* grid */
+  for(let i=0;i<=4;i++){
+    const x=PAD.l+plotW*i/4;
+    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(x,PAD.t); ctx.lineTo(x,PAD.t+opList.length*ROW); ctx.stroke();
+    ctx.fillStyle='#787670'; ctx.font='9px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText(Math.round(maxV*i/4),x,PAD.t+opList.length*ROW+3);
+  }
+
+  opList.forEach((op,i)=>{
+    const y0=PAD.t+i*ROW+4, bh=ROW-8;
+    let x=PAD.l;
+    tipos.forEach(tipo=>{
+      const v=byOp[op][tipo]||0;
+      if(!v) return;
+      const bw=v/maxV*plotW;
+      const col=tipoColor(tipo);
+      ctx.fillStyle=col; ctx.globalAlpha=0.82;
+      ctx.fillRect(x,y0,bw,bh);
+      ctx.globalAlpha=1;
+      /* mini label if wide enough */
+      if(bw>18){
+        ctx.fillStyle='rgba(0,0,0,.55)'; ctx.font='bold 8px system-ui,sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(v,x+bw/2,y0+bh/2);
+      }
+      x+=bw;
+    });
+    ctx.fillStyle='#b8b6ac'; ctx.font='10px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    const nm=opName(op); const sh=nm.length>16?nm.slice(0,15)+'…':nm;
+    ctx.fillText(sh,PAD.l-6,y0+bh/2);
+  });
+
+  /* legend */
+  const legY=PAD.t+opList.length*ROW+22;
+  let lx=PAD.l;
+  tipos.forEach(tipo=>{
+    const col=tipoColor(tipo);
+    ctx.fillStyle=col; ctx.fillRect(lx,legY,9,9);
+    ctx.fillStyle='#787670'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(tipo,lx+12,legY);
+    lx+=ctx.measureText(tipo).width+24;
+  });
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect();
+    const my=(e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx=Math.floor((my/c.height*cssH-PAD.t)/ROW);
+    if(idx<0||idx>=opList.length){hideTip();return;}
+    const op=opList[idx], d=byOp[op];
+    const total=Object.values(d).reduce((s,v)=>s+v,0);
+    const breakdown=tipos.filter(t=>d[t]).map(t=>`<div class="tip-row"><span class="tip-k">${t}</span><span class="tip-v">${d[t]}</span></div>`).join('');
+    showTip(`<div class="tip-title">${opName(op)}</div>
+      <div class="tip-row"><span class="tip-k">Total NCs</span><span class="tip-v">${total}</span></div>
+      ${breakdown}`,e);
+  };
+  c.onmouseleave=hideTip;
+}
+
+/* ══════════════════════════════════════
+   CHART — % NC POR CAIXA (top 15)
+══════════════════════════════════════ */
+function chartCxPct(rows, thresh){
+  const card=document.getElementById('c-cx-pct').parentElement;
+  const cssW=card.clientWidth-20;
+  const byCx={};
+  rows.forEach(r=>{
+    if(!r.cx||r.cx==='—') return;
+    if(!byCx[r.cx]) byCx[r.cx]={peso:0,qtd:0,op:r.op};
+    byCx[r.cx].peso+=r.peso||0;
+    byCx[r.cx].qtd +=r.qtd||1;
+  });
+  const cxList=Object.entries(byCx).map(([cx,d])=>{
+    const pi=CX_PI[cx]||0;
+    const pct=pi>0&&d.peso>0 ? d.peso/pi*100 : d.qtd;
+    return{cx,pct,op:d.op,peso:d.peso,pi};
+  }).sort((a,b)=>b.pct-a.pct).slice(0,15);
+
+  const ROW=26,PAD={t:12,r:56,b:12,l:80};
+  const cssH=Math.max(100,cxList.length*ROW+PAD.t+PAD.b);
+  const {c,ctx}=setupCanvas('c-cx-pct',cssW,cssH);
+  const maxV=Math.max(...cxList.map(e=>e.pct),thresh,1);
+  const plotW=cssW-PAD.l-PAD.r;
+
+  ctx.fillStyle='#161614'; ctx.fillRect(0,0,cssW,cssH);
+
+  /* threshold line */
+  const tx=PAD.l+thresh/maxV*plotW;
+  ctx.strokeStyle='rgba(208,59,59,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(tx,PAD.t-2); ctx.lineTo(tx,PAD.t+cxList.length*ROW); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(208,59,59,.7)'; ctx.font='bold 8px system-ui,sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText(thresh+'%',tx,PAD.t-3);
+
+  cxList.forEach(({cx,pct,op},i)=>{
+    const y0=PAD.t+i*ROW+4, bh=ROW-8;
+    const bw=pct/maxV*plotW;
+    const above=pct>=thresh;
+    ctx.fillStyle='#1d1d1b'; ctx.fillRect(PAD.l,y0,plotW,bh);
+    ctx.fillStyle=above?'#d03b3b':'#2a78d6'; ctx.globalAlpha=above?.9:.7;
+    ctx.fillRect(PAD.l,y0,Math.max(2,bw),bh);
+    ctx.globalAlpha=1;
+
+    const shortCx=cx.length>10?cx.slice(-8):cx;
+    ctx.fillStyle='#b8b6ac'; ctx.font='9px system-ui,sans-serif';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(shortCx,PAD.l-5,y0+bh/2);
+
+    ctx.fillStyle=above?'#ff8a8a':'#7bb8f5'; ctx.font='bold 9px system-ui,sans-serif';
+    ctx.textAlign='left';
+    ctx.fillText(fPct(pct),PAD.l+plotW+4,y0+bh/2);
+  });
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect();
+    const my=(e.clientY-rect.top)*(c.height/c.clientHeight);
+    const idx=Math.floor((my/c.height*cssH-PAD.t)/ROW);
+    if(idx<0||idx>=cxList.length){hideTip();return;}
+    const d=cxList[idx];
+    showTip(`<div class="tip-title">📦 ${d.cx}</div>
+      <div class="tip-row"><span class="tip-k">Operadora</span><span class="tip-v">${opName(d.op)}</span></div>
+      <div class="tip-row"><span class="tip-k">% NC</span><span class="tip-v" style="color:${d.pct>=thresh?'#ff8a8a':'#7bb8f5'}">${fPct(d.pct)}</span></div>
+      ${d.pi>0?`<div class="tip-row"><span class="tip-k">NC / Entrada</span><span class="tip-v">${fKg(d.peso)} / ${fKg(d.pi)}</span></div>`:''}
+      <div class="tip-row"><span class="tip-k">Limite</span><span class="tip-v">${thresh}%</span></div>`,e);
+  };
+  c.onmouseleave=hideTip;
+}
+
+/* ══════════════════════════════════════
+   TABLE DETALHADA
+══════════════════════════════════════ */
+function renderTable(rows, thresh){
+  const tb=document.getElementById('tbl-body');
+  const byCxPct={};
+  rows.forEach(r=>{
+    if(!r.cx||r.cx==='—') return;
+    if(!byCxPct[r.cx]) byCxPct[r.cx]={peso:0,qtd:0};
+    byCxPct[r.cx].peso+=r.peso||0;
+    byCxPct[r.cx].qtd +=r.qtd||1;
+  });
+  const sorted=[...rows].sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+  tb.innerHTML='';
+  sorted.forEach(r=>{
+    const pi=CX_PI[r.cx]||0;
+    const d=byCxPct[r.cx]||{peso:0,qtd:0};
+    const pct=pi>0&&d.peso>0 ? d.peso/pi*100 : null;
+    const pctStr=pct!=null?fPct(pct):'—';
+    const pctCol=pct!=null&&pct>=thresh?'#ff7a7a':'#787670';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-variant-numeric:tabular-nums;color:var(--txt3)">${r.hora}</td>
+      <td><strong>${opName(r.op)}</strong></td>
+      <td style="font-size:10px;color:var(--txt3);font-variant-numeric:tabular-nums">${r.cx}<br><span style="color:var(--txt3)">${r.lote}</span></td>
+      <td style="color:var(--txt2)">${r.produto}</td>
+      <td><span class="pill ${tipoCls(r.tipo)}">${r.tipo}</span></td>
+      <td style="color:var(--txt2);max-width:200px">${r.motivo}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--txt2)">${r.qtd} un${r.peso?` · ${r.peso.toFixed(2)} kg`:''}</td>
+      <td style="font-variant-numeric:tabular-nums;font-weight:700;color:${pctCol}">${pctStr}</td>
+      <td><span class="pill ${destCls(r.destino)}">${destIcon(r.destino)} ${r.destino}</span></td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('tbl-count').textContent=sorted.length+' registros';
+  if(!sorted.length) tb.innerHTML='<tr><td colspan="9" class="empty">Sem registros para o período/filtro</td></tr>';
+}
+
+/* ══════════════════════════════════════
+   RENDER PRINCIPAL
+══════════════════════════════════════ */
+function render(){
+  const rows=filteredData();
+  const thresh=parseFloat(document.getElementById('inp-thresh').value)||10;
+  renderKPIs(rows,thresh);
+  chartTipo(rows);
+  chartDestino(rows);
+  chartHora(rows);
+  chartOpTipo(rows);
+  chartCxPct(rows,thresh);
+  renderTable(rows,thresh);
+  renderAlertRibbon(rows,thresh);
+}
+
+/* ══════════════════════════════════════
+   AUTO-REFRESH
+══════════════════════════════════════ */
+function startAuto(){
+  stopAuto(); autoOn=true; autoSecs=10; updBtn();
+  autoTimer=setInterval(()=>{autoSecs--;updBtn();if(autoSecs<=0){autoSecs=10;fetchAll();}},1000);
+}
+function stopAuto(){autoOn=false;clearInterval(autoTimer);autoTimer=null;updBtn();}
+function toggleAuto(){autoOn?stopAuto():startAuto();}
+function updBtn(){
+  const b=document.getElementById('btn-auto');
+  b.textContent=autoOn?`⏱ Auto: ${autoSecs}s`:'⏱ Auto: OFF';
+  b.style.opacity=autoOn?'1':'.5';
+}
+
+/* ══════════════════════════════════════
+   CSV EXPORT
+══════════════════════════════════════ */
+function exportCSV(){
+  const rows=filteredData();
+  const hdr=['Hora','Operadora','Caixa','Lote','Produto','Tipo','Motivo','Qtd','Peso','Destino'];
+  const lines=[hdr.join(','),...rows.map(r=>[r.hora,opName(r.op),r.cx,r.lote,r.produto,r.tipo,`"${r.motivo}"`,r.qtd,r.peso,r.destino].join(','))];
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+  a.download=`nc-refile-${document.getElementById('dt-de').value}.csv`;
+  a.click();
+}
+
+/* ══════════════════════════════════════
+   RESIZE
+══════════════════════════════════════ */
+let _rt;
+window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(render,180);});
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+fetchAll();
+startAuto();
+</script>
