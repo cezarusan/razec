@@ -1,0 +1,613 @@
+<title>Apontamentos Geral — Filetagem e Refile</title>
+<style>
+:root {
+  --bg:      #0d1117;
+  --surf:    #131b24;
+  --surf2:   #192330;
+  --surf3:   #1f2c3a;
+  --bdr:     #1e2d3f;
+  --bdr2:    #26394f;
+  --txt:     #ccd6e0;
+  --txt2:    #6e8ca8;
+  --txt3:    #384f63;
+  --cyan:    #00bcd4;
+  --orange:  #ff8f00;
+  --yellow:  #ffc107;
+  --blue:    #2196f3;
+  --green:   #4caf50;
+  --purple:  #9c27b0;
+  --red:     #f44336;
+  --silver:  #607d8b;
+  --teal:    #009688;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13px;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:12px;padding:0 16px;height:46px;background:var(--surf);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50;flex-shrink:0}
+.brand{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.brand-co{color:var(--cyan)}
+.brand-sec{color:var(--orange)}
+.top-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--txt2);white-space:nowrap}
+.top-meta .sep{color:var(--bdr2)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 2s ease-in-out infinite;margin-right:3px;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.live-label{color:var(--green);font-weight:500}
+.top-spacer{flex:1}
+.top-actions{display:flex;gap:6px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:4px;border:none;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.03em;white-space:nowrap;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-green{background:#1b5e20;color:#a5d6a7;border:1px solid #2e7d32}
+.btn-orange{background:#e65100;color:#ffccbc;border:1px solid #bf360c}
+.btn-gray{background:var(--surf2);color:var(--txt2);border:1px solid var(--bdr2)}
+
+/* ── FILTERBAR ── */
+.filterbar{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--surf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+.filter-label{font-size:10px;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.tab-group{display:flex;border:1px solid var(--bdr2);border-radius:4px;overflow:hidden}
+.tab{padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--txt2);letter-spacing:.02em;transition:background .15s,color .15s}
+.tab.active-fil{background:#0d3a5c;color:var(--cyan);box-shadow:inset 0 0 0 1px var(--cyan)}
+.tab.active-ref{background:#3e1a00;color:var(--orange);box-shadow:inset 0 0 0 1px var(--orange)}
+.tab:not(.active-fil):not(.active-ref):hover{background:var(--surf3);color:var(--txt)}
+.filter-sep{width:1px;height:20px;background:var(--bdr2)}
+.fselect{background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt);border-radius:4px;padding:4px 8px;font-size:12px;cursor:pointer}
+.fselect:focus{outline:1px solid var(--cyan)}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--bdr);scrollbar-width:none;background:var(--bg)}
+.kpi-strip::-webkit-scrollbar{display:none}
+.kpi{flex-shrink:0;padding:9px 16px 9px 14px;min-width:88px;background:var(--surf);border:1px solid var(--bdr2);border-radius:5px}
+.kpi-label{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt3);font-weight:600;white-space:nowrap;margin-bottom:4px}
+.kpi-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.02em}
+.kpi-sub{font-size:10px;color:var(--txt3);margin-top:3px}
+.kv-blue   {color:var(--blue)}
+.kv-cyan   {color:var(--cyan)}
+.kv-orange {color:var(--orange)}
+.kv-yellow {color:var(--yellow)}
+.kv-green  {color:var(--green)}
+.kv-purple {color:var(--purple)}
+.kpi-best{display:flex;flex-direction:column;gap:2px}
+.kpi-best-op{font-size:18px;font-weight:700;color:var(--orange)}
+.kpi-best-rend{font-size:11px;color:var(--txt2)}
+
+/* ── RANKING ── */
+.ranking-section{padding:12px 16px}
+.ranking-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ranking-title{font-size:13px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+.ranking-title .trophy{font-size:14px}
+.ranking-count{font-size:11px;color:var(--txt3)}
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+
+/* ── OP CARD ── */
+.op-card{background:var(--surf);border:1px solid var(--bdr);border-top:2px solid var(--c,#fff);border-radius:6px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+.op-card-head{padding:9px 12px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.op-info{min-width:0}
+.op-code{font-size:11px;font-weight:600;color:var(--c,#fff);letter-spacing:.04em;opacity:.85}
+.op-name{font-size:14px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.op-rank{font-size:10px;font-weight:700;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:2px 6px;white-space:nowrap;flex-shrink:0}
+.op-body{padding:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.op-row{display:contents}
+.op-k{font-size:10px;color:var(--txt3);align-self:center}
+.op-v{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--txt);text-align:right;align-self:center}
+.op-v.rend-v{color:var(--c,#fff)}
+.op-footer{padding:7px 12px 9px;border-top:1px solid var(--bdr)}
+.progress-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.progress-bar{flex:1;height:4px;background:var(--surf3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:var(--c,#fff);transition:width .4s ease}
+.progress-pct{font-size:10px;color:var(--txt2);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:44px;text-align:right}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:3px;letter-spacing:.04em}
+.badge-otimo {background:#1b4020;color:#69f0ae;border:1px solid #2e7d32}
+.badge-medio {background:#3e2800;color:#ffb300;border:1px solid #e65100}
+.badge-baixo {background:#3b0f0f;color:#ff8a80;border:1px solid #c62828}
+
+/* ── EMPTY STATE ── */
+.empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
+
+/* ── LIGHT THEME ── */
+@media (prefers-color-scheme:light){
+:root{
+  --bg:#0d1117;--surf:#131b24;--surf2:#192330;--surf3:#1f2c3a;
+  --bdr:#1e2d3f;--bdr2:#26394f;
+  --txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
+  --cyan:#00bcd4;--orange:#ff8f00;--yellow:#ffc107;--blue:#2196f3;
+  --green:#4caf50;--purple:#9c27b0;--red:#f44336;--silver:#607d8b;--teal:#009688;
+}}
+:root[data-theme=dark]{
+  --bg:#0d1117;--surf:#131b24;--surf2:#192330;--surf3:#1f2c3a;
+  --bdr:#1e2d3f;--bdr2:#26394f;
+  --txt:#ccd6e0;--txt2:#6e8ca8;--txt3:#384f63;
+  --cyan:#00bcd4;--orange:#ff8f00;--yellow:#ffc107;--blue:#2196f3;
+  --green:#4caf50;--purple:#9c27b0;--red:#f44336;--silver:#607d8b;--teal:#009688;
+}
+</style>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand"><span class="brand-co">BTJ</span> <span class="brand-co" style="opacity:.6">—</span> <span id="brand-sec" class="brand-sec">Filetagem</span></div>
+  <div class="top-meta">
+    <span id="top-count">—</span> registros
+    <span class="sep">·</span>
+    <span id="top-date">2026-07-30</span>
+    <span class="sep">·</span>
+    Grafana
+    <span class="sep">·</span>
+    <span class="live-dot" id="live-dot"></span><span class="live-label" id="live-status">Conectando...</span>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="top-actions">
+    <button class="btn btn-green" id="btn-atualizar" onclick="refresh()">⟳ Atualizar</button>
+    <button class="btn btn-orange">⏱ Auto: 10s</button>
+    <button class="btn btn-gray">⬇ CSV</button>
+  </div>
+</div>
+
+<!-- FILTERBAR -->
+<div class="filterbar">
+  <span class="filter-label">Setor</span>
+  <div class="tab-group">
+    <button class="tab active-fil" id="tab-fil" onclick="setSetor('FIL')">🔪 Filetagem</button>
+    <button class="tab" id="tab-ref" onclick="setSetor('REF')">✂ Refile</button>
+  </div>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Operador</span>
+  <select class="fselect" id="sel-op" onchange="render()">
+    <option value="">Todos</option>
+  </select>
+  <div class="filter-sep"></div>
+  <span class="filter-label" id="lote-label">Lote</span>
+  <select class="fselect" id="sel-lote" onchange="render()">
+    <option value="">Todos</option>
+  </select>
+  <div class="filter-sep"></div>
+  <span class="filter-label">De</span>
+  <input type="date" class="fselect" id="dt-de" value="2026-07-30" onchange="render()" style="padding:3px 7px;font-size:12px;color-scheme:dark">
+  <span class="filter-label">Até</span>
+  <input type="date" class="fselect" id="dt-ate" value="2026-07-30" onchange="render()" style="padding:3px 7px;font-size:12px;color-scheme:dark">
+  <div class="filter-sep"></div>
+  <span class="filter-label">Ordenar</span>
+  <select class="fselect" id="sel-sort" onchange="render()">
+    <option value="caixas">Caixas</option>
+    <option value="rend">Rendimento</option>
+    <option value="cxhora">Cx/Hora</option>
+    <option value="kgentrada">Kg Entrada</option>
+  </select>
+</div>
+
+<!-- KPI STRIP -->
+<div class="kpi-strip" id="kpi-strip"></div>
+
+<!-- RANKING -->
+<div class="ranking-section">
+  <div class="ranking-header">
+    <div class="ranking-title"><span class="trophy">🏆</span> Ranking por Operador</div>
+    <div class="ranking-count" id="ranking-count"></div>
+  </div>
+  <div class="op-grid" id="op-grid"></div>
+</div>
+
+<script>
+const TODAY = '2026-07-30';
+
+/* ── OPERADORES ── */
+/* Cores fixas por operador — paleta BTJ (amarelo, roxo, laranja, teal, azul, vermelho, cinza, ciano) */
+const OP_PALETTE = ['#ffc107','#9c27b0','#ff8f00','#009688','#2196f3','#f44336','#607d8b','#00bcd4'];
+const OPS = {
+  101: {name:'Carlos Silva',    color:OP_PALETTE[0]},
+  102: {name:'João Pereira',   color:OP_PALETTE[1]},
+  203: {name:'André Santos',   color:OP_PALETTE[2]},
+  204: {name:'Lucas Oliveira', color:OP_PALETTE[3]},
+  305: {name:'Paulo Mendes',   color:OP_PALETTE[4]},
+  306: {name:'Ricardo Lima',   color:OP_PALETTE[5]},
+  401: {name:'Marcos Costa',   color:OP_PALETTE[6]},
+  502: {name:'Diego Ferreira', color:OP_PALETTE[7]},
+};
+
+/* ── CONFIG GRAFANA ── */
+// Quando rodando via proxy local (scripts/proxy.py), usa path relativo.
+// Quando aberto direto (artifact no claude.ai), tenta o IP local.
+const IS_LOCAL    = ['localhost','127.0.0.1'].includes(location.hostname);
+const GRAFANA_URL  = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
+const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
+const DS_UID       = 'aeal1lruwzif4c';
+
+/* ── DADOS LOCAIS (fallback) ── */
+const FIL_FALLBACK = [
+  {lote:'LOT-2001',hora:'07:05:22',op:101,cx:'CX-001',pi:26.4,pf:11.20,res:0.30},
+  {lote:'LOT-2001',hora:'07:52:11',op:101,cx:'CX-002',pi:24.8,pf:10.90,res:0.50},
+  {lote:'LOT-2002',hora:'08:47:33',op:101,cx:'CX-003',pi:28.1,pf:12.30,res:0.40},
+  {lote:'LOT-2002',hora:'09:31:08',op:101,cx:'CX-004',pi:25.6,pf:11.50,res:0.20},
+  {lote:'LOT-2003',hora:'10:15:44',op:101,cx:'CX-005',pi:27.3,pf:12.40,res:0.60},
+
+  {lote:'LOT-2004',hora:'07:18:55',op:102,cx:'CX-006',pi:30.2,pf:13.80,res:0.40},
+  {lote:'LOT-2004',hora:'08:10:22',op:102,cx:'CX-007',pi:27.5,pf:12.40,res:0.30},
+  {lote:'LOT-2005',hora:'09:02:44',op:102,cx:'CX-008',pi:29.8,pf:13.50,res:0.70},
+  {lote:'LOT-2005',hora:'09:55:31',op:102,cx:'CX-009',pi:26.4,pf:11.80,res:0.50},
+  {lote:'LOT-2006',hora:'10:48:17',op:102,cx:'CX-010',pi:31.2,pf:14.30,res:0.40},
+
+  {lote:'LOT-2007',hora:'07:33:10',op:203,cx:'CX-011',pi:25.1,pf:11.40,res:0.20},
+  {lote:'LOT-2007',hora:'08:20:45',op:203,cx:'CX-012',pi:28.7,pf:13.00,res:0.50},
+  {lote:'LOT-2008',hora:'09:08:22',op:203,cx:'CX-013',pi:26.9,pf:12.20,res:0.30},
+  {lote:'LOT-2008',hora:'09:55:00',op:203,cx:'CX-014',pi:30.4,pf:13.50,res:0.80},
+  {lote:'LOT-2009',hora:'10:42:18',op:203,cx:'CX-015',pi:27.2,pf:12.60,res:0.40},
+
+  {lote:'LOT-2010',hora:'07:42:05',op:204,cx:'CX-016',pi:24.5,pf:11.50,res:0.30},
+  {lote:'LOT-2010',hora:'08:30:40',op:204,cx:'CX-017',pi:26.8,pf:12.70,res:0.20},
+  {lote:'LOT-2011',hora:'09:18:15',op:204,cx:'CX-018',pi:29.1,pf:13.90,res:0.50},
+  {lote:'LOT-2011',hora:'10:05:50',op:204,cx:'CX-019',pi:25.3,pf:12.10,res:0.40},
+  {lote:'LOT-2012',hora:'10:53:25',op:204,cx:'CX-020',pi:28.6,pf:13.60,res:0.30},
+
+  {lote:'LOT-2013',hora:'07:55:32',op:305,cx:'CX-021',pi:27.4,pf:12.00,res:0.40},
+  {lote:'LOT-2013',hora:'08:45:18',op:305,cx:'CX-022',pi:29.8,pf:13.20,res:0.60},
+  {lote:'LOT-2014',hora:'09:35:05',op:305,cx:'CX-023',pi:26.1,pf:11.70,res:0.30},
+  {lote:'LOT-2014',hora:'10:25:41',op:305,cx:'CX-024',pi:30.5,pf:13.80,res:0.50},
+  {lote:'LOT-2015',hora:'11:15:27',op:305,cx:'CX-025',pi:28.3,pf:12.80,res:0.40},
+
+  {lote:'LOT-2016',hora:'08:02:44',op:306,cx:'CX-026',pi:25.8,pf:11.10,res:0.30},
+  {lote:'LOT-2016',hora:'08:55:20',op:306,cx:'CX-027',pi:28.2,pf:12.30,res:0.50},
+  {lote:'LOT-2017',hora:'09:47:55',op:306,cx:'CX-028',pi:26.9,pf:11.80,res:0.20},
+  {lote:'LOT-2017',hora:'10:40:30',op:306,cx:'CX-029',pi:30.1,pf:13.20,res:0.70},
+  {lote:'LOT-2018',hora:'11:33:08',op:306,cx:'CX-030',pi:27.5,pf:12.00,res:0.40},
+];
+
+/* ── DADOS REFILE FALLBACK ── */
+const REF_FALLBACK = [
+  {hora:'07:22:15',op:102,cx:'CX-R001',pi:12.4,pf:10.8,res:0.90},
+  {hora:'08:15:30',op:102,cx:'CX-R002',pi:15.2,pf:13.1,res:1.40},
+  {hora:'09:10:45',op:102,cx:'CX-R003',pi:11.8,pf:10.2,res:1.00},
+  {hora:'10:05:00',op:102,cx:'CX-R004',pi:14.6,pf:12.8,res:1.20},
+
+  {hora:'07:35:20',op:203,cx:'CX-R005',pi:13.5,pf:12.0,res:0.80},
+  {hora:'08:28:45',op:203,cx:'CX-R006',pi:16.1,pf:14.2,res:1.30},
+  {hora:'09:22:10',op:203,cx:'CX-R007',pi:12.7,pf:11.3,res:0.90},
+  {hora:'10:15:35',op:203,cx:'CX-R008',pi:14.9,pf:13.2,res:1.10},
+
+  {hora:'07:48:05',op:305,cx:'CX-R009',pi:11.2,pf:9.80,res:0.80},
+  {hora:'08:42:20',op:305,cx:'CX-R010',pi:14.8,pf:13.1,res:1.00},
+  {hora:'09:36:35',op:305,cx:'CX-R011',pi:12.5,pf:11.0,res:0.90},
+
+  {hora:'08:05:15',op:401,cx:'CX-R012',pi:15.5,pf:13.7,res:1.20},
+  {hora:'09:00:30',op:401,cx:'CX-R013',pi:13.2,pf:11.6,res:1.00},
+  {hora:'09:55:45',op:401,cx:'CX-R014',pi:16.8,pf:14.9,res:1.30},
+  {hora:'10:51:00',op:401,cx:'CX-R015',pi:14.1,pf:12.5,res:1.10},
+];
+
+/* ── ESTADO ── */
+let FIL = [...FIL_FALLBACK];
+let REF = [...REF_FALLBACK];
+let setor = 'FIL';
+let dataSource = 'fallback'; // 'grafana' | 'fallback'
+
+/* ── GRAFANA FETCH ── */
+function setStatus(msg, tipo) {
+  const el = document.getElementById('live-status');
+  const dot = document.getElementById('live-dot');
+  const colors = {ok:'#4caf50', erro:'#f44336', carregando:'#ffc107'};
+  el.textContent = msg;
+  el.style.color = colors[tipo] || '#6e8ca8';
+  if (dot) dot.style.background = colors[tipo] || '#6e8ca8';
+}
+
+function parseFrame(frame, type) {
+  const fields = frame.schema.fields;
+  const values = frame.data.values;
+  const rows = [];
+  const n = values[0]?.length || 0;
+  for (let i = 0; i < n; i++) {
+    const raw = {};
+    fields.forEach((f, j) => { raw[f.name] = values[j][i]; });
+
+    // DataInicio pode vir como timestamp ms — converte para string de hora
+    let hora = raw['Ultimo_apontamento'] || '';
+    if (typeof hora !== 'string') hora = String(hora);
+    hora = hora.substring(0, 8); // garante HH:MM:SS
+
+    const row = {
+      hora,
+      op:  Number(raw['Operador']),
+      cx:  raw['CodigoCaixa'] || '',
+      pi:  Number(raw['PesoInicial'])  || 0,
+      pf:  Number(raw['PesoFinal'])    || 0,
+      res: Number(raw['PesoResiduo'])  || 0,
+    };
+    if (type === 'FIL') row.lote = raw['Lote'] || '';
+    rows.push(row);
+  }
+  return rows;
+}
+
+async function queryGrafana(sql, dtDe, dtAte) {
+  const from = new Date(dtDe + 'T00:00:00').getTime();
+  const to   = new Date(dtAte + 'T23:59:59').getTime();
+
+  const res = await fetch(`${GRAFANA_URL}/api/ds/query`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': GRAFANA_AUTH,
+    },
+    body: JSON.stringify({
+      queries: [{
+        datasource: {type:'mssql', uid: DS_UID},
+        rawSql: sql,
+        format: 'table',
+        refId: 'A',
+        rawQuery: true,
+        dataset: 'ERP',
+      }],
+      from: String(from),
+      to:   String(to),
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const json = await res.json();
+  const frame = json?.results?.A?.frames?.[0];
+  if (!frame) throw new Error('Resposta inesperada do Grafana');
+  return frame;
+}
+
+const SQL_FIL = `SELECT
+  DataInicio,
+  Lote,
+  CONVERT(varchar(8), HoraFim, 108) AS Ultimo_apontamento,
+  Operador,
+  CodigoCaixa,
+  PesoInicial,
+  PesoFinal,
+  coalesce(PesoResiduo, 0) as PesoResiduo
+FROM BTJDW.industriafrigo.ApontamentoCaixaFiletagem
+WHERE $__timeFilter(DataInicio)
+  AND situacao = 'F'
+  AND Operador <> 667
+  AND DataInicio > '2026-02-19'`;
+
+const SQL_REF = `SELECT
+  DataInicio,
+  CONVERT(varchar(8), HoraFim, 108) AS Ultimo_apontamento,
+  Operador,
+  CodigoCaixa,
+  PesoInicial,
+  PesoFinal,
+  coalesce(PesoResiduo, 0) as PesoResiduo
+FROM BTJDW.industriafrigo.ApontamentoCaixaRefile
+WHERE $__timeFilter(DataInicio)
+  AND situacao = 'F'
+  AND Operador <> 667
+  AND DataInicio > '2026-02-19'`;
+
+async function fetchData() {
+  const dtDe  = document.getElementById('dt-de').value;
+  const dtAte = document.getElementById('dt-ate').value;
+  setStatus('Carregando...', 'carregando');
+  document.getElementById('btn-atualizar').disabled = true;
+
+  try {
+    const [frameFil, frameRef] = await Promise.all([
+      queryGrafana(SQL_FIL, dtDe, dtAte),
+      queryGrafana(SQL_REF, dtDe, dtAte),
+    ]);
+    FIL = parseFrame(frameFil, 'FIL');
+    REF = parseFrame(frameRef, 'REF');
+    dataSource = 'grafana';
+    setStatus(`Conectado ao Grafana · ${FIL.length + REF.length} registros`, 'ok');
+  } catch (e) {
+    // fallback para dados locais
+    FIL = [...FIL_FALLBACK];
+    REF = [...REF_FALLBACK];
+    dataSource = 'fallback';
+    const msg = e.message.includes('Failed to fetch')
+      ? 'Sem acesso à rede local (CORS?) — dados de exemplo'
+      : `Erro: ${e.message} — dados de exemplo`;
+    setStatus(msg, 'erro');
+  } finally {
+    document.getElementById('btn-atualizar').disabled = false;
+  }
+
+  populateFilters();
+  render();
+}
+
+/* ── HELPERS ── */
+
+function toMins(h) {
+  const [hh, mm, ss] = h.split(':').map(Number);
+  return hh * 60 + mm + (ss || 0) / 60;
+}
+function rend(r, type) {
+  return type === 'FIL'
+    ? (r.pf / (r.pi - r.res)) * 100
+    : ((r.pf + r.res) / r.pi) * 100;
+}
+function fmtKg(v) {
+  return v.toLocaleString('pt-BR', {minimumFractionDigits:1, maximumFractionDigits:1}) + ' kg';
+}
+function fmtPct(v) {
+  return v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%';
+}
+function fmtMins(m) {
+  if (m < 60) return m.toFixed(1) + 'min';
+  return (m/60).toFixed(1) + 'h';
+}
+
+function opStats(rows, type) {
+  const byOp = {};
+  rows.forEach(r => {
+    if (!byOp[r.op]) byOp[r.op] = [];
+    byOp[r.op].push({...r, rd: rend(r, type), mins: toMins(r.hora)});
+  });
+  return Object.entries(byOp).map(([op, cx]) => {
+    cx.sort((a,b) => a.mins - b.mins);
+    const n = cx.length;
+    const sumPi = cx.reduce((s,r)=>s+r.pi, 0);
+    const sumPf = cx.reduce((s,r)=>s+r.pf, 0);
+    const sumRes = cx.reduce((s,r)=>s+r.res, 0);
+    const avgRd = cx.reduce((s,r)=>s+r.rd, 0) / n;
+    let intvlSum = 0;
+    for (let i=1;i<n;i++) intvlSum += cx[i].mins - cx[i-1].mins;
+    const avgIntvl = n > 1 ? intvlSum / (n-1) : 0;
+    const span = cx[n-1].mins - cx[0].mins;
+    const cxh = span > 0 ? (n / (span/60)) : 0;
+    return {op:Number(op), caixas:n, sumPi, sumPf, sumRes, avgRd, avgIntvl, cxh,
+            firstHora:cx[0].hora, lastHora:cx[n-1].hora};
+  });
+}
+
+function globalStats(rows, type) {
+  const sumPi  = rows.reduce((s,r)=>s+r.pi, 0);
+  const sumPf  = rows.reduce((s,r)=>s+r.pf, 0);
+  const sumRes = rows.reduce((s,r)=>s+r.res, 0);
+  const ovRd   = type==='FIL' ? (sumPf/(sumPi-sumRes))*100 : ((sumPf+sumRes)/sumPi)*100;
+  const ops    = [...new Set(rows.map(r=>r.op))].length;
+  const sorted = [...rows].sort((a,b)=>toMins(a.hora)-toMins(b.hora));
+  let iSum=0;
+  for(let i=1;i<sorted.length;i++) iSum+=toMins(sorted[i].hora)-toMins(sorted[i-1].hora);
+  const avgI   = sorted.length>1 ? iSum/(sorted.length-1) : 0;
+  const span   = toMins(sorted[sorted.length-1].hora)-toMins(sorted[0].hora);
+  const cxh    = span>0 ? rows.length/(span/60) : 0;
+  return {total:rows.length, ops, sumPi, sumPf, sumRes, ovRd, avgI, cxh};
+}
+
+/* ── SETOR TOGGLE ── */
+function setSetor(s) {
+  setor = s;
+  document.getElementById('tab-fil').className = 'tab' + (s==='FIL' ? ' active-fil' : '');
+  document.getElementById('tab-ref').className = 'tab' + (s==='REF' ? ' active-ref' : '');
+  document.getElementById('brand-sec').textContent = s==='FIL' ? 'Filetagem' : 'Refile';
+  document.getElementById('brand-sec').style.color = s==='FIL' ? 'var(--orange)' : 'var(--cyan)';
+  document.getElementById('lote-label').style.opacity = s==='FIL' ? '1' : '.4';
+  populateFilters();
+  render();
+}
+
+function refresh() { fetchData(); }
+
+/* ── FILTROS ── */
+function populateFilters() {
+  const rows = setor==='FIL' ? FIL : REF;
+  const opSel = document.getElementById('sel-op');
+  const opVal = opSel.value;
+  opSel.innerHTML = '<option value="">Todos</option>';
+  [...new Set(rows.map(r=>r.op))].sort().forEach(op => {
+    const o = document.createElement('option');
+    o.value = op; o.textContent = `Op. ${op} — ${OPS[op]?.name||op}`;
+    if (String(op)===opVal) o.selected = true;
+    opSel.appendChild(o);
+  });
+
+  const loteSel = document.getElementById('sel-lote');
+  const loteVal = loteSel.value;
+  loteSel.innerHTML = '<option value="">Todos</option>';
+  if (setor==='FIL') {
+    [...new Set(FIL.map(r=>r.lote))].sort().forEach(l => {
+      const o = document.createElement('option');
+      o.value = l; o.textContent = l;
+      if (l===loteVal) o.selected = true;
+      loteSel.appendChild(o);
+    });
+  }
+  loteSel.disabled = setor!=='FIL';
+}
+
+/* ── RENDER ── */
+function render() {
+  const rawRows = setor==='FIL' ? FIL : REF;
+  const opFilter   = document.getElementById('sel-op').value;
+  const loteFilter = document.getElementById('sel-lote').value;
+  const sortBy     = document.getElementById('sel-sort').value;
+
+  let rows = rawRows.filter(r => {
+    if (opFilter && String(r.op)!==opFilter) return false;
+    if (loteFilter && r.lote!==loteFilter) return false;
+    return true;
+  });
+
+  document.getElementById('top-count').textContent = rows.length;
+
+  const gs = globalStats(rows, setor);
+  renderKPI(gs, rows, setor);
+
+  const stats = opStats(rows, setor);
+  const sorted = [...stats].sort((a,b)=>{
+    if (sortBy==='rend')     return b.avgRd - a.avgRd;
+    if (sortBy==='cxhora')   return b.cxh - a.cxh;
+    if (sortBy==='kgentrada')return b.sumPi - a.sumPi;
+    return b.caixas - a.caixas;
+  });
+
+  const maxRd = Math.max(...sorted.map(s=>s.avgRd));
+  const minRd = Math.min(...sorted.map(s=>s.avgRd));
+  const p75rd = sorted.length ? sorted[Math.floor(sorted.length*0.25)].avgRd : 0;
+  const p25rd = sorted.length ? sorted[Math.floor(sorted.length*0.75)].avgRd : 0;
+
+  document.getElementById('ranking-count').textContent = `${sorted.length} operador${sorted.length!==1?'es':''}`;
+
+  const grid = document.getElementById('op-grid');
+  if (!sorted.length) { grid.innerHTML='<div class="empty">Nenhum dado para o filtro selecionado.</div>'; return; }
+
+  grid.innerHTML = sorted.map((s, i) => {
+    const op = OPS[s.op] || {name:`Op. ${s.op}`, color:'#78909c'};
+    const col = op.color;
+    const ritmo = s.avgRd >= p75rd ? 'otimo' : s.avgRd <= p25rd ? 'baixo' : 'medio';
+    const rlabel = ritmo==='otimo'?'✓ Ritmo ótimo':ritmo==='medio'?'⚡ Ritmo médio':'↓ Ritmo baixo';
+    const pct = maxRd > minRd ? ((s.avgRd - minRd)/(maxRd - minRd))*100 : 50;
+    return `
+    <div class="op-card" style="--c:${col}">
+      <div class="op-card-head">
+        <div class="op-info">
+          <div class="op-code">Op. ${s.op}</div>
+          <div class="op-name">${op.name}</div>
+        </div>
+        <div class="op-rank">#${i+1}</div>
+      </div>
+      <div class="op-body">
+        <div class="op-k">Caixas</div>        <div class="op-v">${s.caixas}</div>
+        <div class="op-k">Rend. médio</div>   <div class="op-v rend-v">${fmtPct(s.avgRd)}</div>
+        <div class="op-k">Intervalo</div>     <div class="op-v">${fmtMins(s.avgIntvl)}</div>
+        <div class="op-k">Cx/Hora</div>       <div class="op-v">${s.cxh.toFixed(1)}</div>
+        <div class="op-k">Kg entrada</div>    <div class="op-v">${fmtKg(s.sumPi)}</div>
+        <div class="op-k">Kg saída</div>      <div class="op-v">${fmtKg(s.sumPf)}</div>
+        <div class="op-k">Resíduo</div>       <div class="op-v">${fmtKg(s.sumRes)}</div>
+        <div class="op-k">Últ. apont.</div>   <div class="op-v">${s.lastHora}</div>
+      </div>
+      <div class="op-footer">
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div>
+          <span class="progress-pct">${fmtPct(s.avgRd)}</span>
+        </div>
+        <span class="badge badge-${ritmo}">${rlabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderKPI(gs, rows, type) {
+  // best operator
+  const stats = opStats(rows, type);
+  const best = stats.length ? [...stats].sort((a,b)=>b.avgRd-a.avgRd)[0] : null;
+
+  const strip = document.getElementById('kpi-strip');
+  const kpis = [
+    {label:'Total Caixas', val:`<span class="kv-blue" style="font-size:28px">${gs.total}</span>`, sub:'caixas'},
+    {label:'Operadores', val:`<span class="kv-purple" style="font-size:28px">${gs.ops}</span>`, sub:'ativos'},
+    {label:'Peso Entrada', val:`<span class="kv-blue">${fmtKg(gs.sumPi)}</span>`, sub:'total bruto'},
+    {label:'Peso Saída', val:`<span class="kv-orange">${fmtKg(gs.sumPf)}</span>`, sub:'total líquido'},
+    {label:'Resíduo', val:`<span class="kv-cyan">${fmtKg(gs.sumRes)}</span>`, sub:'total'},
+    {label:'Rendimento', val:`<span class="kv-yellow">${fmtPct(gs.ovRd)}</span>`, sub:'geral'},
+    {label:'Intervalo Médio', val:`<span class="kv-orange">${fmtMins(gs.avgI)}</span>`, sub:'entre caixas'},
+    {label:'Cx/Hora Médio', val:`<span class="kv-blue">${gs.cxh.toFixed(1)}</span>`, sub:'cxs/h'},
+    best ? {label:'Melhor Op.', val:`<div class="kpi-best"><div class="kpi-best-op">Op. ${best.op}</div><div class="kpi-best-rend">${fmtPct(best.avgRd)} rend.</div></div>`, sub:OPS[best.op]?.name||''} : null,
+  ].filter(Boolean);
+
+  strip.innerHTML = kpis.map(k=>`
+    <div class="kpi">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-val">${k.val}</div>
+      ${k.sub ? `<div class="kpi-sub">${k.sub}</div>` : ''}
+    </div>`).join('');
+}
+
+/* ── INIT ── */
+populateFilters();
+render();
+fetchData(); // tenta buscar dados reais do Grafana
+</script>
