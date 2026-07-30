@@ -136,7 +136,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
   <div class="top-spacer"></div>
   <div class="top-actions">
     <button class="btn btn-green" id="btn-atualizar" onclick="refresh()">⟳ Atualizar</button>
-    <button class="btn btn-orange">⏱ Auto: 10s</button>
+    <button class="btn btn-orange" id="btn-auto" onclick="toggleAuto()">⏱ Auto: 10s</button>
     <button class="btn btn-gray">⬇ CSV</button>
   </div>
 </div>
@@ -375,6 +375,52 @@ WHERE $__timeFilter(DataInicio)
   AND Operador <> 667
   AND DataInicio > '2026-02-19'`;
 
+/* ── AUTO-REFRESH ── */
+let autoInterval  = null;
+let autoSecs      = 10;
+let countdownSecs = autoSecs;
+let countdownTmr  = null;
+let autoEnabled   = true;
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoEnabled = true;
+  updateAutoBtn();
+  countdownSecs = autoSecs;
+  countdownTmr = setInterval(() => {
+    countdownSecs--;
+    updateAutoBtn();
+    if (countdownSecs <= 0) {
+      countdownSecs = autoSecs;
+      fetchData();
+    }
+  }, 1000);
+}
+
+function stopAutoRefresh() {
+  autoEnabled = false;
+  clearInterval(countdownTmr);
+  countdownTmr = null;
+  updateAutoBtn();
+}
+
+function toggleAuto() {
+  autoEnabled ? stopAutoRefresh() : startAutoRefresh();
+}
+
+function updateAutoBtn() {
+  const btn = document.getElementById('btn-auto');
+  if (!btn) return;
+  if (autoEnabled) {
+    btn.textContent = `⏱ Auto: ${countdownSecs}s`;
+    btn.style.opacity = '1';
+  } else {
+    btn.textContent = '⏱ Auto: OFF';
+    btn.style.opacity = '.5';
+  }
+}
+
+/* ── FETCH DATA ── */
 async function fetchData() {
   const dtDe  = document.getElementById('dt-de').value;
   const dtAte = document.getElementById('dt-ate').value;
@@ -389,14 +435,14 @@ async function fetchData() {
     FIL = parseFrame(frameFil, 'FIL');
     REF = parseFrame(frameRef, 'REF');
     dataSource = 'grafana';
-    setStatus(`Conectado ao Grafana · ${FIL.length + REF.length} registros`, 'ok');
+    const now = new Date().toLocaleTimeString('pt-BR');
+    setStatus(`Conectado ao Grafana · ${FIL.length + REF.length} registros · ${now}`, 'ok');
   } catch (e) {
-    // fallback para dados locais
     FIL = [...FIL_FALLBACK];
     REF = [...REF_FALLBACK];
     dataSource = 'fallback';
     const msg = e.message.includes('Failed to fetch')
-      ? 'Sem acesso à rede local (CORS?) — dados de exemplo'
+      ? 'Sem acesso à rede local — execute scripts/proxy.py'
       : `Erro: ${e.message} — dados de exemplo`;
     setStatus(msg, 'erro');
   } finally {
@@ -609,5 +655,5 @@ function renderKPI(gs, rows, type) {
 /* ── INIT ── */
 populateFilters();
 render();
-fetchData(); // tenta buscar dados reais do Grafana
+fetchData().then(() => startAutoRefresh()); // busca dados e liga auto-refresh
 </script>
