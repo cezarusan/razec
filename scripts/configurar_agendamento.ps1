@@ -99,11 +99,11 @@ try {
         -StartWhenAvailable `
         -RunOnlyIfNetworkAvailable
 
-    # Principal: executa com conta do sistema (não precisa estar logado)
+    # Principal: executa com o usuário atual logado (não requer administrador de domínio)
     $principal = New-ScheduledTaskPrincipal `
-        -UserId "SYSTEM" `
-        -RunLevel Highest `
-        -LogonType ServiceAccount
+        -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) `
+        -RunLevel Limited `
+        -LogonType InteractiveToken
 
     Register-ScheduledTask `
         -TaskName $NOME_TAREFA `
