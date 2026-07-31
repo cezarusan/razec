@@ -50,7 +50,7 @@ ABA_DESTINO  = "Executado_Base_Dados"
 # H=Peso Recebido Est.(BmPrev), I=Peixe Cavalo(BmReal), L=Mortalidade Sangria,
 # O=Biometria(PM Real), AA=Rend Pot Bruto
 COLS_RENDIMENTO = {
-    "lote":      "Lote",       # col C
+    "lote":      "Lote",       # col C — identificador principal do lote
     "data":      "Data",       # col A
     "codfor":    "CodFor",     # col D — usado para resolver Unid. Produtora via cadastro
     "bm_prev":   "H",          # col H — Biomassa Previsto (Peso Recebido Est.)
@@ -58,6 +58,7 @@ COLS_RENDIMENTO = {
     "mort_real": "L",          # col L — Mortalidade Sangria
     "pm_real":   "O",          # col O — Biometria = PM Realizado
     "rend_real": "AA",         # col AA — Rend. Pot. Bruto
+    "idlote":    "idlote",     # col AG — chave numérica usada no Descarte-ETP
 }
 
 # Valores fixos
@@ -68,9 +69,9 @@ DESC_BACT_PERC = 0.0010  # 0,10% da Biomassa Realizada
 DESC_MOLE_PERC = 0.0010  # 0,10% da Biomassa Realizada
 
 # Filtros de SubCateg no Descarte-ETP
-SUBCATEG_500G  = ["PEIXE INTEIRO <0,500"]
+SUBCATEG_500G  = ["PEIXE INTEIRO < 0,500", "PEIXE SSE < 0,500"]
 SUBCATEG_BACT  = ["BACTÉRIA STREPTOCOCCUS", "BACTÉRIA FRANCISELA", "DESCARTE RESÍDUO (BACTÉRIA)"]
-SUBCATEG_MOLE  = ["FILE C/COURO MOLE", "FILE REFILADO MOLE", "FILÉ REFILADO MOLE"]
+SUBCATEG_MOLE  = ["FILE C/COURO MOLE", "FILE REFILADO MOLE", "FILÉ REFILADO MOLE", "DESCARTE RESÍDUO (MOLE)", "PEIXE MOLE"]
 
 # ─────────────────────────────────────────────
 
@@ -134,6 +135,7 @@ def mapear_colunas_rendimento(df: pd.DataFrame) -> dict:
         "mort_real": get_col(COLS_RENDIMENTO["mort_real"], col_letra_para_idx("L")),
         "pm_real":   get_col(COLS_RENDIMENTO["pm_real"],   col_letra_para_idx("O")),
         "rend_real": get_col(COLS_RENDIMENTO["rend_real"], col_letra_para_idx("AA")),
+        "idlote":    get_col(COLS_RENDIMENTO["idlote"],    col_letra_para_idx("AG")),
     }
 
 
@@ -343,6 +345,10 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Coluna AA armazena decimal (ex: 0.4750 = 47.50%) — converte para %
         if 0 < rend_real < 1:
             rend_real = round(rend_real * 100, 4)
+        # idlote é a chave numérica usada no Descarte-ETP (coluna AG do rendimento)
+        idlote = row.get(mapa.get("idlote", ""), None)
+        if pd.isna(idlote) if idlote is not None else True:
+            idlote = lote  # fallback para o lote formatado
 
         # Formata data
         if isinstance(data, datetime):
@@ -355,10 +361,10 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Cód. Abate
         cod_abate = f"{data_fmt} - {unid} - {lote}"
 
-        # Descartes
-        desc_500g = somar_descarte(df_desc, lote, SUBCATEG_500G)
-        desc_bact = somar_descarte(df_desc, lote, SUBCATEG_BACT)
-        desc_mole = somar_descarte(df_desc, lote, SUBCATEG_MOLE)
+        # Descartes — usa idlote (número sequencial) que bate com coluna Lote do Descarte-ETP
+        desc_500g = somar_descarte(df_desc, idlote, SUBCATEG_500G)
+        desc_bact = somar_descarte(df_desc, idlote, SUBCATEG_BACT)
+        desc_mole = somar_descarte(df_desc, idlote, SUBCATEG_MOLE)
 
         # Previstos calculados
         desc_500g_prev = round(bm_real * DESC_500G_PERC, 2)
