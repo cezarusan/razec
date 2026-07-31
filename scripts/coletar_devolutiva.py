@@ -30,11 +30,13 @@ except ImportError:
 # ─────────────────────────────────────────────
 
 ARQUIVOS = {
-    "rendimento": r"P:\FOODS\CONTROLE DE PRODUÇÃO\Industria\Rendimento_Potencial\rendimentoLote3.xlsx",
-    "descarte":   r"P:\FOODS\CONTROLE DE PRODUÇÃO\5 - Descartes\Descarte-ETP.xlsx",
-    "retorno":    r"P:\FOODS\PCP\31 - Originação\Retorno_Pisciculturas.xlsx",
+    "rendimento":   r"P:\FOODS\CONTROLE DE PRODUÇÃO\Industria\Rendimento_Potencial\rendimentoLote3.xlsx",
+    "descarte":     r"P:\FOODS\CONTROLE DE PRODUÇÃO\5 - Descartes\Descarte-ETP.xlsx",
+    "retorno":      r"P:\FOODS\PCP\31 - Originação\Retorno_Pisciculturas.xlsx",
     # Arquivo onde o operador preenche o PM Previsto de cada lote antes da execução
-    "pm_config":  r"P:\FOODS\PCP\31 - Originação\pm_previsto.xlsx",
+    "pm_config":    r"P:\FOODS\PCP\31 - Originação\pm_previsto.xlsx",
+    # Cadastro de CodFor → Unid. Produtora (duas colunas: CodFor | Unid. Produtora)
+    "codfor_unid":  r"P:\FOODS\PCP\31 - Originação\codfor_unidades.xlsx",
 }
 
 # Pasta onde o log diário é gravado
@@ -44,16 +46,18 @@ ABA_DESCARTE = "BaseDeDados"
 ABA_DESTINO  = "Executado_Base_Dados"
 
 # Colunas do rendimentoLote3.xlsx (índice 0 = coluna A)
-# ATENÇÃO: confirme os nomes exatos das colunas ao rodar --inspecionar
+# Confirmado via --inspecionar: A=Data, B=SeqLot, C=Lote, D=CodFor
+# H=Peso Recebido Est.(BmPrev), I=Peixe Cavalo(BmReal), L=Mortalidade Sangria,
+# O=Biometria(PM Real), AA=Rend Pot Bruto
 COLS_RENDIMENTO = {
-    "lote":         "Lote",          # ajuste para o nome real da coluna
-    "data":         "Data",          # ajuste para o nome real da coluna
-    "unid_prod":    "Unid. Produtora",  # ajuste para o nome real da coluna
-    "bm_prev":      "H",             # col H — Biomassa Previsto
-    "bm_real":      "I",             # col I — Biomassa Realizado
-    "mort_real":    "L",             # col L — Mortalidade Realizado
-    "pm_real":      "O",             # col O — PM Realizado (sangria)
-    "rend_real":    "AA",            # col AA — Rend. Pot. Realizado
+    "lote":      "Lote",       # col C
+    "data":      "Data",       # col A
+    "codfor":    "CodFor",     # col D — usado para resolver Unid. Produtora via cadastro
+    "bm_prev":   "H",          # col H — Biomassa Previsto (Peso Recebido Est.)
+    "bm_real":   "I",          # col I — Biomassa Realizado (Peixe Cavalo)
+    "mort_real": "L",          # col L — Mortalidade Sangria
+    "pm_real":   "O",          # col O — Biometria = PM Realizado
+    "rend_real": "AA",         # col AA — Rend. Pot. Bruto
 }
 
 # Valores fixos
@@ -122,12 +126,12 @@ def mapear_colunas_rendimento(df: pd.DataFrame) -> dict:
         return None
 
     return {
-        "lote":      get_col(COLS_RENDIMENTO["lote"],      1),
-        "data":      get_col(COLS_RENDIMENTO["data"],      0),
-        "unid_prod": get_col(COLS_RENDIMENTO["unid_prod"], 4),
+        "lote":      get_col(COLS_RENDIMENTO["lote"],      2),   # col C
+        "data":      get_col(COLS_RENDIMENTO["data"],      0),   # col A
+        "codfor":    get_col(COLS_RENDIMENTO["codfor"],    3),   # col D
         "bm_prev":   get_col(COLS_RENDIMENTO["bm_prev"],   col_letra_para_idx("H")),
         "bm_real":   get_col(COLS_RENDIMENTO["bm_real"],   col_letra_para_idx("I")),
-        "mort_real": get_col(COLS_RENDIMENTO["mort_real"],  col_letra_para_idx("L")),
+        "mort_real": get_col(COLS_RENDIMENTO["mort_real"], col_letra_para_idx("L")),
         "pm_real":   get_col(COLS_RENDIMENTO["pm_real"],   col_letra_para_idx("O")),
         "rend_real": get_col(COLS_RENDIMENTO["rend_real"], col_letra_para_idx("AA")),
     }
@@ -163,6 +167,69 @@ def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
     mask = (col_lote_series == lote_cmp) & (df_desc[col_subcateg].isin(subcategs))
     total = pd.to_numeric(df_desc.loc[mask, col_valor], errors='coerce').sum()
     return round(float(total) if not pd.isna(total) else 0.0, 3)
+
+
+def carregar_codfor_unidades() -> dict:
+    """
+    Lê codfor_unidades.xlsx e retorna dict {codfor: unid_produtora}.
+    O arquivo deve ter duas colunas: CodFor | Unid. Produtora
+    Se o arquivo não existir, cria um modelo para preenchimento.
+    """
+    caminho = ARQUIVOS.get("codfor_unid", "")
+    if not caminho:
+        return {}
+
+    if not os.path.exists(caminho):
+        _criar_codfor_modelo(caminho)
+        return {}
+
+    try:
+        df = pd.read_excel(caminho, sheet_name=0, header=0, dtype=str)
+        resultado = {}
+        for _, row in df.iterrows():
+            codfor = str(row.iloc[0]).strip()
+            unid   = str(row.iloc[1]).strip() if len(row) > 1 else ""
+            if codfor and unid and codfor.lower() != "nan":
+                resultado[codfor] = unid
+        logging.info(f"CodFor→Unidade carregado: {len(resultado)} registros")
+        return resultado
+    except Exception as e:
+        logging.warning(f"Não foi possível ler codfor_unidades.xlsx: {e}")
+        return {}
+
+
+def _criar_codfor_modelo(caminho: str):
+    """Cria arquivo modelo de codfor_unidades.xlsx para preenchimento."""
+    try:
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "CodFor Unidades"
+
+        # Cabeçalho
+        ws.append(["CodFor", "Unid. Produtora"])
+
+        # Exemplos para orientar preenchimento
+        exemplos = [
+            ["3",     "BTJ STC"],
+            ["4",     "BTJ ILHA"],
+            ["13241", "SANTA HELENA"],
+            ["10231", "PURO PEIXE"],
+        ]
+        for ex in exemplos:
+            ws.append(ex)
+
+        ws.column_dimensions["A"].width = 15
+        ws.column_dimensions["B"].width = 30
+
+        # Instrução na célula D1
+        ws["D1"] = "Preencha: CodFor (código do fornecedor) → Unid. Produtora (nome da piscicultura)"
+
+        wb.save(caminho)
+        print(f"\n   📄 Arquivo modelo criado: {caminho}")
+        print(f"      Preencha o cadastro CodFor → Unid. Produtora antes de rodar.")
+    except Exception as e:
+        print(f"   ⚠  Não foi possível criar modelo codfor_unidades.xlsx: {e}")
 
 
 def carregar_pm_config() -> dict:
@@ -230,7 +297,8 @@ def solicitar_pm_previsto(lote, data, unid, automatico=False) -> float:
 
 def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
               mapa: dict, lote_filtro=None, simulacao=False,
-              pm_manual: dict = None, automatico=False) -> list:
+              pm_manual: dict = None, automatico=False,
+              codfor_unid: dict = None) -> list:
     """Processa cada linha do rendimento e retorna lista de dicts prontos para gravar."""
     resultados = []
 
@@ -249,8 +317,14 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         if lote_filtro and lote != str(lote_filtro):
             continue
 
-        data     = row.get(mapa["data"])
-        unid     = row.get(mapa["unid_prod"], "")
+        data   = row.get(mapa["data"])
+        codfor = str(row.get(mapa.get("codfor", ""), "")).strip()
+        if codfor_unid and codfor in codfor_unid:
+            unid = codfor_unid[codfor]
+        elif codfor:
+            unid = f"CodFor:{codfor}"   # fallback: mostra o código até cadastrar
+        else:
+            unid = ""
         bm_prev  = pd.to_numeric(row.get(mapa["bm_prev"]),  errors='coerce') or 0
         bm_real  = pd.to_numeric(row.get(mapa["bm_real"]),  errors='coerce') or 0
         mort_real= pd.to_numeric(row.get(mapa["mort_real"]), errors='coerce') or 0
@@ -441,6 +515,9 @@ def main():
     if args.inspecionar:
         inspecionar(ARQUIVOS["rendimento"], ARQUIVOS["descarte"], ABA_DESCARTE)
         criar_pm_config_modelo()
+        # Cria modelo de cadastro CodFor se não existir
+        if not os.path.exists(ARQUIVOS.get("codfor_unid", "")):
+            _criar_codfor_modelo(ARQUIVOS["codfor_unid"])
         return
 
     # Verifica arquivos de entrada
@@ -469,6 +546,15 @@ def main():
     for k, v in mapa.items():
         print(f"   {k:12} → {v}")
 
+    # Cadastro CodFor → Unid. Produtora
+    codfor_map = carregar_codfor_unidades()
+    if codfor_map:
+        print(f"\n🏭 Unidades cadastradas: {', '.join(codfor_map.values())}")
+    else:
+        print(f"\n⚠  codfor_unidades.xlsx não encontrado ou vazio.")
+        print(f"   Preencha o arquivo em: {ARQUIVOS['codfor_unid']}")
+        print(f"   Enquanto isso, o campo Unid. Produtora mostrará o código CodFor.")
+
     # PM Previsto do arquivo de config
     pm_config = carregar_pm_config()
     if pm_config:
@@ -482,7 +568,8 @@ def main():
                            lote_filtro=args.lote,
                            simulacao=args.simulacao,
                            pm_manual=pm_config,
-                           automatico=args.automatico)
+                           automatico=args.automatico,
+                           codfor_unid=codfor_map)
 
     # Exibe resultado
     imprimir_resultado(resultados)
