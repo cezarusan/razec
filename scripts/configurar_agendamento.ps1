@@ -97,7 +97,7 @@ try {
     $principal = New-ScheduledTaskPrincipal `
         -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) `
         -RunLevel Limited `
-        -LogonType InteractiveToken
+        -LogonType Interactive
 
     Register-ScheduledTask `
         -TaskName $NOME_TAREFA `
