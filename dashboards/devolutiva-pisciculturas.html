@@ -22,7 +22,6 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13px;overflow-x:hidden}
 
-/* TOPBAR */
 .topbar{display:flex;align-items:center;gap:12px;padding:0 16px;height:46px;background:var(--surf);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50}
 .brand{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
 .brand-co{color:var(--cyan)}
@@ -34,11 +33,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:4px;border:none;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.03em;white-space:nowrap;transition:opacity .15s}
 .btn:hover{opacity:.85}
 .btn-green{background:#1b5e20;color:#a5d6a7;border:1px solid #2e7d32}
-.btn-orange{background:#e65100;color:#ffccbc;border:1px solid #bf360c}
 .btn-blue{background:#0d2b4e;color:#90caf9;border:1px solid #1565c0}
 .btn-gray{background:var(--surf2);color:var(--txt2);border:1px solid var(--bdr2)}
 
-/* FILTERBAR */
 .filterbar{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--surf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
 .filter-label{font-size:10px;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap}
 .fselect{background:var(--surf3);border:1px solid var(--bdr2);color:var(--txt);border-radius:4px;padding:4px 8px;font-size:12px;cursor:pointer}
@@ -51,12 +48,11 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .view-btn.active{background:#0d3a5c;color:var(--cyan);box-shadow:inset 0 0 0 1px var(--cyan)}
 .view-btn:not(.active):hover{background:var(--surf3);color:var(--txt)}
 
-/* KPI STRIP */
 .kpi-strip{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--bdr);scrollbar-width:none;background:var(--bg)}
 .kpi-strip::-webkit-scrollbar{display:none}
-.kpi{flex-shrink:0;padding:9px 16px 9px 14px;min-width:110px;background:var(--surf);border:1px solid var(--bdr2);border-radius:5px}
+.kpi{flex-shrink:0;padding:9px 16px 9px 14px;min-width:100px;background:var(--surf);border:1px solid var(--bdr2);border-radius:5px}
 .kpi-label{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt3);font-weight:600;white-space:nowrap;margin-bottom:4px}
-.kpi-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.02em}
+.kpi-val{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.02em}
 .kpi-sub{font-size:10px;color:var(--txt3);margin-top:3px}
 .kv-cyan{color:var(--cyan)}
 .kv-orange{color:var(--orange)}
@@ -65,90 +61,88 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .kv-red{color:var(--red)}
 .kv-blue{color:var(--blue)}
 
-/* MAIN CONTENT */
 .main{padding:12px 16px;display:flex;flex-direction:column;gap:14px}
 
-/* CHART SECTION */
+/* CHART */
 .chart-section{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;padding:14px 16px}
 .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .chart-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3)}
 .chart-legend{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--txt3)}
 .leg-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px;flex-shrink:0}
-.chart-wrap{position:relative;overflow-x:auto}
-.chart-canvas{display:flex;gap:2px;align-items:flex-end;height:160px;padding-bottom:20px;min-width:600px}
-.bar-group{display:flex;gap:2px;align-items:flex-end;flex:1;min-width:60px;position:relative;cursor:pointer}
-.bar-group:hover .bar-prev,.bar-group:hover .bar-real{opacity:.8}
-.bar-prev{background:#1565c0;border-radius:3px 3px 0 0;transition:opacity .15s}
-.bar-real{background:var(--cyan);border-radius:3px 3px 0 0;transition:opacity .15s}
-.bar-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:9px;color:var(--txt3);white-space:nowrap;text-align:center;line-height:1.1}
+.chart-wrap{overflow-x:auto}
+.chart-canvas{display:flex;gap:3px;align-items:flex-end;height:160px;padding-bottom:26px;min-width:500px}
+.bar-group{display:flex;gap:2px;align-items:flex-end;flex:1;min-width:48px;position:relative;cursor:pointer}
+.bar-group:hover .bar-a,.bar-group:hover .bar-b{filter:brightness(1.2)}
+.bar-a{background:#1565c0;border-radius:3px 3px 0 0;transition:filter .12s}
+.bar-b{border-radius:3px 3px 0 0;transition:filter .12s}
+.bar-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:8px;color:var(--txt3);white-space:nowrap;text-align:center;line-height:1.2}
 
 /* TOOLTIP */
-.tooltip{position:fixed;background:#0d1117;border:1px solid var(--bdr2);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--txt);pointer-events:none;z-index:100;display:none;box-shadow:0 4px 16px #00000066;min-width:180px}
-.tt-title{font-weight:700;color:var(--cyan);margin-bottom:6px;font-size:12px}
+.tooltip{position:fixed;background:#0d1117;border:1px solid var(--bdr2);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--txt);pointer-events:none;z-index:100;display:none;box-shadow:0 4px 20px #00000088;min-width:200px}
+.tt-title{font-weight:700;color:var(--cyan);margin-bottom:6px;font-size:12px;border-bottom:1px solid var(--bdr);padding-bottom:5px}
 .tt-row{display:flex;justify-content:space-between;gap:16px;padding:2px 0}
 .tt-label{color:var(--txt2)}
 .tt-val{font-weight:600;font-variant-numeric:tabular-nums}
+.tt-sep{border-top:1px solid var(--bdr);margin:4px 0}
 
-/* CARDS GRID */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
-.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color .15s}
-.card:hover{border-color:var(--cyan)}
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.card{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;overflow:hidden}
 .card.alert-high{border-left:3px solid var(--red)}
 .card.alert-mid{border-left:3px solid var(--yellow)}
 .card.ok{border-left:3px solid var(--green)}
-.card-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surf2);border-bottom:1px solid var(--bdr)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 14px;background:var(--surf2);border-bottom:1px solid var(--bdr);gap:8px}
 .card-title{font-weight:700;font-size:12px;color:var(--txt)}
-.card-sub{font-size:10px;color:var(--txt2);margin-top:1px}
-.card-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px}
+.card-sub{font-size:10px;color:var(--txt2);margin-top:2px}
+.card-sub2{font-size:10px;color:var(--txt3);margin-top:1px}
+.card-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0}
 .badge-red{background:#3b0f0f;color:var(--red);border:1px solid #7b1f1f}
 .badge-yellow{background:#3b2a00;color:var(--yellow);border:1px solid #7b5b00}
 .badge-green{background:#0f2e12;color:var(--green);border:1px solid #1b5e20}
 .card-body{padding:10px 14px}
-.metric-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr)}
+.metric-header-row{display:grid;grid-template-columns:1fr 68px 68px 48px 48px;gap:4px;padding:0 0 5px 0;border-bottom:1px solid var(--bdr2);margin-bottom:4px}
+.mh{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);text-align:right;font-weight:600}
+.mh:first-child{text-align:left}
+.metric-row{display:grid;grid-template-columns:1fr 68px 68px 48px 48px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr)}
 .metric-row:last-child{border-bottom:none}
 .metric-name{font-size:11px;color:var(--txt2)}
 .metric-prev{font-size:11px;color:var(--txt3);text-align:right;font-variant-numeric:tabular-nums}
 .metric-real{font-size:11px;color:var(--txt);text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
-.metric-dif-pct{font-size:11px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;min-width:42px}
-.metric-dif-abs{font-size:11px;text-align:right;color:var(--txt3);font-variant-numeric:tabular-nums;min-width:38px}
+.metric-dpct{font-size:11px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.metric-dabs{font-size:10px;text-align:right;color:var(--txt3);font-variant-numeric:tabular-nums}
 .dif-neg{color:var(--red)}
 .dif-pos{color:var(--orange)}
 .dif-ok{color:var(--green)}
-.metric-header-row{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;padding:0 0 5px 0;border-bottom:1px solid var(--bdr2);margin-bottom:4px}
-.mh{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);text-align:right;font-weight:600}
-.mh:first-child{text-align:left}
 
-/* TABLE VIEW */
+/* CARD FOOTER (logística) */
+.card-footer{display:flex;gap:12px;padding:8px 14px;border-top:1px solid var(--bdr);background:var(--surf2);flex-wrap:wrap}
+.cf-item{font-size:10px;color:var(--txt3)}
+.cf-item span{color:var(--txt2);font-weight:600}
+
+/* TABLE */
 .table-wrap{overflow-x:auto;border-radius:6px;border:1px solid var(--bdr2)}
-table{width:100%;border-collapse:collapse;background:var(--surf)}
-thead th{padding:9px 12px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);font-weight:600;background:var(--surf2);border-bottom:1px solid var(--bdr2);white-space:nowrap;text-align:right}
-thead th:first-child,thead th:nth-child(2){text-align:left}
-tbody tr{border-bottom:1px solid var(--bdr);transition:background .12s;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:var(--surf);font-size:11px}
+thead th{padding:8px 10px;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);font-weight:600;background:var(--surf2);border-bottom:1px solid var(--bdr2);white-space:nowrap;text-align:right}
+thead th:first-child,thead th:nth-child(2),thead th:nth-child(3){text-align:left}
+tbody tr{border-bottom:1px solid var(--bdr);transition:background .12s}
 tbody tr:hover{background:var(--surf2)}
 tbody tr:last-child{border-bottom:none}
-td{padding:8px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-td:first-child,td:nth-child(2){text-align:left;font-size:11px}
-.td-piscic{font-weight:700;color:var(--txt)}
-.td-tanque{color:var(--txt2)}
+td{padding:7px 10px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
+.td-prod{font-weight:700;color:var(--txt);font-size:11px}
+.td-cod{color:var(--txt2);font-size:10px}
 .pill{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700}
 .pill-red{background:#3b0f0f;color:var(--red);border:1px solid #7b1f1f}
 .pill-yellow{background:#3b2a00;color:var(--yellow);border:1px solid #7b5b00}
 .pill-green{background:#0f2e12;color:var(--green);border:1px solid #1b5e20}
 
-/* SECTION DIVIDER */
-.sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);padding:4px 0}
-
-/* EMPTY */
+.sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);padding:2px 0}
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:13px}
-
-/* STATUS BAR */
 .statusbar{padding:4px 16px;background:var(--surf);border-top:1px solid var(--bdr);font-size:10px;color:var(--txt3);display:flex;gap:16px}
 </style>
 
-<!-- TOOLTIP -->
 <div class="tooltip" id="tooltip"></div>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="brand"><span class="brand-co">BTJ</span> <span class="brand-sec">Foods</span></div>
   <div class="top-meta">
@@ -160,16 +154,20 @@ td:first-child,td:nth-child(2){text-align:left;font-size:11px}
   <div class="top-spacer"></div>
   <div class="top-actions">
     <button class="btn btn-blue" onclick="exportCSV()">⬇ CSV</button>
-    <button class="btn btn-green" onclick="exportPDF()">⬇ PDF</button>
+    <button class="btn btn-green" onclick="window.print()">⬇ PDF</button>
     <button class="btn btn-gray" onclick="refresh()">↺ Atualizar</button>
   </div>
 </div>
 
-<!-- FILTERBAR -->
 <div class="filterbar">
-  <span class="filter-label">Filtros</span>
-  <select class="fselect" id="f-piscic" onchange="applyFilters()">
-    <option value="">Todas as Pisciculturas</option>
+  <span class="filter-label">Unid. Produtora</span>
+  <select class="fselect" id="f-prod" onchange="applyFilters()">
+    <option value="">Todas</option>
+  </select>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Semana</span>
+  <select class="fselect" id="f-semana" onchange="applyFilters()">
+    <option value="">Todas</option>
   </select>
   <div class="filter-sep"></div>
   <span class="filter-label">De</span>
@@ -177,7 +175,6 @@ td:first-child,td:nth-child(2){text-align:left;font-size:11px}
   <span class="filter-label">Até</span>
   <input type="date" class="finput" id="f-ate" onchange="applyFilters()">
   <div class="filter-sep"></div>
-  <span class="filter-label">Exibir</span>
   <div class="view-toggle">
     <button class="view-btn active" id="vb-cards" onclick="setView('cards')">Cards</button>
     <button class="view-btn" id="vb-tabela" onclick="setView('tabela')">Tabela</button>
@@ -190,55 +187,56 @@ td:first-child,td:nth-child(2){text-align:left;font-size:11px}
   </select>
 </div>
 
-<!-- KPI STRIP -->
-<div class="kpi-strip" id="kpi-strip">
-  <div class="kpi"><div class="kpi-label">Abates</div><div class="kpi-val kv-cyan" id="k-abates">—</div><div class="kpi-sub">no período</div></div>
-  <div class="kpi"><div class="kpi-label">Biomassa Prev.</div><div class="kpi-val kv-blue" id="k-bprev">—</div><div class="kpi-sub">kg total</div></div>
-  <div class="kpi"><div class="kpi-label">Biomassa Real.</div><div class="kpi-val kv-cyan" id="k-breal">—</div><div class="kpi-sub">kg total</div></div>
-  <div class="kpi"><div class="kpi-label">Δ Biomassa</div><div class="kpi-val" id="k-bdif">—</div><div class="kpi-sub">previsto vs realizado</div></div>
-  <div class="kpi"><div class="kpi-label">Rend. Médio</div><div class="kpi-val kv-yellow" id="k-rend">—</div><div class="kpi-sub">% filetagem</div></div>
+<div class="kpi-strip">
+  <div class="kpi"><div class="kpi-label">Abates</div><div class="kpi-val kv-cyan" id="k-n">—</div><div class="kpi-sub">no período</div></div>
+  <div class="kpi"><div class="kpi-label">Bm Romaneio</div><div class="kpi-val kv-blue" id="k-brom">—</div><div class="kpi-sub">kg total previsto</div></div>
+  <div class="kpi"><div class="kpi-label">Bm Realizado</div><div class="kpi-val kv-cyan" id="k-breal">—</div><div class="kpi-sub">kg total realizado</div></div>
+  <div class="kpi"><div class="kpi-label">Δ Biomassa</div><div class="kpi-val" id="k-bdif">—</div><div class="kpi-sub">romaneio vs realizado</div></div>
+  <div class="kpi"><div class="kpi-label">Rend. Médio</div><div class="kpi-val kv-yellow" id="k-rend">—</div><div class="kpi-sub">% filetagem real</div></div>
   <div class="kpi"><div class="kpi-label">PM Médio Real</div><div class="kpi-val kv-orange" id="k-pm">—</div><div class="kpi-sub">kg/peixe</div></div>
+  <div class="kpi"><div class="kpi-label">Bactéria (kg)</div><div class="kpi-val kv-red" id="k-bact">—</div><div class="kpi-sub">total descarte</div></div>
   <div class="kpi"><div class="kpi-label">Com Alerta</div><div class="kpi-val kv-red" id="k-alerta">—</div><div class="kpi-sub">abates c/ desvio</div></div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
-  <!-- CHART -->
-  <div class="chart-section" id="chart-sec">
+  <div class="chart-section">
     <div class="chart-header">
-      <span class="chart-title">Biomassa por Abate — Previsto × Realizado (kg)</span>
+      <span class="chart-title">Biomassa por Abate — Romaneio × Realizado (kg)</span>
       <div class="chart-legend">
-        <span><span class="leg-dot" style="background:#1565c0"></span>Previsto</span>
+        <span><span class="leg-dot" style="background:#1565c0"></span>Romaneio (Prev.)</span>
         <span><span class="leg-dot" style="background:var(--cyan)"></span>Realizado</span>
       </div>
     </div>
-    <div class="chart-wrap">
-      <div class="chart-canvas" id="chart-canvas"></div>
-    </div>
+    <div class="chart-wrap"><div class="chart-canvas" id="chart-canvas"></div></div>
   </div>
 
-  <!-- CARDS / TABLE -->
   <div class="sec-title" id="sec-label">Romaneios de Abate</div>
+
   <div id="view-cards" class="cards-grid"></div>
   <div id="view-tabela" style="display:none">
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Piscicultura</th>
-            <th>Tanque / Abate</th>
+            <th>Unid. Produtora</th>
+            <th>Cód. Abate</th>
             <th>Data</th>
-            <th>Bm Prev (kg)</th>
+            <th>Sem.</th>
+            <th>Bm Rom (kg)</th>
             <th>Bm Real (kg)</th>
             <th>Δ Bm%</th>
+            <th>PM Prev</th>
+            <th>PM Real</th>
+            <th>Δ PM%</th>
             <th>Rend Prev</th>
             <th>Rend Real</th>
             <th>Δ Rend%</th>
-            <th>PM Real</th>
-            <th>Mort.</th>
-            <th>Desc &lt;500g</th>
-            <th>Desc Bact.</th>
-            <th>Desc Mole</th>
+            <th>Mort Real</th>
+            <th>Desc &lt;400g</th>
+            <th>Bactéria</th>
+            <th>Mole</th>
+            <th>Motorista</th>
+            <th>Km Total</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -249,308 +247,216 @@ td:first-child,td:nth-child(2){text-align:left;font-size:11px}
   <div class="empty" id="empty-msg" style="display:none">Nenhum abate encontrado para os filtros selecionados.</div>
 </div>
 
-<!-- STATUS BAR -->
 <div class="statusbar">
-  <span id="sb-fonte">Fonte: dados de demonstração</span>
+  <span id="sb-fonte">Fonte: Executado_Base_Dados — Retorno_Pisciculturas.xlsx</span>
   <span id="sb-total">0 registros</span>
   <span id="sb-updated">—</span>
 </div>
 
 <script>
-/* ── CONFIG ── */
-const IS_LOCAL    = ['localhost','127.0.0.1'].includes(location.hostname);
-const GRAFANA_URL = IS_LOCAL ? '' : 'http://172.16.0.27:3000';
-const GRAFANA_AUTH = 'Basic ' + btoa('visitante:15151010');
-const DS_UID      = 'aeal1lruwzif4c';
-
-/* ── FALLBACK DATA ── */
-const FALLBACK = [
-  {
-    id:'ABT-001', piscic:'Piscicultura Ilha Verde', tanque:'BTJ ILHA - 1', data:'2026-07-18', cod:'118/12',
-    bm_prev:7200, bm_real:7150,
-    rend_prev:47.5, rend_real:46.2,
-    pm_prev:0.920, pm_real:0.908,
-    mort_prev:0, mort_real:0,
-    desc_500g_prev:12.0, desc_500g_real:11.5,
-    desc_bact_prev:6.0,  desc_bact_real:8.2,
-    desc_mole_prev:6.0,  desc_mole_real:7.1,
-    obs:''
-  },
-  {
-    id:'ABT-002', piscic:'Piscicultura Ilha Verde', tanque:'BTJ ILHA - 2', data:'2026-07-20', cod:'120/12',
-    bm_prev:6525, bm_real:6492,
-    rend_prev:47.5, rend_real:44.64,
-    pm_prev:0.913, pm_real:0.855,
-    mort_prev:0,   mort_real:0,
-    desc_500g_prev:12.98, desc_500g_real:13.40,
-    desc_bact_prev:6.49,  desc_bact_real:117.20,
-    desc_mole_prev:6.49,  desc_mole_real:17.80,
-    obs:''
-  },
-  {
-    id:'ABT-003', piscic:'Piscicultura São Pedro', tanque:'SP - TANQUE 3', data:'2026-07-22', cod:'122/08',
-    bm_prev:5800, bm_real:5920,
-    rend_prev:46.0, rend_real:46.8,
-    pm_prev:0.880, pm_real:0.892,
-    mort_prev:0.5, mort_real:0.3,
-    desc_500g_prev:10.0, desc_500g_real:9.5,
-    desc_bact_prev:5.0,  desc_bact_real:6.1,
-    desc_mole_prev:5.0,  desc_mole_real:5.8,
-    obs:''
-  },
-  {
-    id:'ABT-004', piscic:'Piscicultura Rio Claro', tanque:'RC - TANQUE A', data:'2026-07-24', cod:'124/10',
-    bm_prev:8100, bm_real:7890,
-    rend_prev:48.0, rend_real:45.1,
-    pm_prev:0.950, pm_real:0.920,
-    mort_prev:0,   mort_real:2.0,
-    desc_500g_prev:11.0, desc_500g_real:14.5,
-    desc_bact_prev:5.5,  desc_bact_real:22.3,
-    desc_mole_prev:5.5,  desc_mole_real:9.8,
-    obs:''
-  },
-  {
-    id:'ABT-005', piscic:'Piscicultura São Pedro', tanque:'SP - TANQUE 7', data:'2026-07-25', cod:'125/06',
-    bm_prev:4300, bm_real:4275,
-    rend_prev:47.0, rend_real:47.3,
-    pm_prev:0.870, pm_real:0.875,
-    mort_prev:0,   mort_real:0,
-    desc_500g_prev:9.0,  desc_500g_real:9.1,
-    desc_bact_prev:4.5,  desc_bact_real:4.8,
-    desc_mole_prev:4.5,  desc_mole_real:4.6,
-    obs:''
-  },
-  {
-    id:'ABT-006', piscic:'Piscicultura Rio Claro', tanque:'RC - TANQUE B', data:'2026-07-28', cod:'128/08',
-    bm_prev:6800, bm_real:6755,
-    rend_prev:47.5, rend_real:47.0,
-    pm_prev:0.900, pm_real:0.895,
-    mort_prev:0,   mort_real:0.5,
-    desc_500g_prev:10.5, desc_500g_real:11.0,
-    desc_bact_prev:5.25, desc_bact_real:5.80,
-    desc_mole_prev:5.25, desc_mole_real:6.10,
-    obs:''
-  },
+/* ── DADOS (mapeados de Executado_Base_Dados) ── */
+const BASE = [
+  {data:'2026-06-29',sem:27,seq:1,prod:'BTJ STC',  tanques:'046/029',nf:2805,qtde_nf:5000,bm_rom:5009,bm_real:4887,pm_prev:0.929,pm_real:1.000,qtde_real:4887,pm_rom:0.976,qtde_rom:5132,rend_prev:47.5,rend_real:45.17,mort_prev:0,mort_real:0,desc400:4.20,sangria:4.20,sem_esc:0,bact:31.10,mole:6.40,cod:'29/06/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297245,km_fim:297408,km_tot:163,o2:420,bm_aprov:4845.30,rs_kg:9.70,rs_total:47403.90},
+  {data:'2026-06-29',sem:27,seq:2,prod:'BTJ STC',  tanques:'029/126',nf:2806,qtde_nf:5000,bm_rom:4891,bm_real:4710.5,pm_prev:0.929,pm_real:1.016,qtde_real:4636,pm_rom:0.976,qtde_rom:5011,rend_prev:47.5,rend_real:44.69,mort_prev:0,mort_real:0,desc400:3.20,sangria:3.20,sem_esc:0,bact:49.30,mole:21.20,cod:'29/06/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213357,km_fim:213537,km_tot:180,o2:650,bm_aprov:4636.80,rs_kg:9.70,rs_total:45691.85},
+  {data:'2026-06-30',sem:27,seq:1,prod:'BTJ STC',  tanques:'109/030',nf:2808,qtde_nf:5000,bm_rom:5040,bm_real:5002,pm_prev:0.929,pm_real:0.975,qtde_real:5130,pm_rom:0.925,qtde_rom:5449,rend_prev:47.5,rend_real:44.38,mort_prev:0,mort_real:0,desc400:27.40,sangria:27.40,sem_esc:0,bact:39.70,mole:2.10,cod:'30/06/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297408,km_fim:297570,km_tot:162,o2:420,bm_aprov:4932.80,rs_kg:9.70,rs_total:48519.40},
+  {data:'2026-06-30',sem:27,seq:2,prod:'BTJ STC',  tanques:'030/224',nf:2809,qtde_nf:5000,bm_rom:5109,bm_real:4938,pm_prev:0.929,pm_real:1.060,qtde_real:4658,pm_rom:0.914,qtde_rom:5590,rend_prev:47.5,rend_real:44.95,mort_prev:0,mort_real:0,desc400:10.60,sangria:10.60,sem_esc:0,bact:19.10,mole:29.30,cod:'30/06/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:297570,km_fim:297575,km_tot:5,o2:110,bm_aprov:4879.00,rs_kg:9.70,rs_total:47898.60},
+  {data:'2026-06-30',sem:27,seq:3,prod:'BTJ ILHA', tanques:'19/125', nf:3228,qtde_nf:3200,bm_rom:1721,bm_real:2575,pm_prev:0.900,pm_real:0.846,qtde_real:3044,pm_rom:0.979,qtde_rom:1758,rend_prev:47.5,rend_real:44.75,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:23.20,mole:3.60,cod:'30/06/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FPE4G38',km_ini:297570,km_fim:297575,km_tot:5,o2:110,bm_aprov:2548.20,rs_kg:9.70,rs_total:24977.50},
+  {data:'2026-07-01',sem:27,seq:1,prod:'BTJ SUD',  tanques:'35',     nf:2053,qtde_nf:5000,bm_rom:5000,bm_real:4886,pm_prev:0.950,pm_real:0.960,qtde_real:5090,pm_rom:1.088,qtde_rom:4596,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc400:6.00,sangria:6.00,sem_esc:0,bact:43.90,mole:5.20,cod:'01/07/2026 - BTJ SUD - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213717,km_fim:213953,km_tot:236,o2:650,bm_aprov:4830.90,rs_kg:9.70,rs_total:47394.20},
+  {data:'2026-07-01',sem:27,seq:2,prod:'BTJ SUD',  tanques:'35/37',  nf:2054,qtde_nf:5000,bm_rom:4004,bm_real:3968,pm_prev:0.950,pm_real:0.830,qtde_real:4781,pm_rom:0.781,qtde_rom:5127,rend_prev:47.5,rend_real:44.66,mort_prev:0,mort_real:0,desc400:2.40,sangria:2.40,sem_esc:0,bact:37.40,mole:3.90,cod:'01/07/2026 - BTJ SUD - 2',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297575,km_fim:297828,km_tot:253,o2:320,bm_aprov:3924.30,rs_kg:9.70,rs_total:38489.60},
+  {data:'2026-07-02',sem:27,seq:1,prod:'BTJ ILHA', tanques:'125/105',nf:3230,qtde_nf:6500,bm_rom:6555,bm_real:6555,pm_prev:0.900,pm_real:0.870,qtde_real:7534,pm_rom:0.911,qtde_rom:7195,rend_prev:47.5,rend_real:44.01,mort_prev:0,mort_real:0,desc400:16.07,sangria:16.10,sem_esc:0,bact:43.80,mole:5.30,cod:'02/07/2026 - BTJ ILHA - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297828,km_fim:297971,km_tot:143,o2:350,bm_aprov:6489.83,rs_kg:10.70,rs_total:70138.50},
+  {data:'2026-07-02',sem:27,seq:2,prod:'BTJ ILHA', tanques:'105/114',nf:3231,qtde_nf:6000,bm_rom:5511,bm_real:5423,pm_prev:0.900,pm_real:0.894,qtde_real:6066,pm_rom:0.953,qtde_rom:5783,rend_prev:47.5,rend_real:44.02,mort_prev:0,mort_real:0,desc400:20.10,sangria:19.80,sem_esc:0,bact:62.90,mole:1.60,cod:'02/07/2026 - BTJ ILHA 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213953,km_fim:214077,km_tot:124,o2:500,bm_aprov:5338.40,rs_kg:11.70,rs_total:63449.10},
+  {data:'2026-07-03',sem:27,seq:1,prod:'BTJ ILHA', tanques:'96/114', nf:3234,qtde_nf:6500,bm_rom:6557,bm_real:6509,pm_prev:0.900,pm_real:0.960,qtde_real:6780,pm_rom:1.005,qtde_rom:6524,rend_prev:47.5,rend_real:45.08,mort_prev:0,mort_real:0,desc400:48.20,sangria:48.20,sem_esc:0,bact:76.10,mole:2.70,cod:'03/07/2026 - BTJ ILHA - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297971,km_fim:298116,km_tot:145,o2:350,bm_aprov:6382.00,rs_kg:9.70,rs_total:63137.30},
+  {data:'2026-07-03',sem:27,seq:2,prod:'SANTA HELENA',tanques:'C09', nf:2810,qtde_nf:5000,bm_rom:5200,bm_real:5119,pm_prev:0.950,pm_real:1.020,qtde_real:5019,pm_rom:0.950,qtde_rom:5474,rend_prev:47.5,rend_real:45.18,mort_prev:0,mort_real:0,desc400:4.10,sangria:4.10,sem_esc:0,bact:10.20,mole:4.10,cod:'03/07/2026 - SANTA HELENA - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214077,km_fim:214209,km_tot:132,o2:500,bm_aprov:5100.60,rs_kg:9.90,rs_total:50678.10},
+  {data:'2026-07-06',sem:28,seq:1,prod:'BTJ STC',  tanques:'215/205',nf:2812,qtde_nf:6500,bm_rom:6485,bm_real:6198.9,pm_prev:0.914,pm_real:1.090,qtde_real:5687,pm_rom:1.156,qtde_rom:5610,rend_prev:47.5,rend_real:44.43,mort_prev:0,mort_real:0,desc400:21.48,sangria:21.48,sem_esc:0,bact:26.90,mole:15.00,cod:'06/07/2026 - BTJ STC - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214209,km_fim:214388,km_tot:179,o2:650,bm_aprov:6135.53,rs_kg:9.70,rs_total:60129.43},
+  {data:'2026-07-06',sem:28,seq:2,prod:'BTJ STC',  tanques:'205/413/48',nf:2813,qtde_nf:6500,bm_rom:6572,bm_real:6004.9,pm_prev:0.914,pm_real:0.938,qtde_real:6402,pm_rom:1.029,qtde_rom:6387,rend_prev:47.5,rend_real:43.85,mort_prev:0,mort_real:0,desc400:60.93,sangria:60.93,sem_esc:0,bact:42.50,mole:12.00,cod:'06/07/2026 - BTJ STC - 2',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298116,km_fim:298279,km_tot:163,o2:760,bm_aprov:5889.42,rs_kg:9.70,rs_total:58247.05},
+  {data:'2026-07-06',sem:28,seq:3,prod:'BTJ ILHA', tanques:'114',    nf:3237,qtde_nf:1000,bm_rom:902,bm_real:906.96,pm_prev:0.936,pm_real:0.901,qtde_real:1007,pm_rom:0.944,qtde_rom:956,rend_prev:47.5,rend_real:44.73,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:4.40,mole:1.00,cod:'06/07/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214388,km_fim:214393,km_tot:5,o2:100,bm_aprov:901.56,rs_kg:9.70,rs_total:8797.51},
+  {data:'2026-07-07',sem:28,seq:1,prod:'BTJ STC',  tanques:'222/211',nf:2814,qtde_nf:6500,bm_rom:6534,bm_real:6532,pm_prev:0.914,pm_real:1.058,qtde_real:6174,pm_rom:1.012,qtde_rom:6457,rend_prev:47.5,rend_real:43.98,mort_prev:0,mort_real:0,desc400:22.70,sangria:22.70,sem_esc:0,bact:31.50,mole:17.80,cod:'07/07/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298279,km_fim:298442,km_tot:163,o2:550,bm_aprov:6460.00,rs_kg:9.70,rs_total:63360.40},
+  {data:'2026-07-07',sem:28,seq:2,prod:'BTJ STC',  tanques:'211/48/106',nf:2815,qtde_nf:6500,bm_rom:6796,bm_real:6300,pm_prev:0.914,pm_real:1.049,qtde_real:6006,pm_rom:1.032,qtde_rom:6585,rend_prev:47.5,rend_real:44.49,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:28.60,mole:63.20,cod:'07/07/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214393,km_fim:214573,km_tot:180,o2:700,bm_aprov:6208.20,rs_kg:9.70,rs_total:61110.00},
+  {data:'2026-07-07',sem:28,seq:3,prod:'BTJ ILHA', tanques:'12',     nf:3241,qtde_nf:1000,bm_rom:2055,bm_real:2021,pm_prev:0.936,pm_real:0.788,qtde_real:2565,pm_rom:0.786,qtde_rom:2615,rend_prev:47.5,rend_real:42.86,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:39.60,mole:4.00,cod:'07/07/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FPE4G38',km_ini:298442,km_fim:298447,km_tot:5,o2:130,bm_aprov:1977.40,rs_kg:9.70,rs_total:19603.70},
+  {data:'2026-07-09',sem:28,seq:1,prod:'BTJ ILHA', tanques:'18/78',  nf:3243,qtde_nf:6500,bm_rom:6648,bm_real:6552,pm_prev:0.936,pm_real:1.070,qtde_real:6123,pm_rom:1.046,qtde_rom:6356,rend_prev:47.5,rend_real:44.60,mort_prev:0,mort_real:0,desc400:6.62,sangria:6.62,sem_esc:0,bact:104.60,mole:9.30,cod:'09/07/2026 - BTJ ILHA - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214573,km_fim:214724,km_tot:151,o2:500,bm_aprov:6431.48,rs_kg:9.70,rs_total:63554.40},
+  {data:'2026-07-09',sem:28,seq:2,prod:'BTJ ILHA', tanques:'78',     nf:3244,qtde_nf:1500,bm_rom:1666,bm_real:1663,pm_prev:0.936,pm_real:1.107,qtde_real:1502,pm_rom:1.168,qtde_rom:1426,rend_prev:47.5,rend_real:44.55,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:10.10,mole:1.30,cod:'09/07/2026 - BTJ ILHA - 2',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214724,km_fim:214728,km_tot:4,o2:50,bm_aprov:1651.60,rs_kg:9.70,rs_total:16131.10},
+  {data:'2026-07-09',sem:28,seq:3,prod:'PURO PEIXE',tanques:'219/222/065/034',nf:925,qtde_nf:6000,bm_rom:6015,bm_real:5958,pm_prev:1.000,pm_real:0.948,qtde_real:6285,pm_rom:1.031,qtde_rom:5834,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc400:9.99,sangria:9.99,sem_esc:0,bact:43.20,mole:0.30,cod:'09/07/2026 - PURO PEIXE - 3',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298447,km_fim:298599,km_tot:152,o2:540,bm_aprov:5904.51,rs_kg:9.70,rs_total:57792.60},
+  {data:'2026-07-10',sem:28,seq:1,prod:'BTJ ILHA', tanques:'107/106',nf:3245,qtde_nf:6500,bm_rom:6612,bm_real:6525,pm_prev:0.936,pm_real:1.060,qtde_real:6156,pm_rom:1.092,qtde_rom:6055,rend_prev:47.5,rend_real:44.39,mort_prev:0,mort_real:0,desc400:23.20,sangria:23.20,sem_esc:0,bact:101.80,mole:4.90,cod:'10/07/2026 - BTJ ILHA - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214728,km_fim:214852,km_tot:124,o2:400,bm_aprov:6395.10,rs_kg:9.00,rs_total:58725.00},
+  {data:'2026-07-10',sem:28,seq:2,prod:'BTJ ILHA', tanques:'106',    nf:3246,qtde_nf:1500,bm_rom:1524,bm_real:1527,pm_prev:0.936,pm_real:0.850,qtde_real:1796,pm_rom:0.960,qtde_rom:1588,rend_prev:47.5,rend_real:45.49,mort_prev:0,mort_real:0,desc400:1.30,sangria:1.30,sem_esc:0,bact:9.30,mole:0.50,cod:'10/07/2026 - BTJ ILHA - 2',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214852,km_fim:214856,km_tot:4,o2:40,bm_aprov:1515.90,rs_kg:9.00,rs_total:13743.00},
+  {data:'2026-07-10',sem:28,seq:3,prod:'PURO PEIXE',tanques:'263',   nf:926,qtde_nf:6000,bm_rom:6013,bm_real:5946,pm_prev:1.000,pm_real:1.084,qtde_real:5485,pm_rom:1.159,qtde_rom:5188,rend_prev:47.5,rend_real:45.72,mort_prev:0,mort_real:0,desc400:22.40,sangria:22.40,sem_esc:0,bact:58.30,mole:20.40,cod:'10/07/2026 - PURO PEIXE - 3',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298599,km_fim:298751,km_tot:152,o2:600,bm_aprov:5844.90,rs_kg:9.70,rs_total:57676.20},
 ];
 
-/* ── STATE ── */
-let ALL = [...FALLBACK];
-let filtered = [...ALL];
+/* ── ESTADO ── */
+let filtered = [...BASE];
 let currentView = 'cards';
 
-/* ── HELPERS ── */
-const fmt0 = n => n == null ? '—' : Number(n).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
-const fmt1 = n => n == null ? '—' : Number(n).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
-const fmt2 = n => n == null ? '—' : Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtPct = n => n == null ? '—' : Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
-const fmtDate = s => s ? s.split('-').reverse().join('/') : '—';
+/* ── FORMATTERS ── */
+const f0  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+const f1  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const f2  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const f3  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3});
+const fPct = n => f2(n)+'%';
+const fDate = s => s ? s.split('-').reverse().join('/') : '—';
+const dPct = (a,b) => a ? (b-a)/a*100 : 0;
+const sign = n => (n>=0?'+':'')+f1(n)+'%';
+const signAbs = (n,dec=1) => (n>=0?'+':'')+Number(n).toFixed(dec);
 
-function difPct(prev, real) {
-  if (!prev) return 0;
-  return ((real - prev) / prev) * 100;
-}
-
-function alertLevel(row) {
-  const dBm   = Math.abs(difPct(row.bm_prev, row.bm_real));
-  const dRend = Math.abs(difPct(row.rend_prev, row.rend_real));
-  const dBact = row.desc_bact_real - row.desc_bact_prev;
-  const dMole = row.desc_mole_real - row.desc_mole_prev;
-  if (dBact > 30 || dMole > 8 || dRend > 4 || dBm > 5) return 'alert-high';
-  if (dBact > 5  || dMole > 3 || dRend > 2 || dBm > 2) return 'alert-mid';
+function alertLevel(r) {
+  const dBm   = Math.abs(dPct(r.bm_rom, r.bm_real));
+  const dRend = r.rend_prev - r.rend_real;
+  if (r.bact > 80 || dRend > 3.5 || dBm > 6) return 'alert-high';
+  if (r.bact > 25 || dRend > 2   || dBm > 3) return 'alert-mid';
   return 'ok';
 }
 
-function difClass(pct, invert=false) {
-  const v = invert ? -pct : pct;
-  if (Math.abs(pct) < 1.0) return 'dif-ok';
-  return v < 0 ? 'dif-neg' : 'dif-pos';
+function difCls(pct, badIfPositive=false) {
+  const abs = Math.abs(pct);
+  if (abs < 1) return 'dif-ok';
+  const bad = badIfPositive ? pct > 0 : pct < 0;
+  return bad ? 'dif-neg' : 'dif-pos';
 }
 
-function formatDifPct(pct) {
-  const sign = pct >= 0 ? '+' : '';
-  return sign + pct.toFixed(1)+'%';
-}
-
-/* ── GRAFANA QUERY (futuro) ── */
-async function queryGrafana(sql) {
-  const now = Date.now();
-  const from = now - 30*24*3600*1000;
-  const res = await fetch(`${GRAFANA_URL}/api/ds/query`, {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':GRAFANA_AUTH},
-    body: JSON.stringify({
-      queries:[{datasource:{type:'mssql',uid:DS_UID},rawSql:sql,format:'table',refId:'A',rawQuery:true,dataset:'ERP'}],
-      from:String(from), to:String(now),
-    }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  return json?.results?.A?.frames?.[0];
-}
-
-/* ── FILTERS ── */
+/* ── FILTROS ── */
 function populateFilters() {
-  const sel = document.getElementById('f-piscic');
-  const current = sel.value;
-  const piscics = [...new Set(ALL.map(r => r.piscic))].sort();
-  sel.innerHTML = '<option value="">Todas as Pisciculturas</option>' +
-    piscics.map(p => `<option value="${p}"${p===current?' selected':''}>${p}</option>`).join('');
+  const prods   = [...new Set(BASE.map(r=>r.prod))].sort();
+  const semanas = [...new Set(BASE.map(r=>r.sem))].sort((a,b)=>a-b);
+  const pSel = document.getElementById('f-prod');
+  const cv = pSel.value;
+  pSel.innerHTML = '<option value="">Todas</option>' + prods.map(p=>`<option value="${p}"${p===cv?' selected':''}>${p}</option>`).join('');
+  const sSel = document.getElementById('f-semana');
+  const cs = sSel.value;
+  sSel.innerHTML = '<option value="">Todas</option>' + semanas.map(s=>`<option value="${s}"${String(s)===cs?' selected':''}>${s}</option>`).join('');
 }
 
 function applyFilters() {
-  const piscic  = document.getElementById('f-piscic').value;
-  const de      = document.getElementById('f-de').value;
-  const ate     = document.getElementById('f-ate').value;
-  const alerta  = document.getElementById('f-alerta').value;
+  const prod   = document.getElementById('f-prod').value;
+  const sem    = document.getElementById('f-semana').value;
+  const de     = document.getElementById('f-de').value;
+  const ate    = document.getElementById('f-ate').value;
+  const alerta = document.getElementById('f-alerta').value;
 
-  filtered = ALL.filter(r => {
-    if (piscic && r.piscic !== piscic) return false;
-    if (de  && r.data < de)  return false;
-    if (ate && r.data > ate) return false;
-    if (alerta === 'alert' && alertLevel(r) === 'ok') return false;
-    if (alerta === 'ok'    && alertLevel(r) !== 'ok') return false;
+  filtered = BASE.filter(r => {
+    if (prod   && r.prod  !== prod)        return false;
+    if (sem    && r.sem   !== Number(sem)) return false;
+    if (de     && r.data  <  de)           return false;
+    if (ate    && r.data  >  ate)          return false;
+    if (alerta === 'alert' && alertLevel(r) === 'ok')  return false;
+    if (alerta === 'ok'    && alertLevel(r) !== 'ok')  return false;
     return true;
   });
 
   renderKPIs();
   renderChart();
   renderView();
+  document.getElementById('sb-total').textContent = `${filtered.length} abate(s) exibido(s)`;
+  document.getElementById('sec-label').textContent = `Romaneios de Abate (${filtered.length})`;
 }
 
 /* ── KPIs ── */
 function renderKPIs() {
   const n = filtered.length;
-  const bprev = filtered.reduce((a,r) => a + r.bm_prev, 0);
-  const breal = filtered.reduce((a,r) => a + r.bm_real, 0);
-  const bdif  = bprev ? ((breal - bprev) / bprev * 100) : 0;
-  const rend  = n ? filtered.reduce((a,r) => a + r.rend_real, 0) / n : 0;
-  const pm    = n ? filtered.reduce((a,r) => a + r.pm_real, 0) / n : 0;
-  const alertas = filtered.filter(r => alertLevel(r) !== 'ok').length;
+  const brom  = filtered.reduce((a,r)=>a+r.bm_rom,0);
+  const breal = filtered.reduce((a,r)=>a+r.bm_real,0);
+  const bdif  = brom ? dPct(brom,breal) : 0;
+  const rend  = n ? filtered.reduce((a,r)=>a+r.rend_real,0)/n : 0;
+  const pm    = n ? filtered.reduce((a,r)=>a+r.pm_real,0)/n : 0;
+  const bact  = filtered.reduce((a,r)=>a+r.bact,0);
+  const alertas = filtered.filter(r=>alertLevel(r)!=='ok').length;
 
-  document.getElementById('k-abates').textContent = n;
-  document.getElementById('k-bprev').textContent  = fmt0(bprev) + ' kg';
-  document.getElementById('k-breal').textContent  = fmt0(breal) + ' kg';
-  const kBdif = document.getElementById('k-bdif');
-  kBdif.textContent = formatDifPct(bdif);
-  kBdif.className = 'kpi-val ' + (Math.abs(bdif) < 2 ? 'kv-green' : bdif < 0 ? 'kv-red' : 'kv-orange');
-  document.getElementById('k-rend').textContent  = fmtPct(rend);
-  document.getElementById('k-pm').textContent    = fmt3(pm) + ' kg';
+  document.getElementById('k-n').textContent    = n;
+  document.getElementById('k-brom').textContent = f0(brom)+' kg';
+  document.getElementById('k-breal').textContent= f0(breal)+' kg';
+  const kd = document.getElementById('k-bdif');
+  kd.textContent = sign(bdif);
+  kd.className = 'kpi-val '+(Math.abs(bdif)<2?'kv-green':bdif<0?'kv-red':'kv-orange');
+  document.getElementById('k-rend').textContent = fPct(rend);
+  document.getElementById('k-pm').textContent   = f3(pm)+' kg';
+  document.getElementById('k-bact').textContent = f1(bact)+' kg';
   document.getElementById('k-alerta').textContent = alertas;
-  document.getElementById('sb-total').textContent = `${n} abate(s) exibido(s)`;
-}
-
-function fmt3(n) {
-  return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3});
 }
 
 /* ── CHART ── */
 function renderChart() {
   const canvas = document.getElementById('chart-canvas');
-  if (!filtered.length) { canvas.innerHTML = '<div style="color:var(--txt3);padding:40px">Sem dados</div>'; return; }
-
-  const maxVal = Math.max(...filtered.flatMap(r => [r.bm_prev, r.bm_real]));
+  if (!filtered.length) { canvas.innerHTML='<div style="color:var(--txt3);padding:40px">Sem dados</div>'; return; }
+  const maxV = Math.max(...filtered.flatMap(r=>[r.bm_rom,r.bm_real]));
   const H = 130;
-
-  canvas.innerHTML = filtered.map(r => {
-    const hPrev = Math.round((r.bm_prev / maxVal) * H);
-    const hReal = Math.round((r.bm_real / maxVal) * H);
-    const alert = alertLevel(r);
-    const barReal = alert === 'alert-high' ? '#f44336' : alert === 'alert-mid' ? '#ffc107' : 'var(--cyan)';
-    const label = r.tanque.length > 14 ? r.tanque.substring(0,12)+'…' : r.tanque;
-    return `<div class="bar-group"
-      onmouseenter="showTT(event,${JSON.stringify({
-        title: r.piscic,
-        tanque: r.tanque,
-        data: fmtDate(r.data),
-        bm_prev: fmt0(r.bm_prev),
-        bm_real: fmt0(r.bm_real),
-        dif: formatDifPct(difPct(r.bm_prev,r.bm_real)),
-        rend_real: fmtPct(r.rend_real),
-      }).replace(/"/g,'&quot;')})"
-      onmouseleave="hideTT()">
-      <div class="bar-prev" style="height:${hPrev}px;width:20px"></div>
-      <div class="bar-real" style="height:${hReal}px;width:20px;background:${barReal}"></div>
-      <div class="bar-label">${label}<br>${fmtDate(r.data)}</div>
+  canvas.innerHTML = filtered.map(r=>{
+    const hA = Math.round(r.bm_rom/maxV*H);
+    const hB = Math.round(r.bm_real/maxV*H);
+    const al = alertLevel(r);
+    const barB = al==='alert-high'?'#c62828':al==='alert-mid'?'#f9a825':'var(--cyan)';
+    const lbl = r.cod.split(' - ').slice(1).join(' - ');
+    const tt = {prod:r.prod,cod:r.cod,data:fDate(r.data),brom:f0(r.bm_rom),breal:f0(r.bm_real),dBm:sign(dPct(r.bm_rom,r.bm_real)),rend:fPct(r.rend_real),bact:f1(r.bact),mole:f1(r.mole)};
+    return `<div class="bar-group" onmouseenter='showTT(event,${JSON.stringify(tt).replace(/'/g,"\\'")})'  onmouseleave="hideTT()">
+      <div class="bar-a" style="height:${hA}px;width:18px"></div>
+      <div class="bar-b" style="height:${hB}px;width:18px;background:${barB}"></div>
+      <div class="bar-label">${lbl}</div>
     </div>`;
   }).join('');
 }
 
 /* ── TOOLTIP ── */
-function showTT(e, data) {
-  const tt = document.getElementById('tooltip');
-  tt.innerHTML = `<div class="tt-title">${data.title}</div>
-    <div class="tt-row"><span class="tt-label">Tanque</span><span class="tt-val">${data.tanque}</span></div>
-    <div class="tt-row"><span class="tt-label">Data</span><span class="tt-val">${data.data}</span></div>
-    <div class="tt-row"><span class="tt-label">Bm Prev.</span><span class="tt-val">${data.bm_prev} kg</span></div>
-    <div class="tt-row"><span class="tt-label">Bm Real.</span><span class="tt-val">${data.bm_real} kg</span></div>
-    <div class="tt-row"><span class="tt-label">Δ Bm</span><span class="tt-val" style="color:${data.dif.startsWith('-')?'var(--red)':'var(--green)'}">${data.dif}</span></div>
-    <div class="tt-row"><span class="tt-label">Rend. Real</span><span class="tt-val">${data.rend_real}</span></div>`;
-  tt.style.display = 'block';
-  moveTT(e);
+function showTT(e,d) {
+  const t = document.getElementById('tooltip');
+  const dColor = d.dBm.startsWith('-')?'var(--red)':'var(--green)';
+  t.innerHTML = `<div class="tt-title">${d.prod}</div>
+    <div class="tt-row"><span class="tt-label">Data</span><span class="tt-val">${d.data}</span></div>
+    <div class="tt-row"><span class="tt-label">Cód. Abate</span><span class="tt-val" style="font-size:10px">${d.cod}</span></div>
+    <div class="tt-sep"></div>
+    <div class="tt-row"><span class="tt-label">Bm Romaneio</span><span class="tt-val">${d.brom} kg</span></div>
+    <div class="tt-row"><span class="tt-label">Bm Realizado</span><span class="tt-val">${d.breal} kg</span></div>
+    <div class="tt-row"><span class="tt-label">Δ Biomassa</span><span class="tt-val" style="color:${dColor}">${d.dBm}</span></div>
+    <div class="tt-sep"></div>
+    <div class="tt-row"><span class="tt-label">Rend. Real</span><span class="tt-val">${d.rend}</span></div>
+    <div class="tt-row"><span class="tt-label">Bactéria</span><span class="tt-val">${d.bact} kg</span></div>
+    <div class="tt-row"><span class="tt-label">Mole</span><span class="tt-val">${d.mole} kg</span></div>`;
+  t.style.display='block'; moveTT(e);
 }
-function moveTT(e) {
-  const tt = document.getElementById('tooltip');
-  tt.style.left = (e.clientX + 14) + 'px';
-  tt.style.top  = (e.clientY - 10) + 'px';
-}
-function hideTT() { document.getElementById('tooltip').style.display = 'none'; }
-document.addEventListener('mousemove', e => {
-  const tt = document.getElementById('tooltip');
-  if (tt.style.display !== 'none') moveTT(e);
-});
+function moveTT(e){const t=document.getElementById('tooltip');t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-10)+'px';}
+function hideTT(){document.getElementById('tooltip').style.display='none';}
+document.addEventListener('mousemove',e=>{const t=document.getElementById('tooltip');if(t.style.display!=='none')moveTT(e);});
 
 /* ── VIEW ── */
 function setView(v) {
-  currentView = v;
-  document.getElementById('vb-cards').classList.toggle('active', v==='cards');
-  document.getElementById('vb-tabela').classList.toggle('active', v==='tabela');
+  currentView=v;
+  document.getElementById('vb-cards').classList.toggle('active',v==='cards');
+  document.getElementById('vb-tabela').classList.toggle('active',v==='tabela');
   renderView();
 }
-
-function renderView() {
-  if (currentView === 'cards') renderCards();
-  else renderTable();
-}
+function renderView(){ currentView==='cards'?renderCards():renderTable(); }
 
 /* ── CARDS ── */
 function renderCards() {
-  document.getElementById('view-cards').style.display = '';
-  document.getElementById('view-tabela').style.display = 'none';
+  document.getElementById('view-cards').style.display='';
+  document.getElementById('view-tabela').style.display='none';
   const el = document.getElementById('view-cards');
   const em = document.getElementById('empty-msg');
+  if(!filtered.length){el.innerHTML='';em.style.display='';return;}
+  em.style.display='none';
 
-  if (!filtered.length) { el.innerHTML=''; em.style.display=''; return; }
-  em.style.display = 'none';
+  el.innerHTML = filtered.map(r=>{
+    const al=alertLevel(r);
+    const bc=al==='alert-high'?'badge-red':al==='alert-mid'?'badge-yellow':'badge-green';
+    const bt=al==='alert-high'?'⚠ Alerta':al==='alert-mid'?'~ Atenção':'✓ OK';
 
-  el.innerHTML = filtered.map(r => {
-    const alert = alertLevel(r);
-    const badge = alert==='alert-high' ? 'badge-red' : alert==='alert-mid' ? 'badge-yellow' : 'badge-green';
-    const badgeTxt = alert==='alert-high' ? '⚠ Alerta' : alert==='alert-mid' ? '~ Atenção' : '✓ OK';
+    const dBm   = dPct(r.bm_rom,r.bm_real);
+    const dPm   = dPct(r.pm_prev,r.pm_real);
+    const dRend = dPct(r.rend_prev,r.rend_real);
 
-    const metrics = [
-      { name:'Biomassa (kg)', prev:fmt0(r.bm_prev), real:fmt0(r.bm_real),
-        dif: difPct(r.bm_prev,r.bm_real), difAbs: fmt0(r.bm_real-r.bm_prev), invert:false },
-      { name:'Rend. Pot. (%)', prev:fmtPct(r.rend_prev), real:fmtPct(r.rend_real),
-        dif: difPct(r.rend_prev,r.rend_real), difAbs: fmt1(r.rend_real-r.rend_prev), invert:false },
-      { name:'PM (prog/sangria)', prev:fmt3(r.pm_prev), real:fmt3(r.pm_real),
-        dif: difPct(r.pm_prev,r.pm_real), difAbs: fmt3(r.pm_real-r.pm_prev), invert:false },
-      { name:'Mortalidade (%)', prev:fmt2(r.mort_prev), real:fmt2(r.mort_real),
-        dif: difPct(r.mort_prev||0.01,r.mort_real), difAbs: fmt2(r.mort_real-r.mort_prev), invert:true },
-      { name:'Descarte <500g (%)', prev:fmt2(r.desc_500g_prev), real:fmt2(r.desc_500g_real),
-        dif: difPct(r.desc_500g_prev,r.desc_500g_real), difAbs: fmt2(r.desc_500g_real-r.desc_500g_prev), invert:true },
-      { name:'Desc. Bactéria (%)', prev:fmt2(r.desc_bact_prev), real:fmt2(r.desc_bact_real),
-        dif: difPct(r.desc_bact_prev,r.desc_bact_real), difAbs: fmt2(r.desc_bact_real-r.desc_bact_prev), invert:true },
-      { name:'Desc. Mole (%)', prev:fmt2(r.desc_mole_prev), real:fmt2(r.desc_mole_real),
-        dif: difPct(r.desc_mole_prev,r.desc_mole_real), difAbs: fmt2(r.desc_mole_real-r.desc_mole_prev), invert:true },
+    const rows = [
+      {n:'Biomassa (kg)',    pv:f0(r.bm_rom),  rv:f0(r.bm_real),  dp:dBm,   da:signAbs(r.bm_real-r.bm_rom,0), bad:false},
+      {n:'Rend. Pot. (%)',   pv:fPct(r.rend_prev), rv:fPct(r.rend_real), dp:dRend, da:signAbs(r.rend_real-r.rend_prev), bad:false},
+      {n:'Peso Médio (kg)',  pv:f3(r.pm_prev), rv:f3(r.pm_real),  dp:dPm,   da:signAbs(r.pm_real-r.pm_prev,3), bad:false},
+      {n:'Mortalidade (kg)', pv:f2(r.mort_prev),rv:f2(r.mort_real),dp:dPct(r.mort_prev||0.01,r.mort_real),da:signAbs(r.mort_real-r.mort_prev), bad:true},
+      {n:'Desc. <400g (kg)', pv:'—',           rv:f2(r.desc400),  dp:null,  da:'',  bad:true},
+      {n:'Bactéria (kg)',    pv:'—',           rv:f1(r.bact),     dp:null,  da:'',  bad:true},
+      {n:'Mole (kg)',        pv:'—',           rv:f1(r.mole),     dp:null,  da:'',  bad:true},
     ];
 
-    return `<div class="card ${alert}">
+    return `<div class="card ${al}">
       <div class="card-header">
         <div>
-          <div class="card-title">${r.piscic}</div>
-          <div class="card-sub">${r.tanque} · ${fmtDate(r.data)} · Cód. ${r.cod}</div>
+          <div class="card-title">${r.prod}</div>
+          <div class="card-sub">Tanques: ${r.tanques} · NF ${r.nf}</div>
+          <div class="card-sub2">${r.cod}</div>
         </div>
-        <span class="card-badge ${badge}">${badgeTxt}</span>
+        <span class="card-badge ${bc}">${bt}</span>
       </div>
       <div class="card-body">
         <div class="metric-header-row">
@@ -560,16 +466,25 @@ function renderCards() {
           <span class="mh">Dif%</span>
           <span class="mh">Dif</span>
         </div>
-        ${metrics.map(m => {
-          const dc = difClass(m.dif, m.invert);
+        ${rows.map(m=>{
+          const dc = m.dp==null ? '' : difCls(m.dp, m.bad);
+          const dpTxt = m.dp==null ? '—' : sign(m.dp);
           return `<div class="metric-row">
-            <span class="metric-name">${m.name}</span>
-            <span class="metric-prev">${m.prev}</span>
-            <span class="metric-real">${m.real}</span>
-            <span class="metric-dif-pct ${dc}">${formatDifPct(m.dif)}</span>
-            <span class="metric-dif-abs">${(m.dif>=0?'+':'')}${m.difAbs}</span>
+            <span class="metric-name">${m.n}</span>
+            <span class="metric-prev">${m.pv}</span>
+            <span class="metric-real">${m.rv}</span>
+            <span class="metric-dpct ${dc}">${dpTxt}</span>
+            <span class="metric-dabs">${m.da}</span>
           </div>`;
         }).join('')}
+      </div>
+      <div class="card-footer">
+        <span class="cf-item">Motorista <span>${r.motorista}</span></span>
+        <span class="cf-item">Veículo <span>${r.veiculo}</span></span>
+        <span class="cf-item">Km <span>${f0(r.km_tot)}</span></span>
+        <span class="cf-item">O₂ <span>${r.o2} L</span></span>
+        <span class="cf-item">Bm Aprov. <span>${f1(r.bm_aprov)} kg</span></span>
+        <span class="cf-item">R$ Vivo <span>R$ ${f2(r.rs_kg)}/kg</span></span>
       </div>
     </div>`;
   }).join('');
@@ -577,74 +492,75 @@ function renderCards() {
 
 /* ── TABLE ── */
 function renderTable() {
-  document.getElementById('view-cards').style.display = 'none';
-  document.getElementById('view-tabela').style.display = '';
-  const em = document.getElementById('empty-msg');
-  const tbody = document.getElementById('tbl-body');
+  document.getElementById('view-cards').style.display='none';
+  document.getElementById('view-tabela').style.display='';
+  const em=document.getElementById('empty-msg');
+  const tb=document.getElementById('tbl-body');
+  if(!filtered.length){tb.innerHTML='';em.style.display='';return;}
+  em.style.display='none';
 
-  if (!filtered.length) { tbody.innerHTML=''; em.style.display=''; return; }
-  em.style.display = 'none';
-
-  tbody.innerHTML = filtered.map(r => {
-    const alert = alertLevel(r);
-    const pillCls = alert==='alert-high' ? 'pill-red' : alert==='alert-mid' ? 'pill-yellow' : 'pill-green';
-    const pillTxt = alert==='alert-high' ? 'Alerta' : alert==='alert-mid' ? 'Atenção' : 'OK';
-    const dBm   = difPct(r.bm_prev, r.bm_real);
-    const dRend = difPct(r.rend_prev, r.rend_real);
+  tb.innerHTML=filtered.map(r=>{
+    const al=alertLevel(r);
+    const pc=al==='alert-high'?'pill-red':al==='alert-mid'?'pill-yellow':'pill-green';
+    const pt=al==='alert-high'?'Alerta':al==='alert-mid'?'Atenção':'OK';
+    const dBm=dPct(r.bm_rom,r.bm_real);
+    const dPm=dPct(r.pm_prev,r.pm_real);
+    const dRd=dPct(r.rend_prev,r.rend_real);
     return `<tr>
-      <td class="td-piscic">${r.piscic}</td>
-      <td class="td-tanque">${r.tanque}</td>
-      <td>${fmtDate(r.data)}</td>
-      <td>${fmt0(r.bm_prev)}</td>
-      <td>${fmt0(r.bm_real)}</td>
-      <td class="${difClass(dBm)}">${formatDifPct(dBm)}</td>
-      <td>${fmtPct(r.rend_prev)}</td>
-      <td>${fmtPct(r.rend_real)}</td>
-      <td class="${difClass(dRend)}">${formatDifPct(dRend)}</td>
-      <td>${fmt3(r.pm_real)}</td>
-      <td>${fmt2(r.mort_real)}%</td>
-      <td>${fmt2(r.desc_500g_real)}%</td>
-      <td>${fmt2(r.desc_bact_real)}%</td>
-      <td>${fmt2(r.desc_mole_real)}%</td>
-      <td><span class="pill ${pillCls}">${pillTxt}</span></td>
+      <td class="td-prod">${r.prod}</td>
+      <td class="td-cod">${r.cod}</td>
+      <td>${fDate(r.data)}</td>
+      <td>${r.sem}</td>
+      <td>${f0(r.bm_rom)}</td>
+      <td>${f0(r.bm_real)}</td>
+      <td class="${difCls(dBm)}">${sign(dBm)}</td>
+      <td>${f3(r.pm_prev)}</td>
+      <td>${f3(r.pm_real)}</td>
+      <td class="${difCls(dPm)}">${sign(dPm)}</td>
+      <td>${fPct(r.rend_prev)}</td>
+      <td>${fPct(r.rend_real)}</td>
+      <td class="${difCls(dRd)}">${sign(dRd)}</td>
+      <td>${f2(r.mort_real)}</td>
+      <td>${f2(r.desc400)}</td>
+      <td>${f1(r.bact)}</td>
+      <td>${f1(r.mole)}</td>
+      <td>${r.motorista}</td>
+      <td>${f0(r.km_tot)}</td>
+      <td><span class="pill ${pc}">${pt}</span></td>
     </tr>`;
   }).join('');
 }
 
 /* ── EXPORT CSV ── */
 function exportCSV() {
-  const cols = ['Piscicultura','Tanque','Data','Código','Bm Prev(kg)','Bm Real(kg)','Δ Bm%',
-    'Rend Prev(%)','Rend Real(%)','Δ Rend%','PM Real(kg)','Mortalidade(%)','Desc<500g(%)','Desc Bact(%)','Desc Mole(%)'];
-  const rows = filtered.map(r => [
-    r.piscic, r.tanque, r.data, r.cod,
-    r.bm_prev, r.bm_real, difPct(r.bm_prev,r.bm_real).toFixed(1)+'%',
-    r.rend_prev+'%', r.rend_real+'%', difPct(r.rend_prev,r.rend_real).toFixed(1)+'%',
-    r.pm_real, r.mort_real, r.desc_500g_real, r.desc_bact_real, r.desc_mole_real
+  const h = ['Data','Semana','Prod','Tanques','NF','Cód Abate','Bm Rom(kg)','Bm Real(kg)','Δ Bm%','PM Prev','PM Real','Δ PM%','Rend Prev%','Rend Real%','Δ Rend%','Mort Real','Desc<400g','Bactéria','Mole','Motorista','Veículo','Km Tot','O2','Bm Aprov','R$/kg'];
+  const rows = filtered.map(r=>[
+    r.data,r.sem,r.prod,r.tanques,r.nf,r.cod,
+    r.bm_rom,r.bm_real,dPct(r.bm_rom,r.bm_real).toFixed(1)+'%',
+    r.pm_prev,r.pm_real,dPct(r.pm_prev,r.pm_real).toFixed(1)+'%',
+    r.rend_prev+'%',r.rend_real+'%',dPct(r.rend_prev,r.rend_real).toFixed(1)+'%',
+    r.mort_real,r.desc400,r.bact,r.mole,
+    r.motorista,r.veiculo,r.km_tot,r.o2,r.bm_aprov,r.rs_kg
   ].join(';'));
-  const csv = [cols.join(';'), ...rows].join('\n');
-  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+  const csv = [h.join(';'),...rows].join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), {href:url, download:`devolutiva_pisciculturas_${new Date().toISOString().slice(0,10)}.csv`});
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  const a = Object.assign(document.createElement('a'),{href:url,download:`devolutiva_${new Date().toISOString().slice(0,10)}.csv`});
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
 }
-
-/* ── EXPORT PDF ── */
-function exportPDF() { window.print(); }
 
 /* ── INIT ── */
 function refresh() {
-  document.getElementById('sb-fonte').textContent = 'Fonte: dados de demonstração (conectar Grafana para dados reais)';
-  document.getElementById('sb-updated').textContent = 'Atualizado: ' + new Date().toLocaleString('pt-BR');
+  document.getElementById('sb-updated').textContent = 'Atualizado: '+new Date().toLocaleString('pt-BR');
   document.getElementById('ts-label').textContent = new Date().toLocaleDateString('pt-BR');
   populateFilters();
   applyFilters();
 }
 
-/* default date range: last 30 days */
-(function initDates() {
-  const today = new Date();
-  const de = new Date(today); de.setDate(de.getDate() - 30);
-  document.getElementById('f-ate').value = today.toISOString().slice(0,10);
+(function(){
+  const ate = new Date(); ate.setDate(ate.getDate()+1);
+  const de  = new Date(); de.setDate(de.getDate()-60);
+  document.getElementById('f-ate').value = ate.toISOString().slice(0,10);
   document.getElementById('f-de').value  = de.toISOString().slice(0,10);
 })();
 
@@ -653,11 +569,15 @@ refresh();
 
 <style>
 @media print {
-  .topbar,.filterbar,.btn,.statusbar,.chart-section{display:none!important}
-  .card{break-inside:avoid;border:1px solid #ccc!important}
-  body{background:#fff!important;color:#000!important}
-  .metric-name,.metric-prev,.metric-real,.card-title,.card-sub{color:#000!important}
-  .metric-dif-pct,.metric-dif-abs{color:#333!important}
+  .topbar,.filterbar,.statusbar,.chart-section,.top-actions{display:none!important}
+  .card{break-inside:avoid;border:1px solid #999!important;border-left:3px solid #999!important;margin-bottom:8px}
+  .card.alert-high{border-left-color:#c00!important}
+  .card.alert-mid{border-left-color:#840!important}
+  .card.ok{border-left-color:#060!important}
+  body,html{background:#fff!important;color:#000!important}
+  .card-body,.card-header,.card-footer{background:#fff!important}
+  .metric-name,.card-title,.card-sub,.card-sub2,.cf-item{color:#333!important}
+  .metric-prev,.metric-real{color:#000!important}
   .dif-neg{color:#c00!important}
   .dif-ok{color:#060!important}
   .dif-pos{color:#840!important}
