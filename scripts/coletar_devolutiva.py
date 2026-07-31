@@ -156,15 +156,17 @@ def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
         logging.warning(f"Colunas de descarte não encontradas: lote={col_lote}, subcateg={col_subcateg}, valor={col_valor}")
         return 0.0
 
-    # Normaliza lote para comparação: tenta numérico, senão string
-    col_lote_series = df_desc[col_lote]
-    try:
-        lote_cmp = type(col_lote_series.iloc[0])(lote)
-    except (ValueError, TypeError):
-        lote_cmp = str(lote).strip()
-        col_lote_series = col_lote_series.astype(str).str.strip()
+    # Normaliza lote para comparação: converte tudo para string sem decimais
+    # Ex: 2805.0 → "2805", "2805" → "2805", 2805 → "2805"
+    def _norm_lote(val):
+        try:
+            return str(int(float(str(val).strip())))
+        except (ValueError, TypeError):
+            return str(val).strip()
 
-    mask = (col_lote_series == lote_cmp) & (df_desc[col_subcateg].isin(subcategs))
+    col_lote_norm = df_desc[col_lote].map(_norm_lote)
+    lote_cmp = _norm_lote(lote)
+    mask = (col_lote_norm == lote_cmp) & (df_desc[col_subcateg].isin(subcategs))
     total = pd.to_numeric(df_desc.loc[mask, col_valor], errors='coerce').sum()
     return round(float(total) if not pd.isna(total) else 0.0, 3)
 
@@ -313,6 +315,14 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         if pd.isna(lote) or lote == "":
             continue
         lote = str(lote).strip()
+        # Ignora linhas com lote zerado ou inválido (linhas vazias da planilha)
+        if lote in ("", "0", "nan", "0.0"):
+            continue
+        try:
+            if int(float(lote)) == 0:
+                continue
+        except (ValueError, TypeError):
+            pass
 
         if lote_filtro and lote != str(lote_filtro):
             continue
@@ -330,6 +340,9 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         mort_real= pd.to_numeric(row.get(mapa["mort_real"]), errors='coerce') or 0
         pm_real  = pd.to_numeric(row.get(mapa["pm_real"]),  errors='coerce') or 0
         rend_real= pd.to_numeric(row.get(mapa["rend_real"]), errors='coerce') or 0
+        # Coluna AA armazena decimal (ex: 0.4750 = 47.50%) — converte para %
+        if 0 < rend_real < 1:
+            rend_real = round(rend_real * 100, 4)
 
         # Formata data
         if isinstance(data, datetime):
