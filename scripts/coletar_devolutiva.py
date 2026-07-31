@@ -428,6 +428,14 @@ def imprimir_resultado(resultados: list):
         print(f"     Bactéria:   Prev {r['Desc Bact Prev']:>6.2f} kg  |  Real {r['Desc Bact Real']:>6.2f} kg")
         print(f"     Mole:       Prev {r['Desc Mole Prev']:>6.2f} kg  |  Real {r['Desc Mole Real']:>6.2f} kg")
 
+    # Resumo final
+    datas = [r["Data"] for r in resultados if r["Data"]]
+    print("\n" + "═" * 80)
+    print(f"  RESUMO: {len(resultados)} lote(s) processado(s)")
+    if datas:
+        print(f"  Período: {min(datas)}  →  {max(datas)}")
+    print("═" * 80)
+
 
 def gravar_excel(resultados: list, caminho: str, aba: str):
     """Adiciona as linhas processadas na aba Executado_Base_Dados."""
