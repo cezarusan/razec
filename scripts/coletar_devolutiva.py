@@ -3,14 +3,17 @@ Coleta automática de dados para Devolutiva Pisciculturas
 Lê rendimentoLote3.xlsx e Descarte-ETP.xlsx e grava em Retorno_Pisciculturas.xlsx
 
 Uso:
-    python coletar_devolutiva.py
-    python coletar_devolutiva.py --simulacao   (não grava, só mostra o resultado)
-    python coletar_devolutiva.py --lote 2805   (processa só um lote específico)
+    python coletar_devolutiva.py                  (interativo)
+    python coletar_devolutiva.py --simulacao       (não grava, só mostra resultado)
+    python coletar_devolutiva.py --automatico      (sem perguntas — para agendamento)
+    python coletar_devolutiva.py --inspecionar     (mostra colunas dos arquivos)
+    python coletar_devolutiva.py --lote 2805       (processa só um lote)
 """
 
 import sys
 import os
 import argparse
+import logging
 from datetime import datetime
 
 try:
@@ -30,7 +33,12 @@ ARQUIVOS = {
     "rendimento": r"P:\FOODS\CONTROLE DE PRODUÇÃO\Industria\Rendimento_Potencial\rendimentoLote3.xlsx",
     "descarte":   r"P:\FOODS\CONTROLE DE PRODUÇÃO\5 - Descartes\Descarte-ETP.xlsx",
     "retorno":    r"P:\FOODS\PCP\31 - Originação\Retorno_Pisciculturas.xlsx",
+    # Arquivo onde o operador preenche o PM Previsto de cada lote antes da execução
+    "pm_config":  r"P:\FOODS\PCP\31 - Originação\pm_previsto.xlsx",
 }
+
+# Pasta onde o log diário é gravado
+LOG_DIR = r"P:\FOODS\PCP\31 - Originação\logs_devolutiva"
 
 ABA_DESCARTE = "BaseDeDados"
 ABA_DESTINO  = "Executado_Base_Dados"
@@ -149,8 +157,58 @@ def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
     return round(float(total) if not pd.isna(total) else 0.0, 3)
 
 
-def solicitar_pm_previsto(lote, data, unid) -> float:
-    """Solicita PM Previsto manualmente para cada lote."""
+def carregar_pm_config() -> dict:
+    """
+    Lê pm_previsto.xlsx e retorna dict {lote: pm_previsto}.
+    O arquivo deve ter duas colunas: Lote | PM Previsto (kg)
+    """
+    caminho = ARQUIVOS.get("pm_config", "")
+    if not caminho or not os.path.exists(caminho):
+        return {}
+    try:
+        df = pd.read_excel(caminho, sheet_name=0, header=0, dtype=str)
+        resultado = {}
+        for _, row in df.iterrows():
+            lote = str(row.iloc[0]).strip()
+            try:
+                pm = float(str(row.iloc[1]).replace(",", "."))
+                resultado[lote] = pm
+            except (ValueError, IndexError):
+                pass
+        logging.info(f"PM config carregado: {len(resultado)} lotes")
+        return resultado
+    except Exception as e:
+        logging.warning(f"Não foi possível ler pm_previsto.xlsx: {e}")
+        return {}
+
+
+def criar_pm_config_modelo():
+    """Cria um arquivo modelo de pm_previsto.xlsx se não existir."""
+    caminho = ARQUIVOS.get("pm_config", "")
+    if not caminho or os.path.exists(caminho):
+        return
+    try:
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "PM Previsto"
+        ws.append(["Lote", "PM Previsto (kg)"])
+        ws.append(["2805", "0.929"])
+        ws.append(["2806", "0.929"])
+        ws.column_dimensions["A"].width = 15
+        ws.column_dimensions["B"].width = 20
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+        wb.save(caminho)
+        print(f"   📄 Arquivo modelo criado: {caminho}")
+        print(f"      Preencha o PM Previsto de cada lote nesse arquivo antes de rodar.")
+    except Exception as e:
+        print(f"   ⚠  Não foi possível criar modelo: {e}")
+
+
+def solicitar_pm_previsto(lote, data, unid, automatico=False) -> float:
+    """Solicita PM Previsto manualmente para cada lote (modo interativo)."""
+    if automatico:
+        logging.warning(f"PM Previsto não encontrado para lote {lote} — usando 0")
+        return 0.0
     while True:
         try:
             val = input(f"\n  📝 PM Previsto para Lote {lote} | {unid} | {data}: ").strip().replace(",", ".")
@@ -163,7 +221,8 @@ def solicitar_pm_previsto(lote, data, unid) -> float:
 
 
 def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
-              mapa: dict, lote_filtro=None, simulacao=False, pm_manual: dict = None) -> list:
+              mapa: dict, lote_filtro=None, simulacao=False,
+              pm_manual: dict = None, automatico=False) -> list:
     """Processa cada linha do rendimento e retorna lista de dicts prontos para gravar."""
     resultados = []
 
@@ -211,16 +270,13 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         desc_bact_prev = round(bm_real * DESC_BACT_PERC, 2)
         desc_mole_prev = round(bm_real * DESC_MOLE_PERC, 2)
 
-        # PM Previsto
-        chave_pm = f"{lote}_{data_iso}"
-        if pm_manual and chave_pm in pm_manual:
-            pm_prev = pm_manual[chave_pm]
+        # PM Previsto — lê do config ou pede manualmente
+        if pm_manual and lote in pm_manual:
+            pm_prev = pm_manual[lote]
         elif simulacao:
-            pm_prev = 0.0  # não pergunta em simulação
+            pm_prev = 0.0
         else:
-            pm_prev = solicitar_pm_previsto(lote, data_fmt, unid)
-            if pm_manual is not None:
-                pm_manual[chave_pm] = pm_prev
+            pm_prev = solicitar_pm_previsto(lote, data_fmt, unid, automatico=automatico)
 
         resultado = {
             "Data":               data_fmt,
@@ -335,12 +391,33 @@ def inspecionar(caminho_rend: str, caminho_desc: str, aba_desc: str):
 # MAIN
 # ─────────────────────────────────────────────
 
+def configurar_log(automatico: bool):
+    """Configura log em arquivo quando roda em modo automático."""
+    handlers = [logging.StreamHandler()]
+    if automatico:
+        try:
+            os.makedirs(LOG_DIR, exist_ok=True)
+            log_file = os.path.join(LOG_DIR, f"devolutiva_{datetime.now().strftime('%Y%m%d')}.log")
+            handlers.append(logging.FileHandler(log_file, encoding="utf-8"))
+        except Exception:
+            pass
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s  %(levelname)s  %(message)s",
+        datefmt="%H:%M:%S",
+        handlers=handlers,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Coleta dados para Devolutiva Pisciculturas")
     parser.add_argument("--simulacao",   action="store_true", help="Processa mas não grava no Excel")
+    parser.add_argument("--automatico",  action="store_true", help="Sem perguntas — para agendamento diário")
     parser.add_argument("--inspecionar", action="store_true", help="Mostra estrutura dos arquivos fonte")
     parser.add_argument("--lote",        type=str, default=None, help="Processa somente este lote")
     args = parser.parse_args()
+
+    configurar_log(args.automatico)
 
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
@@ -349,25 +426,30 @@ def main():
 
     if args.simulacao:
         print("\n⚠  MODO SIMULAÇÃO — nenhum dado será gravado\n")
+    if args.automatico:
+        print("\n🤖 MODO AUTOMÁTICO — sem interação manual\n")
 
     # Modo inspeção
     if args.inspecionar:
         inspecionar(ARQUIVOS["rendimento"], ARQUIVOS["descarte"], ABA_DESCARTE)
+        criar_pm_config_modelo()
         return
 
-    # Verifica arquivos
+    # Verifica arquivos de entrada
     erros = []
-    for nome, caminho in ARQUIVOS.items():
-        if nome == "retorno" and args.simulacao:
-            continue
-        if not os.path.exists(caminho):
-            erros.append(f"  ❌ {nome}: {caminho}")
+    for nome in ["rendimento", "descarte"]:
+        if not os.path.exists(ARQUIVOS[nome]):
+            erros.append(f"  ❌ {nome}: {ARQUIVOS[nome]}")
+    if not args.simulacao and not os.path.exists(ARQUIVOS["retorno"]):
+        erros.append(f"  ❌ retorno: {ARQUIVOS['retorno']}")
     if erros:
-        print("\nArquivos não encontrados:")
-        for e in erros:
-            print(e)
-        print("\nVerifique se está conectado à rede e tente novamente.")
+        msg = "Arquivos não encontrados:\n" + "\n".join(erros) + "\n\nVerifique a conexão com a rede."
+        print(msg)
+        logging.error(msg)
         sys.exit(1)
+
+    # Cria modelo de PM se não existir
+    criar_pm_config_modelo()
 
     # Leitura
     df_rend = ler_rendimento(ARQUIVOS["rendimento"])
@@ -379,26 +461,39 @@ def main():
     for k, v in mapa.items():
         print(f"   {k:12} → {v}")
 
+    # PM Previsto do arquivo de config
+    pm_config = carregar_pm_config()
+    if pm_config:
+        print(f"\n📄 PM Previsto carregado para {len(pm_config)} lote(s): {', '.join(pm_config.keys())}")
+    elif args.automatico:
+        print(f"\n⚠  pm_previsto.xlsx não encontrado — PM Previsto será 0 para todos os lotes.")
+        print(f"   Crie o arquivo em: {ARQUIVOS['pm_config']}")
+
     # Processamento
-    pm_cache = {}
     resultados = processar(df_rend, df_desc, mapa,
                            lote_filtro=args.lote,
                            simulacao=args.simulacao,
-                           pm_manual=pm_cache)
+                           pm_manual=pm_config,
+                           automatico=args.automatico)
 
     # Exibe resultado
     imprimir_resultado(resultados)
 
     if not resultados:
+        logging.warning("Nenhum resultado processado.")
         return
 
     # Grava
     if not args.simulacao:
-        confirmar = input(f"\n  Gravar {len(resultados)} linha(s) em Executado_Base_Dados? (s/n): ").strip().lower()
-        if confirmar == "s":
+        if args.automatico:
             gravar_excel(resultados, ARQUIVOS["retorno"], ABA_DESTINO)
+            logging.info(f"Execução concluída. {len(resultados)} lote(s) gravado(s).")
         else:
-            print("  Gravação cancelada.")
+            confirmar = input(f"\n  Gravar {len(resultados)} linha(s) em Executado_Base_Dados? (s/n): ").strip().lower()
+            if confirmar == "s":
+                gravar_excel(resultados, ARQUIVOS["retorno"], ABA_DESTINO)
+            else:
+                print("  Gravação cancelada.")
     else:
         print("\n  (simulação — nada foi gravado)")
 
