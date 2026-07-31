@@ -140,19 +140,27 @@ def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
     col_valor = None
 
     for c in df_desc.columns:
-        cl = str(c).lower()
+        cl = str(c).lower().replace(" ", "")
         if "lote" in cl and col_lote is None:
             col_lote = c
         if "subcateg" in cl and col_subcateg is None:
             col_subcateg = c
-        if "peixovivo" in cl.replace(" ","") or "peixevivo" in cl.replace(" ","") and col_valor is None:
+        if "peixevivo" in cl and col_valor is None:
             col_valor = c
 
     if not col_lote or not col_subcateg or not col_valor:
-        print(f"   ⚠  Colunas de descarte não encontradas: lote={col_lote}, subcateg={col_subcateg}, valor={col_valor}")
+        logging.warning(f"Colunas de descarte não encontradas: lote={col_lote}, subcateg={col_subcateg}, valor={col_valor}")
         return 0.0
 
-    mask = (df_desc[col_lote] == lote) & (df_desc[col_subcateg].isin(subcategs))
+    # Normaliza lote para comparação: tenta numérico, senão string
+    col_lote_series = df_desc[col_lote]
+    try:
+        lote_cmp = type(col_lote_series.iloc[0])(lote)
+    except (ValueError, TypeError):
+        lote_cmp = str(lote).strip()
+        col_lote_series = col_lote_series.astype(str).str.strip()
+
+    mask = (col_lote_series == lote_cmp) & (df_desc[col_subcateg].isin(subcategs))
     total = pd.to_numeric(df_desc.loc[mask, col_valor], errors='coerce').sum()
     return round(float(total) if not pd.isna(total) else 0.0, 3)
 
