@@ -17,8 +17,9 @@ $PASTA_LOG      = "P:\FOODS\PCP\31 - Originação\logs_devolutiva"
 # Nome da tarefa no Agendador
 $NOME_TAREFA    = "BTJFoods_Devolutiva_Pisciculturas"
 
-# Horário de execução diária (ajuste se necessário)
-$HORA_EXECUCAO  = "07:00"
+# Horários de execução diária
+$HORA_MANHA = "10:00"
+$HORA_TARDE = "14:00"
 
 # ── Banner ────────────────────────────────────────────────────────────────────
 Write-Host ""
@@ -63,7 +64,7 @@ try {
 Write-Host ""
 Write-Host "[3/4] Configurando Agendador de Tarefas..." -ForegroundColor Yellow
 Write-Host "      Tarefa: $NOME_TAREFA" -ForegroundColor Gray
-Write-Host "      Horário: todos os dias às $HORA_EXECUCAO" -ForegroundColor Gray
+Write-Host "      Horários: seg–sex às $HORA_MANHA e às $HORA_TARDE" -ForegroundColor Gray
 
 try {
     # Remove tarefa anterior se existir
@@ -79,11 +80,16 @@ try {
         -Argument "/c `"$ARQUIVO_BAT`"" `
         -WorkingDirectory $PASTA_SCRIPTS
 
-    # Gatilho: diário às 07:00 (dias úteis — seg a sex)
-    $gatilho = New-ScheduledTaskTrigger `
+    # Dois gatilhos: 10:00 e 14:00 (seg a sex)
+    $gatilhoManha = New-ScheduledTaskTrigger `
         -Weekly `
         -DaysOfWeek Monday, Tuesday, Wednesday, Thursday, Friday `
-        -At $HORA_EXECUCAO
+        -At $HORA_MANHA
+
+    $gatilhoTarde = New-ScheduledTaskTrigger `
+        -Weekly `
+        -DaysOfWeek Monday, Tuesday, Wednesday, Thursday, Friday `
+        -At $HORA_TARDE
 
     # Configurações: executar mesmo se usuário não estiver logado, com máxima prioridade
     $config = New-ScheduledTaskSettingsSet `
@@ -102,14 +108,14 @@ try {
     Register-ScheduledTask `
         -TaskName $NOME_TAREFA `
         -Action $acao `
-        -Trigger $gatilho `
+        -Trigger @($gatilhoManha, $gatilhoTarde) `
         -Settings $config `
         -Principal $principal `
         -Description "Coleta automática de dados para Devolutiva Pisciculturas — BTJ Foods" `
         | Out-Null
 
-    Write-Host "      OK: tarefa criada (seg–sex às $HORA_EXECUCAO)." -ForegroundColor Green
-    Write-Host "      Você pode ajustar o horário no Agendador de Tarefas." -ForegroundColor Gray
+    Write-Host "      OK: tarefa criada (seg–sex às $HORA_MANHA e às $HORA_TARDE)." -ForegroundColor Green
+    Write-Host "      Você pode ajustar no Agendador de Tarefas se necessário." -ForegroundColor Gray
 
 } catch {
     Write-Host "      ERRO ao criar tarefa: $_" -ForegroundColor Red
@@ -160,7 +166,7 @@ Write-Host "  CONFIGURAÇÃO CONCLUÍDA" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Agendamento:" -ForegroundColor White
-Write-Host "    Segunda a sexta às $HORA_EXECUCAO (automático, sem interação)" -ForegroundColor Gray
+Write-Host "    Segunda a sexta às $HORA_MANHA e às $HORA_TARDE (automático, sem interação)" -ForegroundColor Gray
 Write-Host "    Log diário em: $PASTA_LOG" -ForegroundColor Gray
 Write-Host ""
 Write-Host "  Atalhos criados na Área de Trabalho:" -ForegroundColor White
