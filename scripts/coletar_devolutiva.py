@@ -475,9 +475,25 @@ def inspecionar(caminho_rend: str, caminho_desc: str, aba_desc: str):
 
     print(f"\n📂 {caminho_desc} → aba '{aba_desc}'")
     try:
-        df = pd.read_excel(caminho_desc, sheet_name=aba_desc, header=0, nrows=3)
+        df = pd.read_excel(caminho_desc, sheet_name=aba_desc, header=0)
         for i, col in enumerate(df.columns):
             print(f"   {i+1:>3} | {col}")
+
+        # Mostra SubCateg únicas para validar os filtros
+        col_sub = next((c for c in df.columns if "subcateg" in str(c).lower().replace(" ","")), None)
+        if col_sub:
+            unicas = sorted(df[col_sub].dropna().astype(str).unique())
+            print(f"\n   SubCateg encontradas em '{col_sub}' ({len(unicas)} valores únicos):")
+            for v in unicas:
+                print(f"      • {v}")
+
+        # Mostra formato do lote
+        col_lote = next((c for c in df.columns if "lote" in str(c).lower()), None)
+        if col_lote:
+            exemplos = df[col_lote].dropna().astype(str).unique()[:5]
+            print(f"\n   Exemplos de Lote na coluna '{col_lote}':")
+            for v in exemplos:
+                print(f"      • {v}")
     except Exception as e:
         print(f"   ❌ Erro: {e}")
 
