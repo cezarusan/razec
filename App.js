@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, ScrollView, SafeAreaView } from 'react-native';
 
-// --- BANCO DE DADOS LOCAL DE CIFTAS (Focado em Refrões) ---
+// --- LOCAL CHORD DATABASE (Focused on Choruses) ---
 const BANCO_DE_CIFRAS = [
   {
     id: '1',
     titulo: 'Cobaia',
     artista: 'Lauana Prado',
     tomOriginal: 'D',
-    trecho: 'Refrão',
+    trecho: 'Chorus',
     cifra: "D               A\n  Eu sou a sua cobaia\nBm               G\n  E você testando amor...\nD                  A\n  Tentando achar alguém pra dar certo\nBm                     G\n  Enquanto eu tô aqui sofrendo de perto!"
   },
   {
@@ -16,7 +16,7 @@ const BANCO_DE_CIFRAS = [
     titulo: 'Me Leva Pra Casa',
     artista: 'Lauana Prado',
     tomOriginal: 'G',
-    trecho: 'Refrão',
+    trecho: 'Chorus',
     cifra: "G               D\n  Me leva pra casa, meu amor\nC                     G\n  Não deixe o nosso fogo apagar\nC                  G\n  A noite tá fria, o peito vazio\n    A7             D7\n  Vem me abraçar..."
   },
   {
@@ -24,14 +24,14 @@ const BANCO_DE_CIFRAS = [
     titulo: 'Vingança',
     artista: 'Lauana Prado',
     tomOriginal: 'A',
-    trecho: 'Refrão',
+    trecho: 'Chorus',
     cifra: "A                 E\n  E agora, quem vai apagar o incêndio\nF#m                D\n  Que você deixou aqui dentro?\nA                    E\n  Cê acha que amor é brincadeira\n      D                    E\n  E jogou nossa história na lixeira!"
   }
 ];
 
 const ESCALA = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-// Transpõe os acordes de uma cifra do tom original para o tom atual
+// Transposes chords in a chart from the original key to the current key
 function transporCifra(cifraOriginal, tomOriginal, tomAtual) {
   const indexOriginal = ESCALA.indexOf(tomOriginal);
   const indexAtual = ESCALA.indexOf(tomAtual);
@@ -53,22 +53,22 @@ function transporCifra(cifraOriginal, tomOriginal, tomAtual) {
 }
 
 export default function App() {
-  const [telaAtual, setTelaAtual] = useState('home'); // 'home', 'pasta', 'busca', 'cifra'
+  const [telaAtual, setTelaAtual] = useState('home'); // 'home', 'folder', 'search', 'chord'
   const [pastas, setPastas] = useState([
-    { id: '1', nome: 'Churrasco com Amigos', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[1]] },
-    { id: '2', nome: 'Lauana Prado - Só Hits', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[2]] }
+    { id: '1', nome: 'BBQ with Friends', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[1]] },
+    { id: '2', nome: 'Lauana Prado - Greatest Hits', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[2]] }
   ]);
   const [pastaSelecionada, setPastaSelecionada] = useState(null);
   const [musicaSelecionada, setMusicaSelecionada] = useState(null);
   const [termoBusca, setTermoBusca] = useState('');
   const [tomAtual, setTomAtual] = useState('D');
 
-  // --- TELA 1: HOME (Lista de Pastas) ---
+  // --- SCREEN 1: HOME (Folder List) ---
   if (telaAtual === 'home') {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.headerTitle}>🎸 RefrãoCifras</Text>
-        <Text style={styles.subtitle}>Suas pastas de rodas de violão</Text>
+        <Text style={styles.subtitle}>Your guitar jam session folders</Text>
 
         <FlatList
           data={pastas}
@@ -79,7 +79,7 @@ export default function App() {
               onPress={() => { setPastaSelecionada(item); setTelaAtual('pasta'); }}
             >
               <Text style={styles.cardTitle}>{item.nome}</Text>
-              <Text style={styles.cardSub}>{item.musicas.length} músicas cadastradas</Text>
+              <Text style={styles.cardSub}>{item.musicas.length} songs saved</Text>
             </TouchableOpacity>
           )}
         />
@@ -87,12 +87,12 @@ export default function App() {
     );
   }
 
-  // --- TELA 2: DETALHES DA PASTA (Músicas na Pasta) ---
+  // --- SCREEN 2: FOLDER DETAILS (Songs in Folder) ---
   if (telaAtual === 'pasta') {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('home')}><Text style={styles.backButton}>← Voltar</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setTelaAtual('home')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
           <Text style={styles.headerTitleSmall}>{pastaSelecionada.nome}</Text>
           <View style={{width: 50}} />
         </View>
@@ -101,7 +101,7 @@ export default function App() {
           style={styles.primaryButton}
           onPress={() => setTelaAtual('busca')}
         >
-          <Text style={styles.primaryButtonText}>+ Adicionar Música da Busca</Text>
+          <Text style={styles.primaryButtonText}>+ Add Song from Search</Text>
         </TouchableOpacity>
 
         <FlatList
@@ -117,7 +117,7 @@ export default function App() {
               }}
             >
               <Text style={styles.cardTitle}>{item.titulo}</Text>
-              <Text style={styles.cardSub}>{item.artista} • Tom: {item.tomOriginal}</Text>
+              <Text style={styles.cardSub}>{item.artista} • Key: {item.tomOriginal}</Text>
             </TouchableOpacity>
           )}
         />
@@ -125,7 +125,7 @@ export default function App() {
     );
   }
 
-  // --- TELA 3: BUSCA LOCAL PARA ADICIONAR ---
+  // --- SCREEN 3: LOCAL SEARCH TO ADD ---
   if (telaAtual === 'busca') {
     const musicasFiltradas = BANCO_DE_CIFRAS.filter(m =>
       m.titulo.toLowerCase().includes(termoBusca.toLowerCase()) ||
@@ -142,14 +142,14 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Voltar</Text></TouchableOpacity>
-          <Text style={styles.headerTitleSmall}>Buscar Cifra</Text>
+          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
+          <Text style={styles.headerTitleSmall}>Search Chords</Text>
           <View style={{width: 50}} />
         </View>
 
         <TextInput
           style={styles.searchInput}
-          placeholder="Digite o nome da música ou artista..."
+          placeholder="Type song name or artist..."
           placeholderTextColor="#666"
           value={termoBusca}
           onChangeText={setTermoBusca}
@@ -164,8 +164,8 @@ export default function App() {
               style={styles.card}
               onPress={() => adicionarMusicaNaPasta(item)}
             >
-              <Text style={styles.cardTitle}>{item.titulo} <Text style={{color: '#4CD964', fontSize: 14}}>[+ Adicionar]</Text></Text>
-              <Text style={styles.cardSub}>{item.artista} • Tom: {item.tomOriginal}</Text>
+              <Text style={styles.cardTitle}>{item.titulo} <Text style={{color: '#4CD964', fontSize: 14}}>[+ Add]</Text></Text>
+              <Text style={styles.cardSub}>{item.artista} • Key: {item.tomOriginal}</Text>
             </TouchableOpacity>
           )}
         />
@@ -173,7 +173,7 @@ export default function App() {
     );
   }
 
-  // --- TELA 4: EXIBIÇÃO DA CIFRA (Com Transposição) ---
+  // --- SCREEN 4: CHORD DISPLAY (With Transposition) ---
   if (telaAtual === 'cifra') {
     const alterarTom = (direcao) => {
       const idx = ESCALA.indexOf(tomAtual);
@@ -188,10 +188,10 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Voltar</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
           <View style={styles.toneControl}>
             <TouchableOpacity onPress={() => alterarTom(-1)} style={styles.toneBtn}><Text style={styles.toneBtnText}>-</Text></TouchableOpacity>
-            <Text style={styles.toneText}>Tom: {tomAtual}</Text>
+            <Text style={styles.toneText}>Key: {tomAtual}</Text>
             <TouchableOpacity onPress={() => alterarTom(1)} style={styles.toneBtn}><Text style={styles.toneBtnText}>+</Text></TouchableOpacity>
           </View>
         </View>
@@ -209,7 +209,7 @@ export default function App() {
   }
 }
 
-// --- ESTILOS DO APLICATIVO ---
+// --- APP STYLES ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#121212', padding: 20 },
   headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#FFF', marginTop: 10 },
