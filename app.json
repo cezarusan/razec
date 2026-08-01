@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "RefrãoCifras",
+    "slug": "refrao-cifras",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#121212"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.refraocifras.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#121212"
+      },
+      "package": "com.refraocifras.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

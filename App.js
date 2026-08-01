@@ -53,7 +53,7 @@ function transporCifra(cifraOriginal, tomOriginal, tomAtual) {
 }
 
 export default function App() {
-  const [telaAtual, setTelaAtual] = useState('home'); // 'home', 'folder', 'search', 'chord'
+  const [telaAtual, setTelaAtual] = useState('home'); // 'home', 'pasta', 'busca', 'cifra'
   const [pastas, setPastas] = useState([
     { id: '1', nome: 'BBQ with Friends', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[1]] },
     { id: '2', nome: 'Lauana Prado - Greatest Hits', musicas: [BANCO_DE_CIFRAS[0], BANCO_DE_CIFRAS[2]] }
@@ -92,14 +92,16 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('home')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setTelaAtual('home')}>
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
           <Text style={styles.headerTitleSmall}>{pastaSelecionada.nome}</Text>
-          <View style={{width: 50}} />
+          <View style={{ width: 50 }} />
         </View>
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => setTelaAtual('busca')}
+          onPress={() => { setTermoBusca(''); setTelaAtual('busca'); }}
         >
           <Text style={styles.primaryButtonText}>+ Add Song from Search</Text>
         </TouchableOpacity>
@@ -134,7 +136,13 @@ export default function App() {
 
     const adicionarMusicaNaPasta = (musica) => {
       if (!pastaSelecionada.musicas.some(m => m.id === musica.id)) {
-        pastaSelecionada.musicas.push(musica);
+        // FIX: use setPastas to update state immutably so React re-renders
+        setPastas(prev => prev.map(p =>
+          p.id === pastaSelecionada.id
+            ? { ...p, musicas: [...p.musicas, musica] }
+            : p
+        ));
+        setPastaSelecionada(prev => ({ ...prev, musicas: [...prev.musicas, musica] }));
       }
       setTelaAtual('pasta');
     };
@@ -142,9 +150,11 @@ export default function App() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setTelaAtual('pasta')}>
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
           <Text style={styles.headerTitleSmall}>Search Chords</Text>
-          <View style={{width: 50}} />
+          <View style={{ width: 50 }} />
         </View>
 
         <TextInput
@@ -164,7 +174,10 @@ export default function App() {
               style={styles.card}
               onPress={() => adicionarMusicaNaPasta(item)}
             >
-              <Text style={styles.cardTitle}>{item.titulo} <Text style={{color: '#4CD964', fontSize: 14}}>[+ Add]</Text></Text>
+              <Text style={styles.cardTitle}>
+                {item.titulo}{' '}
+                <Text style={{ color: '#4CD964', fontSize: 14 }}>[+ Add]</Text>
+              </Text>
               <Text style={styles.cardSub}>{item.artista} • Key: {item.tomOriginal}</Text>
             </TouchableOpacity>
           )}
@@ -183,22 +196,34 @@ export default function App() {
       setTomAtual(ESCALA[novoIdx]);
     };
 
-    const cifraTransposta = transporCifra(musicaSelecionada.cifra, musicaSelecionada.tomOriginal, tomAtual);
+    const cifraTransposta = transporCifra(
+      musicaSelecionada.cifra,
+      musicaSelecionada.tomOriginal,
+      tomAtual
+    );
 
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.navBar}>
-          <TouchableOpacity onPress={() => setTelaAtual('pasta')}><Text style={styles.backButton}>← Back</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => setTelaAtual('pasta')}>
+            <Text style={styles.backButton}>← Back</Text>
+          </TouchableOpacity>
           <View style={styles.toneControl}>
-            <TouchableOpacity onPress={() => alterarTom(-1)} style={styles.toneBtn}><Text style={styles.toneBtnText}>-</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => alterarTom(-1)} style={styles.toneBtn}>
+              <Text style={styles.toneBtnText}>-</Text>
+            </TouchableOpacity>
             <Text style={styles.toneText}>Key: {tomAtual}</Text>
-            <TouchableOpacity onPress={() => alterarTom(1)} style={styles.toneBtn}><Text style={styles.toneBtnText}>+</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => alterarTom(1)} style={styles.toneBtn}>
+              <Text style={styles.toneBtnText}>+</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.cifraHeader}>
           <Text style={styles.cifraTitle}>{musicaSelecionada.titulo}</Text>
-          <Text style={styles.cifraArtist}>{musicaSelecionada.artista} ({musicaSelecionada.trecho})</Text>
+          <Text style={styles.cifraArtist}>
+            {musicaSelecionada.artista} ({musicaSelecionada.trecho})
+          </Text>
         </View>
 
         <ScrollView style={styles.cifraContainer}>
