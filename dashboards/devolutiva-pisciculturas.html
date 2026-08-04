@@ -566,7 +566,7 @@ function renderChart() {
     const hB = maxV ? Math.round((r.bm_real||0)/maxV*H) : 0;
     const al = alertLevel(r);
     const barB = al==='alert-high'?'#c62828':al==='alert-mid'?'#f9a825':'var(--cyan)';
-    const lbl = r.prod + ' ' + r.seq;
+    const lbl = r.prod + ' Lote ' + r.seq;
     const tt = {
       prod:r.prod, cod:r.cod, data:fDate(r.data),
       bprev:f0(r.bm_prev), breal:f0(r.bm_real),
@@ -758,7 +758,7 @@ function renderTable() {
 
 /* ─── EXPORT CSV ── */
 function exportCSV() {
-  const h = ['Data','Semana','Seq','Prod','Lote','Cód Abate',
+  const h = ['Data','Semana','Lote','Prod','Lote Nº','Cód Abate',
     'Bm Prev(kg)','Bm Real(kg)','Δ Bm%',
     'PM Prev','PM Real','Δ PM%',
     'Rend Prev%','Rend Real%','Δ Rend%',
