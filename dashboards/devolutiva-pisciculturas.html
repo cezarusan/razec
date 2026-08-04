@@ -220,6 +220,11 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
   <div class="kpi"><div class="kpi-label">Com Alerta</div><div class="kpi-val kv-red" id="k-alerta">—</div><div class="kpi-sub">abates c/ desvio</div></div>
 </div>
 
+<div id="analise-section" style="background:var(--surf);border-bottom:1px solid var(--bdr2);padding:12px 16px;display:none">
+  <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px">⚠ Análise de Desvios — Indicadores Fora do Previsto</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap" id="analise-body"></div>
+</div>
+
 <div class="main">
   <div class="chart-section">
     <div class="chart-header">
@@ -360,6 +365,111 @@ function loadJSON(input) {
   reader.readAsText(file, 'utf-8');
 }
 
+/* ─── ANÁLISE DE DESVIOS ── */
+function renderAnalise() {
+  const sec  = document.getElementById('analise-section');
+  const body = document.getElementById('analise-body');
+  if (!filtered.length) { sec.style.display='none'; return; }
+
+  const n = filtered.length;
+
+  // Define indicadores e suas tolerâncias
+  const indicadores = [
+    {
+      nome: 'Rend. Potencial',
+      cor: 'var(--yellow)',
+      icon: '📉',
+      calc: r => r.rend_prev - r.rend_real,        // positivo = abaixo do previsto (ruim)
+      fmt:  v => (v > 0 ? '-' : '+') + f2(Math.abs(v)) + '%',
+      limiar: 1.5,
+      unidade: '%',
+      ruim: v => v > 0,
+    },
+    {
+      nome: 'Biomassa',
+      cor: 'var(--blue)',
+      icon: '⚖',
+      calc: r => (r.bm_prev ? (r.bm_prev - r.bm_real)/r.bm_prev*100 : 0),
+      fmt:  v => (v > 0 ? '-' : '+') + f1(Math.abs(v)) + '%',
+      limiar: 3,
+      ruim: v => Math.abs(v) > 3,
+    },
+    {
+      nome: 'Bactéria',
+      cor: 'var(--red)',
+      icon: '🦠',
+      calc: r => r.bact_real - (r.bact_prev || 0),  // excesso real sobre previsto
+      fmt:  v => '+' + f1(v) + ' kg',
+      limiar: 0,
+      ruim: v => v > 0,
+    },
+    {
+      nome: 'Desc. <500g',
+      cor: 'var(--orange)',
+      icon: '🐟',
+      calc: r => r.desc500g_real - (r.desc500g_prev || 0),
+      fmt:  v => '+' + f1(v) + ' kg',
+      limiar: 0,
+      ruim: v => v > 0,
+    },
+    {
+      nome: 'Mole',
+      cor: 'var(--orange)',
+      icon: '💧',
+      calc: r => r.mole_real - (r.mole_prev || 0),
+      fmt:  v => '+' + f1(v) + ' kg',
+      limiar: 0,
+      ruim: v => v > 0,
+    },
+    {
+      nome: 'Mortalidade',
+      cor: 'var(--red)',
+      icon: '💀',
+      calc: r => r.mort_real || 0,
+      fmt:  v => f1(v) + ' kg',
+      limiar: 0,
+      ruim: v => v > 0,
+    },
+  ];
+
+  let html = '';
+  let temDesvio = false;
+
+  indicadores.forEach(ind => {
+    const fora = filtered.filter(r => ind.ruim(ind.calc(r)));
+    if (!fora.length) return;
+    temDesvio = true;
+
+    const pct   = Math.round(fora.length / n * 100);
+    const total = fora.reduce((a,r) => a + Math.abs(ind.calc(r)), 0);
+    const med   = total / fora.length;
+
+    // Pior fazenda
+    const porProd = {};
+    fora.forEach(r => { porProd[r.prod] = (porProd[r.prod]||0) + 1; });
+    const piorProd = Object.entries(porProd).sort((a,b)=>b[1]-a[1])[0];
+
+    const gravidade = pct >= 60 ? 'var(--red)' : pct >= 30 ? 'var(--orange)' : 'var(--yellow)';
+
+    html += `<div style="background:var(--surf2);border:1px solid var(--bdr2);border-left:3px solid ${gravidade};border-radius:5px;padding:10px 14px;min-width:180px;flex:1">
+      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">${ind.icon} ${ind.nome}</div>
+      <div style="font-size:22px;font-weight:800;color:${gravidade};font-variant-numeric:tabular-nums;line-height:1">${fora.length} <span style="font-size:13px;font-weight:600">/ ${n} abates</span></div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:3px">${pct}% acima do previsto</div>
+      <div style="border-top:1px solid var(--bdr);margin:7px 0"></div>
+      <div style="font-size:11px;color:var(--txt2)">Média do excesso: <b style="color:var(--txt)">${ind.fmt(med)}</b></div>
+      ${piorProd ? `<div style="font-size:11px;color:var(--txt2);margin-top:2px">Mais freq.: <b style="color:${gravidade}">${piorProd[0]}</b> (${piorProd[1]}x)</div>` : ''}
+    </div>`;
+  });
+
+  if (temDesvio) {
+    sec.style.display = '';
+    body.innerHTML = html;
+  } else {
+    sec.style.display = '';
+    body.innerHTML = `<div style="color:var(--green);font-size:13px;font-weight:600;padding:6px 0">✅ Todos os indicadores dentro do previsto no período.</div>`;
+  }
+}
+
 /* ─── ALERTA ── */
 function alertLevel(r) {
   const dBm    = Math.abs(dPct(r.bm_prev, r.bm_real));
@@ -411,6 +521,7 @@ function applyFilters() {
   renderKPIs();
   renderChart();
   renderView();
+  renderAnalise();
   document.getElementById('sb-total').textContent = `${filtered.length} abate(s) exibido(s) de ${BASE.length} total`;
   document.getElementById('sec-label').textContent = `Abates (${filtered.length})`;
 }
