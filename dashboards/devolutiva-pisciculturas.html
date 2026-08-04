@@ -184,6 +184,9 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
     <option value="">Todas</option>
   </select>
   <div class="filter-sep"></div>
+  <span class="filter-label">Lote</span>
+  <input type="text" class="finput" id="f-lote" placeholder="ex: 2805" oninput="applyFilters()" style="width:90px">
+  <div class="filter-sep"></div>
   <span class="filter-label">De</span>
   <input type="date" class="finput" id="f-de" onchange="applyFilters()">
   <span class="filter-label">Até</span>
@@ -384,17 +387,19 @@ function populateFilters() {
 function applyFilters() {
   const prod   = document.getElementById('f-prod').value;
   const sem    = document.getElementById('f-semana').value;
+  const lote   = document.getElementById('f-lote').value.trim().toLowerCase();
   const de     = document.getElementById('f-de').value;
   const ate    = document.getElementById('f-ate').value;
   const alerta = document.getElementById('f-alerta').value;
 
   filtered = BASE.filter(r => {
-    if (prod   && r.prod !== prod)           return false;
-    if (sem    && r.sem  !== Number(sem))    return false;
-    if (de     && r.data <  de)              return false;
-    if (ate    && r.data >  ate)             return false;
-    if (alerta === 'alert' && alertLevel(r) === 'ok')  return false;
-    if (alerta === 'ok'    && alertLevel(r) !== 'ok')  return false;
+    if (prod   && r.prod !== prod)                          return false;
+    if (sem    && r.sem  !== Number(sem))                   return false;
+    if (lote   && !String(r.lote).toLowerCase().includes(lote)) return false;
+    if (de     && r.data <  de)                             return false;
+    if (ate    && r.data >  ate)                            return false;
+    if (alerta === 'alert' && alertLevel(r) === 'ok')       return false;
+    if (alerta === 'ok'    && alertLevel(r) !== 'ok')       return false;
     return true;
   });
 
