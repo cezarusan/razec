@@ -34,18 +34,18 @@ except ImportError:
 ARQUIVOS = {
     "rendimento":   r"P:\FOODS\CONTROLE DE PRODUÇÃO\Industria\Rendimento_Potencial\rendimentoLote3.xlsx",
     "descarte":     r"P:\FOODS\CONTROLE DE PRODUÇÃO\5 - Descartes\Descarte-ETP.xlsx",
-    "retorno":      r"P:\FOODS\PCP\31 - Originação\Retorno_Pisciculturas.xlsx",
+    "retorno":      r"P:\FOODS\PCP\31 - Originacao\Retorno_Pisciculturas.xlsx",
     # Arquivo onde o operador preenche o PM Previsto de cada lote antes da execução
-    "pm_config":    r"P:\FOODS\PCP\31 - Originação\pm_previsto.xlsx",
+    "pm_config":    r"P:\FOODS\PCP\31 - Originacao\pm_previsto.xlsx",
     # Cadastro de CodFor → Unid. Produtora (duas colunas: CodFor | Unid. Produtora)
-    "codfor_unid":  r"P:\FOODS\PCP\31 - Originação\codfor_unidades.xlsx",
+    "codfor_unid":  r"P:\FOODS\PCP\31 - Originacao\codfor_unidades.xlsx",
 }
 
 # Pasta onde o log diário é gravado
-LOG_DIR = r"P:\FOODS\PCP\31 - Originação\logs_devolutiva"
+LOG_DIR = r"P:\FOODS\PCP\31 - Originacao\logs_devolutiva"
 
 # Caminho do JSON exportado para o dashboard
-JSON_EXPORT = r"P:\FOODS\PCP\31 - Originação\devolutiva_dados.json"
+JSON_EXPORT = r"P:\FOODS\PCP\31 - Originacao\devolutiva_dados.json"
 
 ABA_DESCARTE = "BaseDeDados"
 ABA_DESTINO  = "Executado_Base_Dados"

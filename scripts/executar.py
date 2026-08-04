@@ -12,7 +12,7 @@ import json
 URL = "https://raw.githubusercontent.com/cezarusan/razec/claude/pisciculturas-dashboard-devolutiva-kfazaq"
 
 def achar_pasta():
-    for p in [r"P:\FOODS\PCP\31 - Originação", r"P:\FOODS\PCP\31 - Originacao"]:
+    for p in [r"P:\FOODS\PCP\31 - Originacao", r"P:\FOODS\PCP\31 - Originação"]:
         if os.path.isdir(p):
             return p
     for p in glob.glob(r"P:\FOODS\PCP\31*"):

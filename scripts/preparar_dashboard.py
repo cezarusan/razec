@@ -10,8 +10,8 @@ import subprocess
 
 def achar_pasta():
     tentativas = [
-        r"P:\FOODS\PCP\31 - Originação",
         r"P:\FOODS\PCP\31 - Originacao",
+        r"P:\FOODS\PCP\31 - Originação",
     ]
     for p in tentativas:
         if os.path.isdir(p):
