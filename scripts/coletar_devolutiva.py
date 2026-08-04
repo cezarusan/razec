@@ -13,6 +13,7 @@ Uso:
 import sys
 import os
 import argparse
+import json
 import logging
 from datetime import datetime
 
@@ -41,6 +42,9 @@ ARQUIVOS = {
 
 # Pasta onde o log diário é gravado
 LOG_DIR = r"P:\FOODS\PCP\31 - Originação\logs_devolutiva"
+
+# Caminho do JSON exportado para o dashboard
+JSON_EXPORT = r"P:\FOODS\PCP\31 - Originação\devolutiva_dados.json"
 
 ABA_DESCARTE = "BaseDeDados"
 ABA_DESTINO  = "Executado_Base_Dados"
@@ -417,8 +421,21 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         else:
             pm_prev = solicitar_pm_previsto(lote, data_fmt, unid, automatico=automatico)
 
+        # Semana ISO e sequência para o dashboard
+        try:
+            sem = _norm_data(data).isocalendar()[1] if data else 0
+        except Exception:
+            sem = 0
+        try:
+            seq_int = int(float(str(seqlot).strip())) if seqlot is not None else 0
+        except (ValueError, TypeError):
+            seq_int = 0
+
         resultado = {
             "Data":               data_fmt,
+            "Data ISO":           data_iso,
+            "Semana":             sem,
+            "SeqLote":            seq_int,
             "Lote":               lote,
             "Unid. Produtora":    unid,
             "Cód. Abate":         cod_abate,
@@ -553,6 +570,58 @@ def inspecionar(caminho_rend: str, caminho_desc: str, aba_desc: str):
         print(f"   ❌ Erro: {e}")
 
 
+def gravar_json(resultados: list, caminho: str):
+    """
+    Exporta os resultados para JSON no formato esperado pelo dashboard.
+    Campos: data, data_iso, sem, seq, prod, lote, cod,
+            bm_prev, bm_real, pm_prev, pm_real,
+            rend_prev, rend_real, mort_prev, mort_real,
+            desc500g_prev, desc500g_real, bact_prev, bact_real, mole_prev, mole_real
+    """
+    registros = []
+    for r in resultados:
+        registros.append({
+            "data":          r.get("Data ISO", ""),
+            "data_fmt":      r.get("Data", ""),
+            "sem":           r.get("Semana", 0),
+            "seq":           r.get("SeqLote", 0),
+            "prod":          r.get("Unid. Produtora", ""),
+            "lote":          r.get("Lote", ""),
+            "cod":           r.get("Cód. Abate", ""),
+            "bm_prev":       r.get("Bm Previsto (kg)", 0),
+            "bm_real":       r.get("Bm Realizado (kg)", 0),
+            "pm_prev":       r.get("PM Previsto (kg)", 0),
+            "pm_real":       r.get("PM Realizado (kg)", 0),
+            "rend_prev":     r.get("Rend. Prev (%)", 0),
+            "rend_real":     r.get("Rend. Real (%)", 0),
+            "mort_prev":     r.get("Mort. Prev (kg)", 0),
+            "mort_real":     r.get("Mort. Real (kg)", 0),
+            "desc500g_prev": r.get("Desc <500g Prev", 0),
+            "desc500g_real": r.get("Desc <500g Real", 0),
+            "bact_prev":     r.get("Desc Bact Prev", 0),
+            "bact_real":     r.get("Desc Bact Real", 0),
+            "mole_prev":     r.get("Desc Mole Prev", 0),
+            "mole_real":     r.get("Desc Mole Real", 0),
+        })
+
+    payload = {
+        "gerado_em": datetime.now().isoformat(timespec="seconds"),
+        "versao":    "2026-08-04-v9",
+        "total":     len(registros),
+        "registros": registros,
+    }
+
+    try:
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+        with open(caminho, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+        print(f"\n✅ JSON exportado: {caminho}  ({len(registros)} registros)")
+        logging.info(f"JSON exportado: {caminho}  ({len(registros)} registros)")
+    except Exception as e:
+        print(f"\n⚠  Não foi possível gravar JSON: {e}")
+        logging.warning(f"Erro ao gravar JSON: {e}")
+
+
 # ─────────────────────────────────────────────
 # MAIN
 # ─────────────────────────────────────────────
@@ -585,6 +654,8 @@ def main():
                         help="Processa somente lotes a partir desta data (DD/MM/AAAA ou AAAA-MM-DD)")
     parser.add_argument("--ultimos",      type=int, default=None,
                         help="Mostra somente os últimos N lotes (por data)")
+    parser.add_argument("--exportar-json", action="store_true", dest="exportar_json",
+                        help="Exporta resultado para JSON (para o dashboard HTML)")
     args = parser.parse_args()
 
     configurar_log(args.automatico)
@@ -592,7 +663,7 @@ def main():
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
     print(f"║   {datetime.now().strftime('%d/%m/%Y %H:%M')}                               ║")
-    print("║   versao: 2026-08-04-v8                          ║")
+    print("║   versao: 2026-08-04-v9                          ║")
     print("╚══════════════════════════════════════════════════╝")
 
     if args.simulacao:
@@ -688,7 +759,11 @@ def main():
         logging.warning("Nenhum resultado processado.")
         return
 
-    # Grava
+    # Exporta JSON para o dashboard (automático ou flag explícita)
+    if args.automatico or args.exportar_json:
+        gravar_json(resultados, JSON_EXPORT)
+
+    # Grava Excel
     if not args.simulacao:
         if args.automatico:
             gravar_excel(resultados, ARQUIVOS["retorno"], ABA_DESTINO)
@@ -697,6 +772,9 @@ def main():
             confirmar = input(f"\n  Gravar {len(resultados)} linha(s) em Executado_Base_Dados? (s/n): ").strip().lower()
             if confirmar == "s":
                 gravar_excel(resultados, ARQUIVOS["retorno"], ABA_DESTINO)
+                # Exporta JSON também ao gravar manualmente
+                if not (args.automatico or args.exportar_json):
+                    gravar_json(resultados, JSON_EXPORT)
             else:
                 print("  Gravação cancelada.")
     else:

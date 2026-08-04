@@ -34,6 +34,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .btn:hover{opacity:.85}
 .btn-green{background:#1b5e20;color:#a5d6a7;border:1px solid #2e7d32}
 .btn-blue{background:#0d2b4e;color:#90caf9;border:1px solid #1565c0}
+.btn-teal{background:#00352e;color:#80cbc4;border:1px solid #00695c}
 .btn-gray{background:var(--surf2);color:var(--txt2);border:1px solid var(--bdr2)}
 
 .filterbar{display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--surf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
@@ -78,7 +79,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .bar-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:8px;color:var(--txt3);white-space:nowrap;text-align:center;line-height:1.2}
 
 /* TOOLTIP */
-.tooltip{position:fixed;background:#0d1117;border:1px solid var(--bdr2);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--txt);pointer-events:none;z-index:100;display:none;box-shadow:0 4px 20px #00000088;min-width:200px}
+.tooltip{position:fixed;background:#0d1117;border:1px solid var(--bdr2);border-radius:5px;padding:8px 12px;font-size:11px;color:var(--txt);pointer-events:none;z-index:100;display:none;box-shadow:0 4px 20px #00000088;min-width:210px}
 .tt-title{font-weight:700;color:var(--cyan);margin-bottom:6px;font-size:12px;border-bottom:1px solid var(--bdr);padding-bottom:5px}
 .tt-row{display:flex;justify-content:space-between;gap:16px;padding:2px 0}
 .tt-label{color:var(--txt2)}
@@ -86,7 +87,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .tt-sep{border-top:1px solid var(--bdr);margin:4px 0}
 
 /* CARDS */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:10px}
 .card{background:var(--surf);border:1px solid var(--bdr2);border-radius:6px;overflow:hidden}
 .card.alert-high{border-left:3px solid var(--red)}
 .card.alert-mid{border-left:3px solid var(--yellow)}
@@ -100,10 +101,10 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .badge-yellow{background:#3b2a00;color:var(--yellow);border:1px solid #7b5b00}
 .badge-green{background:#0f2e12;color:var(--green);border:1px solid #1b5e20}
 .card-body{padding:10px 14px}
-.metric-header-row{display:grid;grid-template-columns:1fr 68px 68px 48px 48px;gap:4px;padding:0 0 5px 0;border-bottom:1px solid var(--bdr2);margin-bottom:4px}
+.metric-header-row{display:grid;grid-template-columns:1fr 70px 70px 52px 52px;gap:4px;padding:0 0 5px 0;border-bottom:1px solid var(--bdr2);margin-bottom:4px}
 .mh{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);text-align:right;font-weight:600}
 .mh:first-child{text-align:left}
-.metric-row{display:grid;grid-template-columns:1fr 68px 68px 48px 48px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr)}
+.metric-row{display:grid;grid-template-columns:1fr 70px 70px 52px 52px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr)}
 .metric-row:last-child{border-bottom:none}
 .metric-name{font-size:11px;color:var(--txt2)}
 .metric-prev{font-size:11px;color:var(--txt3);text-align:right;font-variant-numeric:tabular-nums}
@@ -114,7 +115,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .dif-pos{color:var(--orange)}
 .dif-ok{color:var(--green)}
 
-/* CARD FOOTER (logística) */
+/* CARD FOOTER */
 .card-footer{display:flex;gap:12px;padding:8px 14px;border-top:1px solid var(--bdr);background:var(--surf2);flex-wrap:wrap}
 .cf-item{font-size:10px;color:var(--txt3)}
 .cf-item span{color:var(--txt2);font-weight:600}
@@ -138,7 +139,12 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
 
 .sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);padding:2px 0}
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:13px}
-.statusbar{padding:4px 16px;background:var(--surf);border-top:1px solid var(--bdr);font-size:10px;color:var(--txt3);display:flex;gap:16px}
+.statusbar{padding:4px 16px;background:var(--surf);border-top:1px solid var(--bdr);font-size:10px;color:var(--txt3);display:flex;gap:16px;flex-wrap:wrap}
+
+/* JSON load banner */
+.load-banner{display:none;align-items:center;gap:10px;padding:8px 16px;background:#00352e;border-bottom:1px solid #00695c;font-size:11px;color:#80cbc4}
+.load-banner.visible{display:flex}
+.load-banner b{color:#a5d6a7}
 </style>
 
 <div class="tooltip" id="tooltip"></div>
@@ -153,10 +159,18 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
   </div>
   <div class="top-spacer"></div>
   <div class="top-actions">
+    <label class="btn btn-teal" style="cursor:pointer">
+      📂 Carregar JSON
+      <input type="file" accept=".json" id="json-input" style="display:none" onchange="loadJSON(this)">
+    </label>
     <button class="btn btn-blue" onclick="exportCSV()">⬇ CSV</button>
     <button class="btn btn-green" onclick="window.print()">⬇ PDF</button>
     <button class="btn btn-gray" onclick="refresh()">↺ Atualizar</button>
   </div>
+</div>
+
+<div class="load-banner" id="load-banner">
+  ✅ Dados carregados: <b id="banner-info">—</b>
 </div>
 
 <div class="filterbar">
@@ -189,28 +203,28 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
 
 <div class="kpi-strip">
   <div class="kpi"><div class="kpi-label">Abates</div><div class="kpi-val kv-cyan" id="k-n">—</div><div class="kpi-sub">no período</div></div>
-  <div class="kpi"><div class="kpi-label">Bm Romaneio</div><div class="kpi-val kv-blue" id="k-brom">—</div><div class="kpi-sub">kg total previsto</div></div>
+  <div class="kpi"><div class="kpi-label">Bm Previsto</div><div class="kpi-val kv-blue" id="k-bprev">—</div><div class="kpi-sub">kg total romaneio</div></div>
   <div class="kpi"><div class="kpi-label">Bm Realizado</div><div class="kpi-val kv-cyan" id="k-breal">—</div><div class="kpi-sub">kg total realizado</div></div>
-  <div class="kpi"><div class="kpi-label">Δ Biomassa</div><div class="kpi-val" id="k-bdif">—</div><div class="kpi-sub">romaneio vs realizado</div></div>
+  <div class="kpi"><div class="kpi-label">Δ Biomassa</div><div class="kpi-val" id="k-bdif">—</div><div class="kpi-sub">prev vs realizado</div></div>
   <div class="kpi"><div class="kpi-label">Rend. Médio</div><div class="kpi-val kv-yellow" id="k-rend">—</div><div class="kpi-sub">% filetagem real</div></div>
   <div class="kpi"><div class="kpi-label">PM Médio Real</div><div class="kpi-val kv-orange" id="k-pm">—</div><div class="kpi-sub">kg/peixe</div></div>
-  <div class="kpi"><div class="kpi-label">Bactéria (kg)</div><div class="kpi-val kv-red" id="k-bact">—</div><div class="kpi-sub">total descarte</div></div>
+  <div class="kpi"><div class="kpi-label">Bactéria Total</div><div class="kpi-val kv-red" id="k-bact">—</div><div class="kpi-sub">kg descarte real</div></div>
   <div class="kpi"><div class="kpi-label">Com Alerta</div><div class="kpi-val kv-red" id="k-alerta">—</div><div class="kpi-sub">abates c/ desvio</div></div>
 </div>
 
 <div class="main">
   <div class="chart-section">
     <div class="chart-header">
-      <span class="chart-title">Biomassa por Abate — Romaneio × Realizado (kg)</span>
+      <span class="chart-title">Biomassa por Abate — Previsto × Realizado (kg)</span>
       <div class="chart-legend">
-        <span><span class="leg-dot" style="background:#1565c0"></span>Romaneio (Prev.)</span>
+        <span><span class="leg-dot" style="background:#1565c0"></span>Previsto</span>
         <span><span class="leg-dot" style="background:var(--cyan)"></span>Realizado</span>
       </div>
     </div>
     <div class="chart-wrap"><div class="chart-canvas" id="chart-canvas"></div></div>
   </div>
 
-  <div class="sec-title" id="sec-label">Romaneios de Abate</div>
+  <div class="sec-title" id="sec-label">Abates</div>
 
   <div id="view-cards" class="cards-grid"></div>
   <div id="view-tabela" style="display:none">
@@ -219,10 +233,10 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
         <thead>
           <tr>
             <th>Unid. Produtora</th>
-            <th>Cód. Abate</th>
+            <th>Lote / Abate</th>
             <th>Data</th>
             <th>Sem.</th>
-            <th>Bm Rom (kg)</th>
+            <th>Bm Prev (kg)</th>
             <th>Bm Real (kg)</th>
             <th>Δ Bm%</th>
             <th>PM Prev</th>
@@ -232,11 +246,12 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
             <th>Rend Real</th>
             <th>Δ Rend%</th>
             <th>Mort Real</th>
-            <th>Desc &lt;400g</th>
-            <th>Bactéria</th>
-            <th>Mole</th>
-            <th>Motorista</th>
-            <th>Km Total</th>
+            <th>Desc &lt;500g P</th>
+            <th>Desc &lt;500g R</th>
+            <th>Bact Prev</th>
+            <th>Bact Real</th>
+            <th>Mole Prev</th>
+            <th>Mole Real</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -248,59 +263,102 @@ td:first-child,td:nth-child(2),td:nth-child(3){text-align:left}
 </div>
 
 <div class="statusbar">
-  <span id="sb-fonte">Fonte: Executado_Base_Dados — Retorno_Pisciculturas.xlsx</span>
+  <span id="sb-fonte">Fonte: demo — carregue um JSON exportado pelo script para dados reais</span>
   <span id="sb-total">0 registros</span>
   <span id="sb-updated">—</span>
 </div>
 
 <script>
-/* ── DADOS (mapeados de Executado_Base_Dados) ── */
-const BASE = [
-  {data:'2026-06-29',sem:27,seq:1,prod:'BTJ STC',  tanques:'046/029',nf:2805,qtde_nf:5000,bm_rom:5009,bm_real:4887,pm_prev:0.929,pm_real:1.000,qtde_real:4887,pm_rom:0.976,qtde_rom:5132,rend_prev:47.5,rend_real:45.17,mort_prev:0,mort_real:0,desc400:4.20,sangria:4.20,sem_esc:0,bact:31.10,mole:6.40,cod:'29/06/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297245,km_fim:297408,km_tot:163,o2:420,bm_aprov:4845.30,rs_kg:9.70,rs_total:47403.90},
-  {data:'2026-06-29',sem:27,seq:2,prod:'BTJ STC',  tanques:'029/126',nf:2806,qtde_nf:5000,bm_rom:4891,bm_real:4710.5,pm_prev:0.929,pm_real:1.016,qtde_real:4636,pm_rom:0.976,qtde_rom:5011,rend_prev:47.5,rend_real:44.69,mort_prev:0,mort_real:0,desc400:3.20,sangria:3.20,sem_esc:0,bact:49.30,mole:21.20,cod:'29/06/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213357,km_fim:213537,km_tot:180,o2:650,bm_aprov:4636.80,rs_kg:9.70,rs_total:45691.85},
-  {data:'2026-06-30',sem:27,seq:1,prod:'BTJ STC',  tanques:'109/030',nf:2808,qtde_nf:5000,bm_rom:5040,bm_real:5002,pm_prev:0.929,pm_real:0.975,qtde_real:5130,pm_rom:0.925,qtde_rom:5449,rend_prev:47.5,rend_real:44.38,mort_prev:0,mort_real:0,desc400:27.40,sangria:27.40,sem_esc:0,bact:39.70,mole:2.10,cod:'30/06/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297408,km_fim:297570,km_tot:162,o2:420,bm_aprov:4932.80,rs_kg:9.70,rs_total:48519.40},
-  {data:'2026-06-30',sem:27,seq:2,prod:'BTJ STC',  tanques:'030/224',nf:2809,qtde_nf:5000,bm_rom:5109,bm_real:4938,pm_prev:0.929,pm_real:1.060,qtde_real:4658,pm_rom:0.914,qtde_rom:5590,rend_prev:47.5,rend_real:44.95,mort_prev:0,mort_real:0,desc400:10.60,sangria:10.60,sem_esc:0,bact:19.10,mole:29.30,cod:'30/06/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:297570,km_fim:297575,km_tot:5,o2:110,bm_aprov:4879.00,rs_kg:9.70,rs_total:47898.60},
-  {data:'2026-06-30',sem:27,seq:3,prod:'BTJ ILHA', tanques:'19/125', nf:3228,qtde_nf:3200,bm_rom:1721,bm_real:2575,pm_prev:0.900,pm_real:0.846,qtde_real:3044,pm_rom:0.979,qtde_rom:1758,rend_prev:47.5,rend_real:44.75,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:23.20,mole:3.60,cod:'30/06/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FPE4G38',km_ini:297570,km_fim:297575,km_tot:5,o2:110,bm_aprov:2548.20,rs_kg:9.70,rs_total:24977.50},
-  {data:'2026-07-01',sem:27,seq:1,prod:'BTJ SUD',  tanques:'35',     nf:2053,qtde_nf:5000,bm_rom:5000,bm_real:4886,pm_prev:0.950,pm_real:0.960,qtde_real:5090,pm_rom:1.088,qtde_rom:4596,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc400:6.00,sangria:6.00,sem_esc:0,bact:43.90,mole:5.20,cod:'01/07/2026 - BTJ SUD - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213717,km_fim:213953,km_tot:236,o2:650,bm_aprov:4830.90,rs_kg:9.70,rs_total:47394.20},
-  {data:'2026-07-01',sem:27,seq:2,prod:'BTJ SUD',  tanques:'35/37',  nf:2054,qtde_nf:5000,bm_rom:4004,bm_real:3968,pm_prev:0.950,pm_real:0.830,qtde_real:4781,pm_rom:0.781,qtde_rom:5127,rend_prev:47.5,rend_real:44.66,mort_prev:0,mort_real:0,desc400:2.40,sangria:2.40,sem_esc:0,bact:37.40,mole:3.90,cod:'01/07/2026 - BTJ SUD - 2',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297575,km_fim:297828,km_tot:253,o2:320,bm_aprov:3924.30,rs_kg:9.70,rs_total:38489.60},
-  {data:'2026-07-02',sem:27,seq:1,prod:'BTJ ILHA', tanques:'125/105',nf:3230,qtde_nf:6500,bm_rom:6555,bm_real:6555,pm_prev:0.900,pm_real:0.870,qtde_real:7534,pm_rom:0.911,qtde_rom:7195,rend_prev:47.5,rend_real:44.01,mort_prev:0,mort_real:0,desc400:16.07,sangria:16.10,sem_esc:0,bact:43.80,mole:5.30,cod:'02/07/2026 - BTJ ILHA - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297828,km_fim:297971,km_tot:143,o2:350,bm_aprov:6489.83,rs_kg:10.70,rs_total:70138.50},
-  {data:'2026-07-02',sem:27,seq:2,prod:'BTJ ILHA', tanques:'105/114',nf:3231,qtde_nf:6000,bm_rom:5511,bm_real:5423,pm_prev:0.900,pm_real:0.894,qtde_real:6066,pm_rom:0.953,qtde_rom:5783,rend_prev:47.5,rend_real:44.02,mort_prev:0,mort_real:0,desc400:20.10,sangria:19.80,sem_esc:0,bact:62.90,mole:1.60,cod:'02/07/2026 - BTJ ILHA 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:213953,km_fim:214077,km_tot:124,o2:500,bm_aprov:5338.40,rs_kg:11.70,rs_total:63449.10},
-  {data:'2026-07-03',sem:27,seq:1,prod:'BTJ ILHA', tanques:'96/114', nf:3234,qtde_nf:6500,bm_rom:6557,bm_real:6509,pm_prev:0.900,pm_real:0.960,qtde_real:6780,pm_rom:1.005,qtde_rom:6524,rend_prev:47.5,rend_real:45.08,mort_prev:0,mort_real:0,desc400:48.20,sangria:48.20,sem_esc:0,bact:76.10,mole:2.70,cod:'03/07/2026 - BTJ ILHA - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:297971,km_fim:298116,km_tot:145,o2:350,bm_aprov:6382.00,rs_kg:9.70,rs_total:63137.30},
-  {data:'2026-07-03',sem:27,seq:2,prod:'SANTA HELENA',tanques:'C09', nf:2810,qtde_nf:5000,bm_rom:5200,bm_real:5119,pm_prev:0.950,pm_real:1.020,qtde_real:5019,pm_rom:0.950,qtde_rom:5474,rend_prev:47.5,rend_real:45.18,mort_prev:0,mort_real:0,desc400:4.10,sangria:4.10,sem_esc:0,bact:10.20,mole:4.10,cod:'03/07/2026 - SANTA HELENA - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214077,km_fim:214209,km_tot:132,o2:500,bm_aprov:5100.60,rs_kg:9.90,rs_total:50678.10},
-  {data:'2026-07-06',sem:28,seq:1,prod:'BTJ STC',  tanques:'215/205',nf:2812,qtde_nf:6500,bm_rom:6485,bm_real:6198.9,pm_prev:0.914,pm_real:1.090,qtde_real:5687,pm_rom:1.156,qtde_rom:5610,rend_prev:47.5,rend_real:44.43,mort_prev:0,mort_real:0,desc400:21.48,sangria:21.48,sem_esc:0,bact:26.90,mole:15.00,cod:'06/07/2026 - BTJ STC - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214209,km_fim:214388,km_tot:179,o2:650,bm_aprov:6135.53,rs_kg:9.70,rs_total:60129.43},
-  {data:'2026-07-06',sem:28,seq:2,prod:'BTJ STC',  tanques:'205/413/48',nf:2813,qtde_nf:6500,bm_rom:6572,bm_real:6004.9,pm_prev:0.914,pm_real:0.938,qtde_real:6402,pm_rom:1.029,qtde_rom:6387,rend_prev:47.5,rend_real:43.85,mort_prev:0,mort_real:0,desc400:60.93,sangria:60.93,sem_esc:0,bact:42.50,mole:12.00,cod:'06/07/2026 - BTJ STC - 2',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298116,km_fim:298279,km_tot:163,o2:760,bm_aprov:5889.42,rs_kg:9.70,rs_total:58247.05},
-  {data:'2026-07-06',sem:28,seq:3,prod:'BTJ ILHA', tanques:'114',    nf:3237,qtde_nf:1000,bm_rom:902,bm_real:906.96,pm_prev:0.936,pm_real:0.901,qtde_real:1007,pm_rom:0.944,qtde_rom:956,rend_prev:47.5,rend_real:44.73,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:4.40,mole:1.00,cod:'06/07/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214388,km_fim:214393,km_tot:5,o2:100,bm_aprov:901.56,rs_kg:9.70,rs_total:8797.51},
-  {data:'2026-07-07',sem:28,seq:1,prod:'BTJ STC',  tanques:'222/211',nf:2814,qtde_nf:6500,bm_rom:6534,bm_real:6532,pm_prev:0.914,pm_real:1.058,qtde_real:6174,pm_rom:1.012,qtde_rom:6457,rend_prev:47.5,rend_real:43.98,mort_prev:0,mort_real:0,desc400:22.70,sangria:22.70,sem_esc:0,bact:31.50,mole:17.80,cod:'07/07/2026 - BTJ STC - 1',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298279,km_fim:298442,km_tot:163,o2:550,bm_aprov:6460.00,rs_kg:9.70,rs_total:63360.40},
-  {data:'2026-07-07',sem:28,seq:2,prod:'BTJ STC',  tanques:'211/48/106',nf:2815,qtde_nf:6500,bm_rom:6796,bm_real:6300,pm_prev:0.914,pm_real:1.049,qtde_real:6006,pm_rom:1.032,qtde_rom:6585,rend_prev:47.5,rend_real:44.49,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:28.60,mole:63.20,cod:'07/07/2026 - BTJ STC - 2',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214393,km_fim:214573,km_tot:180,o2:700,bm_aprov:6208.20,rs_kg:9.70,rs_total:61110.00},
-  {data:'2026-07-07',sem:28,seq:3,prod:'BTJ ILHA', tanques:'12',     nf:3241,qtde_nf:1000,bm_rom:2055,bm_real:2021,pm_prev:0.936,pm_real:0.788,qtde_real:2565,pm_rom:0.786,qtde_rom:2615,rend_prev:47.5,rend_real:42.86,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:39.60,mole:4.00,cod:'07/07/2026 - BTJ ILHA - 3',motorista:'ALEXANDRE',veiculo:'FPE4G38',km_ini:298442,km_fim:298447,km_tot:5,o2:130,bm_aprov:1977.40,rs_kg:9.70,rs_total:19603.70},
-  {data:'2026-07-09',sem:28,seq:1,prod:'BTJ ILHA', tanques:'18/78',  nf:3243,qtde_nf:6500,bm_rom:6648,bm_real:6552,pm_prev:0.936,pm_real:1.070,qtde_real:6123,pm_rom:1.046,qtde_rom:6356,rend_prev:47.5,rend_real:44.60,mort_prev:0,mort_real:0,desc400:6.62,sangria:6.62,sem_esc:0,bact:104.60,mole:9.30,cod:'09/07/2026 - BTJ ILHA - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214573,km_fim:214724,km_tot:151,o2:500,bm_aprov:6431.48,rs_kg:9.70,rs_total:63554.40},
-  {data:'2026-07-09',sem:28,seq:2,prod:'BTJ ILHA', tanques:'78',     nf:3244,qtde_nf:1500,bm_rom:1666,bm_real:1663,pm_prev:0.936,pm_real:1.107,qtde_real:1502,pm_rom:1.168,qtde_rom:1426,rend_prev:47.5,rend_real:44.55,mort_prev:0,mort_real:0,desc400:0,sangria:0,sem_esc:0,bact:10.10,mole:1.30,cod:'09/07/2026 - BTJ ILHA - 2',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214724,km_fim:214728,km_tot:4,o2:50,bm_aprov:1651.60,rs_kg:9.70,rs_total:16131.10},
-  {data:'2026-07-09',sem:28,seq:3,prod:'PURO PEIXE',tanques:'219/222/065/034',nf:925,qtde_nf:6000,bm_rom:6015,bm_real:5958,pm_prev:1.000,pm_real:0.948,qtde_real:6285,pm_rom:1.031,qtde_rom:5834,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc400:9.99,sangria:9.99,sem_esc:0,bact:43.20,mole:0.30,cod:'09/07/2026 - PURO PEIXE - 3',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298447,km_fim:298599,km_tot:152,o2:540,bm_aprov:5904.51,rs_kg:9.70,rs_total:57792.60},
-  {data:'2026-07-10',sem:28,seq:1,prod:'BTJ ILHA', tanques:'107/106',nf:3245,qtde_nf:6500,bm_rom:6612,bm_real:6525,pm_prev:0.936,pm_real:1.060,qtde_real:6156,pm_rom:1.092,qtde_rom:6055,rend_prev:47.5,rend_real:44.39,mort_prev:0,mort_real:0,desc400:23.20,sangria:23.20,sem_esc:0,bact:101.80,mole:4.90,cod:'10/07/2026 - BTJ ILHA - 1',motorista:'CLAUDIO',veiculo:'FDF8F02',km_ini:214728,km_fim:214852,km_tot:124,o2:400,bm_aprov:6395.10,rs_kg:9.00,rs_total:58725.00},
-  {data:'2026-07-10',sem:28,seq:2,prod:'BTJ ILHA', tanques:'106',    nf:3246,qtde_nf:1500,bm_rom:1524,bm_real:1527,pm_prev:0.936,pm_real:0.850,qtde_real:1796,pm_rom:0.960,qtde_rom:1588,rend_prev:47.5,rend_real:45.49,mort_prev:0,mort_real:0,desc400:1.30,sangria:1.30,sem_esc:0,bact:9.30,mole:0.50,cod:'10/07/2026 - BTJ ILHA - 2',motorista:'ALEXANDRE',veiculo:'FDF8F02',km_ini:214852,km_fim:214856,km_tot:4,o2:40,bm_aprov:1515.90,rs_kg:9.00,rs_total:13743.00},
-  {data:'2026-07-10',sem:28,seq:3,prod:'PURO PEIXE',tanques:'263',   nf:926,qtde_nf:6000,bm_rom:6013,bm_real:5946,pm_prev:1.000,pm_real:1.084,qtde_real:5485,pm_rom:1.159,qtde_rom:5188,rend_prev:47.5,rend_real:45.72,mort_prev:0,mort_real:0,desc400:22.40,sangria:22.40,sem_esc:0,bact:58.30,mole:20.40,cod:'10/07/2026 - PURO PEIXE - 3',motorista:'MARCOS',veiculo:'FPE4G38',km_ini:298599,km_fim:298751,km_tot:152,o2:600,bm_aprov:5844.90,rs_kg:9.70,rs_total:57676.20},
+/* ─── DADOS DEMO ───────────────────────────────────────────────────────────── */
+/* Formato gerado por: python coletar_devolutiva.py --exportar-json            */
+/* Campos:  data, sem, seq, prod, lote, cod                                    */
+/*          bm_prev, bm_real  |  pm_prev, pm_real                              */
+/*          rend_prev, rend_real  |  mort_prev, mort_real                      */
+/*          desc500g_prev, desc500g_real  |  bact_prev, bact_real              */
+/*          mole_prev, mole_real                                                */
+const DEMO = [
+  {data:'2026-06-29',sem:27,seq:1,prod:'BTJ STC',  lote:'2805',cod:'29/06/2026 - BTJ STC - 2805',  bm_prev:5009,bm_real:4887,pm_prev:0.929,pm_real:1.000,rend_prev:47.5,rend_real:45.17,mort_prev:0,mort_real:0,desc500g_prev:9.77,desc500g_real:4.20, bact_prev:4.89,bact_real:31.10,mole_prev:4.89,mole_real:6.40},
+  {data:'2026-06-29',sem:27,seq:2,prod:'BTJ STC',  lote:'2806',cod:'29/06/2026 - BTJ STC - 2806',  bm_prev:4891,bm_real:4710,pm_prev:0.929,pm_real:1.016,rend_prev:47.5,rend_real:44.69,mort_prev:0,mort_real:0,desc500g_prev:9.42,desc500g_real:3.20, bact_prev:4.71,bact_real:49.30,mole_prev:4.71,mole_real:21.20},
+  {data:'2026-06-30',sem:27,seq:1,prod:'BTJ STC',  lote:'2808',cod:'30/06/2026 - BTJ STC - 2808',  bm_prev:5040,bm_real:5002,pm_prev:0.929,pm_real:0.975,rend_prev:47.5,rend_real:44.38,mort_prev:0,mort_real:0,desc500g_prev:10.00,desc500g_real:27.40,bact_prev:5.00,bact_real:39.70,mole_prev:5.00,mole_real:2.10},
+  {data:'2026-06-30',sem:27,seq:2,prod:'BTJ STC',  lote:'2809',cod:'30/06/2026 - BTJ STC - 2809',  bm_prev:5109,bm_real:4938,pm_prev:0.929,pm_real:1.060,rend_prev:47.5,rend_real:44.95,mort_prev:0,mort_real:0,desc500g_prev:9.88,desc500g_real:10.60,bact_prev:4.94,bact_real:19.10,mole_prev:4.94,mole_real:29.30},
+  {data:'2026-06-30',sem:27,seq:3,prod:'BTJ ILHA', lote:'3228',cod:'30/06/2026 - BTJ ILHA - 3228',  bm_prev:1721,bm_real:2575,pm_prev:0.900,pm_real:0.846,rend_prev:47.5,rend_real:44.75,mort_prev:0,mort_real:0,desc500g_prev:5.15,desc500g_real:0.00, bact_prev:2.58,bact_real:23.20,mole_prev:2.58,mole_real:3.60},
+  {data:'2026-07-01',sem:27,seq:1,prod:'BTJ SUD',  lote:'2053',cod:'01/07/2026 - BTJ SUD - 2053',  bm_prev:5000,bm_real:4886,pm_prev:0.950,pm_real:0.960,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc500g_prev:9.77,desc500g_real:6.00, bact_prev:4.89,bact_real:43.90,mole_prev:4.89,mole_real:5.20},
+  {data:'2026-07-01',sem:27,seq:2,prod:'BTJ SUD',  lote:'2054',cod:'01/07/2026 - BTJ SUD - 2054',  bm_prev:4004,bm_real:3968,pm_prev:0.950,pm_real:0.830,rend_prev:47.5,rend_real:44.66,mort_prev:0,mort_real:0,desc500g_prev:7.94,desc500g_real:2.40, bact_prev:3.97,bact_real:37.40,mole_prev:3.97,mole_real:3.90},
+  {data:'2026-07-02',sem:27,seq:1,prod:'BTJ ILHA', lote:'3230',cod:'02/07/2026 - BTJ ILHA - 3230',  bm_prev:6555,bm_real:6555,pm_prev:0.900,pm_real:0.870,rend_prev:47.5,rend_real:44.01,mort_prev:0,mort_real:0,desc500g_prev:13.11,desc500g_real:16.07,bact_prev:6.56,bact_real:43.80,mole_prev:6.56,mole_real:5.30},
+  {data:'2026-07-02',sem:27,seq:2,prod:'BTJ ILHA', lote:'3231',cod:'02/07/2026 - BTJ ILHA - 3231',  bm_prev:5511,bm_real:5423,pm_prev:0.900,pm_real:0.894,rend_prev:47.5,rend_real:44.02,mort_prev:0,mort_real:0,desc500g_prev:10.85,desc500g_real:20.10,bact_prev:5.42,bact_real:62.90,mole_prev:5.42,mole_real:1.60},
+  {data:'2026-07-03',sem:27,seq:1,prod:'BTJ ILHA', lote:'3234',cod:'03/07/2026 - BTJ ILHA - 3234',  bm_prev:6557,bm_real:6509,pm_prev:0.900,pm_real:0.960,rend_prev:47.5,rend_real:45.08,mort_prev:0,mort_real:0,desc500g_prev:13.02,desc500g_real:48.20,bact_prev:6.51,bact_real:76.10,mole_prev:6.51,mole_real:2.70},
+  {data:'2026-07-03',sem:27,seq:2,prod:'SANTA HELENA',lote:'2810',cod:'03/07/2026 - SANTA HELENA - 2810',bm_prev:5200,bm_real:5119,pm_prev:0.950,pm_real:1.020,rend_prev:47.5,rend_real:45.18,mort_prev:0,mort_real:0,desc500g_prev:10.24,desc500g_real:4.10, bact_prev:5.12,bact_real:10.20,mole_prev:5.12,mole_real:4.10},
+  {data:'2026-07-06',sem:28,seq:1,prod:'BTJ STC',  lote:'2812',cod:'06/07/2026 - BTJ STC - 2812',  bm_prev:6485,bm_real:6199,pm_prev:0.914,pm_real:1.090,rend_prev:47.5,rend_real:44.43,mort_prev:0,mort_real:0,desc500g_prev:12.40,desc500g_real:21.48,bact_prev:6.20,bact_real:26.90,mole_prev:6.20,mole_real:15.00},
+  {data:'2026-07-06',sem:28,seq:2,prod:'BTJ STC',  lote:'2813',cod:'06/07/2026 - BTJ STC - 2813',  bm_prev:6572,bm_real:6005,pm_prev:0.914,pm_real:0.938,rend_prev:47.5,rend_real:43.85,mort_prev:0,mort_real:0,desc500g_prev:12.01,desc500g_real:60.93,bact_prev:6.01,bact_real:42.50,mole_prev:6.01,mole_real:12.00},
+  {data:'2026-07-06',sem:28,seq:3,prod:'BTJ ILHA', lote:'3237',cod:'06/07/2026 - BTJ ILHA - 3237',  bm_prev:902,bm_real:907,pm_prev:0.936,pm_real:0.901,rend_prev:47.5,rend_real:44.73,mort_prev:0,mort_real:0,desc500g_prev:1.81,desc500g_real:0.00, bact_prev:0.91,bact_real:4.40,mole_prev:0.91,mole_real:1.00},
+  {data:'2026-07-07',sem:28,seq:1,prod:'BTJ STC',  lote:'2814',cod:'07/07/2026 - BTJ STC - 2814',  bm_prev:6534,bm_real:6532,pm_prev:0.914,pm_real:1.058,rend_prev:47.5,rend_real:43.98,mort_prev:0,mort_real:0,desc500g_prev:13.06,desc500g_real:22.70,bact_prev:6.53,bact_real:31.50,mole_prev:6.53,mole_real:17.80},
+  {data:'2026-07-07',sem:28,seq:2,prod:'BTJ STC',  lote:'2815',cod:'07/07/2026 - BTJ STC - 2815',  bm_prev:6796,bm_real:6300,pm_prev:0.914,pm_real:1.049,rend_prev:47.5,rend_real:44.49,mort_prev:0,mort_real:0,desc500g_prev:12.60,desc500g_real:0.00, bact_prev:6.30,bact_real:28.60,mole_prev:6.30,mole_real:63.20},
+  {data:'2026-07-07',sem:28,seq:3,prod:'BTJ ILHA', lote:'3241',cod:'07/07/2026 - BTJ ILHA - 3241',  bm_prev:2055,bm_real:2021,pm_prev:0.936,pm_real:0.788,rend_prev:47.5,rend_real:42.86,mort_prev:0,mort_real:0,desc500g_prev:4.04,desc500g_real:0.00, bact_prev:2.02,bact_real:39.60,mole_prev:2.02,mole_real:4.00},
+  {data:'2026-07-09',sem:28,seq:1,prod:'BTJ ILHA', lote:'3243',cod:'09/07/2026 - BTJ ILHA - 3243',  bm_prev:6648,bm_real:6552,pm_prev:0.936,pm_real:1.070,rend_prev:47.5,rend_real:44.60,mort_prev:0,mort_real:0,desc500g_prev:13.10,desc500g_real:6.62, bact_prev:6.55,bact_real:104.60,mole_prev:6.55,mole_real:9.30},
+  {data:'2026-07-09',sem:28,seq:2,prod:'BTJ ILHA', lote:'3244',cod:'09/07/2026 - BTJ ILHA - 3244',  bm_prev:1666,bm_real:1663,pm_prev:0.936,pm_real:1.107,rend_prev:47.5,rend_real:44.55,mort_prev:0,mort_real:0,desc500g_prev:3.33,desc500g_real:0.00, bact_prev:1.66,bact_real:10.10,mole_prev:1.66,mole_real:1.30},
+  {data:'2026-07-09',sem:28,seq:3,prod:'PURO PEIXE',lote:'925', cod:'09/07/2026 - PURO PEIXE - 925', bm_prev:6015,bm_real:5958,pm_prev:1.000,pm_real:0.948,rend_prev:47.5,rend_real:44.27,mort_prev:0,mort_real:0,desc500g_prev:11.92,desc500g_real:9.99, bact_prev:5.96,bact_real:43.20,mole_prev:5.96,mole_real:0.30},
+  {data:'2026-07-10',sem:28,seq:1,prod:'BTJ ILHA', lote:'3245',cod:'10/07/2026 - BTJ ILHA - 3245',  bm_prev:6612,bm_real:6525,pm_prev:0.936,pm_real:1.060,rend_prev:47.5,rend_real:44.39,mort_prev:0,mort_real:0,desc500g_prev:13.05,desc500g_real:23.20,bact_prev:6.53,bact_real:101.80,mole_prev:6.53,mole_real:4.90},
+  {data:'2026-07-10',sem:28,seq:2,prod:'BTJ ILHA', lote:'3246',cod:'10/07/2026 - BTJ ILHA - 3246',  bm_prev:1524,bm_real:1527,pm_prev:0.936,pm_real:0.850,rend_prev:47.5,rend_real:45.49,mort_prev:0,mort_real:0,desc500g_prev:3.05,desc500g_real:1.30, bact_prev:1.53,bact_real:9.30,mole_prev:1.53,mole_real:0.50},
+  {data:'2026-07-10',sem:28,seq:3,prod:'PURO PEIXE',lote:'926', cod:'10/07/2026 - PURO PEIXE - 926', bm_prev:6013,bm_real:5946,pm_prev:1.000,pm_real:1.084,rend_prev:47.5,rend_real:45.72,mort_prev:0,mort_real:0,desc500g_prev:11.89,desc500g_real:22.40,bact_prev:5.95,bact_real:58.30,mole_prev:5.95,mole_real:20.40},
 ];
 
-/* ── ESTADO ── */
+/* ─── ESTADO ── */
+let BASE = [...DEMO];
 let filtered = [...BASE];
 let currentView = 'cards';
+let fonteLabel = 'demo';
+let geradoEm   = '';
 
-/* ── FORMATTERS ── */
-const f0  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
-const f1  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
-const f2  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const f3  = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3});
+/* ─── FORMATTERS ── */
+const f0   = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+const f1   = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const f2   = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const f3   = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3});
 const fPct = n => f2(n)+'%';
 const fDate = s => s ? s.split('-').reverse().join('/') : '—';
-const dPct = (a,b) => a ? (b-a)/a*100 : 0;
-const sign = n => (n>=0?'+':'')+f1(n)+'%';
+const dPct  = (a,b) => a ? (b-a)/a*100 : 0;
+const sign  = n => (n>=0?'+':'')+f1(n)+'%';
 const signAbs = (n,dec=1) => (n>=0?'+':'')+Number(n).toFixed(dec);
 
+/* ─── CARREGAR JSON ── */
+function loadJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      const registros = payload.registros || payload; // suporta array direto
+      if (!Array.isArray(registros) || registros.length === 0)
+        throw new Error('Arquivo vazio ou formato inválido');
+
+      BASE = registros;
+      filtered = [...BASE];
+      geradoEm = payload.gerado_em || '';
+      fonteLabel = `devolutiva_dados.json — ${payload.total || registros.length} registros`;
+
+      const banner = document.getElementById('load-banner');
+      const binfo  = document.getElementById('banner-info');
+      binfo.textContent = `${registros.length} abates carregados` + (geradoEm ? ` · gerado em ${geradoEm.replace('T',' ')}` : '');
+      banner.classList.add('visible');
+
+      document.getElementById('sb-fonte').textContent = 'Fonte: ' + fonteLabel;
+      refresh();
+    } catch(err) {
+      alert('Erro ao ler JSON: ' + err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ─── ALERTA ── */
 function alertLevel(r) {
-  const dBm   = Math.abs(dPct(r.bm_rom, r.bm_real));
-  const dRend = r.rend_prev - r.rend_real;
-  if (r.bact > 80 || dRend > 3.5 || dBm > 6) return 'alert-high';
-  if (r.bact > 25 || dRend > 2   || dBm > 3) return 'alert-mid';
+  const dBm    = Math.abs(dPct(r.bm_prev, r.bm_real));
+  const dRend  = r.rend_prev - r.rend_real;
+  const bact   = r.bact_real  || 0;
+  if (bact > 80 || dRend > 3.5 || dBm > 6) return 'alert-high';
+  if (bact > 25 || dRend > 2   || dBm > 3) return 'alert-mid';
   return 'ok';
 }
 
@@ -311,7 +369,7 @@ function difCls(pct, badIfPositive=false) {
   return bad ? 'dif-neg' : 'dif-pos';
 }
 
-/* ── FILTROS ── */
+/* ─── FILTROS ── */
 function populateFilters() {
   const prods   = [...new Set(BASE.map(r=>r.prod))].sort();
   const semanas = [...new Set(BASE.map(r=>r.sem))].sort((a,b)=>a-b);
@@ -331,10 +389,10 @@ function applyFilters() {
   const alerta = document.getElementById('f-alerta').value;
 
   filtered = BASE.filter(r => {
-    if (prod   && r.prod  !== prod)        return false;
-    if (sem    && r.sem   !== Number(sem)) return false;
-    if (de     && r.data  <  de)           return false;
-    if (ate    && r.data  >  ate)          return false;
+    if (prod   && r.prod !== prod)           return false;
+    if (sem    && r.sem  !== Number(sem))    return false;
+    if (de     && r.data <  de)              return false;
+    if (ate    && r.data >  ate)             return false;
     if (alerta === 'alert' && alertLevel(r) === 'ok')  return false;
     if (alerta === 'ok'    && alertLevel(r) !== 'ok')  return false;
     return true;
@@ -343,46 +401,51 @@ function applyFilters() {
   renderKPIs();
   renderChart();
   renderView();
-  document.getElementById('sb-total').textContent = `${filtered.length} abate(s) exibido(s)`;
-  document.getElementById('sec-label').textContent = `Romaneios de Abate (${filtered.length})`;
+  document.getElementById('sb-total').textContent = `${filtered.length} abate(s) exibido(s) de ${BASE.length} total`;
+  document.getElementById('sec-label').textContent = `Abates (${filtered.length})`;
 }
 
-/* ── KPIs ── */
+/* ─── KPIs ── */
 function renderKPIs() {
-  const n = filtered.length;
-  const brom  = filtered.reduce((a,r)=>a+r.bm_rom,0);
-  const breal = filtered.reduce((a,r)=>a+r.bm_real,0);
-  const bdif  = brom ? dPct(brom,breal) : 0;
-  const rend  = n ? filtered.reduce((a,r)=>a+r.rend_real,0)/n : 0;
-  const pm    = n ? filtered.reduce((a,r)=>a+r.pm_real,0)/n : 0;
-  const bact  = filtered.reduce((a,r)=>a+r.bact,0);
+  const n     = filtered.length;
+  const bprev = filtered.reduce((a,r)=>a+(r.bm_prev||0), 0);
+  const breal = filtered.reduce((a,r)=>a+(r.bm_real||0), 0);
+  const bdif  = bprev ? dPct(bprev,breal) : 0;
+  const rend  = n ? filtered.reduce((a,r)=>a+(r.rend_real||0),0)/n : 0;
+  const pm    = n ? filtered.reduce((a,r)=>a+(r.pm_real||0),0)/n : 0;
+  const bact  = filtered.reduce((a,r)=>a+(r.bact_real||0), 0);
   const alertas = filtered.filter(r=>alertLevel(r)!=='ok').length;
 
-  document.getElementById('k-n').textContent    = n;
-  document.getElementById('k-brom').textContent = f0(brom)+' kg';
-  document.getElementById('k-breal').textContent= f0(breal)+' kg';
+  document.getElementById('k-n').textContent     = n;
+  document.getElementById('k-bprev').textContent = f0(bprev)+' kg';
+  document.getElementById('k-breal').textContent = f0(breal)+' kg';
   const kd = document.getElementById('k-bdif');
   kd.textContent = sign(bdif);
   kd.className = 'kpi-val '+(Math.abs(bdif)<2?'kv-green':bdif<0?'kv-red':'kv-orange');
-  document.getElementById('k-rend').textContent = fPct(rend);
-  document.getElementById('k-pm').textContent   = f3(pm)+' kg';
-  document.getElementById('k-bact').textContent = f1(bact)+' kg';
+  document.getElementById('k-rend').textContent   = fPct(rend);
+  document.getElementById('k-pm').textContent     = f3(pm)+' kg';
+  document.getElementById('k-bact').textContent   = f1(bact)+' kg';
   document.getElementById('k-alerta').textContent = alertas;
 }
 
-/* ── CHART ── */
+/* ─── CHART ── */
 function renderChart() {
   const canvas = document.getElementById('chart-canvas');
   if (!filtered.length) { canvas.innerHTML='<div style="color:var(--txt3);padding:40px">Sem dados</div>'; return; }
-  const maxV = Math.max(...filtered.flatMap(r=>[r.bm_rom,r.bm_real]));
+  const maxV = Math.max(...filtered.flatMap(r=>[r.bm_prev||0, r.bm_real||0]));
   const H = 130;
   canvas.innerHTML = filtered.map(r=>{
-    const hA = Math.round(r.bm_rom/maxV*H);
-    const hB = Math.round(r.bm_real/maxV*H);
+    const hA = maxV ? Math.round((r.bm_prev||0)/maxV*H) : 0;
+    const hB = maxV ? Math.round((r.bm_real||0)/maxV*H) : 0;
     const al = alertLevel(r);
     const barB = al==='alert-high'?'#c62828':al==='alert-mid'?'#f9a825':'var(--cyan)';
-    const lbl = r.cod.split(' - ').slice(1).join(' - ');
-    const tt = {prod:r.prod,cod:r.cod,data:fDate(r.data),brom:f0(r.bm_rom),breal:f0(r.bm_real),dBm:sign(dPct(r.bm_rom,r.bm_real)),rend:fPct(r.rend_real),bact:f1(r.bact),mole:f1(r.mole)};
+    const lbl = r.prod + ' ' + r.seq;
+    const tt = {
+      prod:r.prod, cod:r.cod, data:fDate(r.data),
+      bprev:f0(r.bm_prev), breal:f0(r.bm_real),
+      dBm:sign(dPct(r.bm_prev,r.bm_real)),
+      rend:fPct(r.rend_real), bact:f1(r.bact_real), mole:f1(r.mole_real)
+    };
     return `<div class="bar-group" onmouseenter='showTT(event,${JSON.stringify(tt).replace(/'/g,"\\'")})'  onmouseleave="hideTT()">
       <div class="bar-a" style="height:${hA}px;width:18px"></div>
       <div class="bar-b" style="height:${hB}px;width:18px;background:${barB}"></div>
@@ -391,28 +454,28 @@ function renderChart() {
   }).join('');
 }
 
-/* ── TOOLTIP ── */
+/* ─── TOOLTIP ── */
 function showTT(e,d) {
   const t = document.getElementById('tooltip');
-  const dColor = d.dBm.startsWith('-')?'var(--red)':'var(--green)';
+  const dColor = (d.dBm||'').startsWith('-')?'var(--red)':'var(--green)';
   t.innerHTML = `<div class="tt-title">${d.prod}</div>
     <div class="tt-row"><span class="tt-label">Data</span><span class="tt-val">${d.data}</span></div>
     <div class="tt-row"><span class="tt-label">Cód. Abate</span><span class="tt-val" style="font-size:10px">${d.cod}</span></div>
     <div class="tt-sep"></div>
-    <div class="tt-row"><span class="tt-label">Bm Romaneio</span><span class="tt-val">${d.brom} kg</span></div>
+    <div class="tt-row"><span class="tt-label">Bm Previsto</span><span class="tt-val">${d.bprev} kg</span></div>
     <div class="tt-row"><span class="tt-label">Bm Realizado</span><span class="tt-val">${d.breal} kg</span></div>
     <div class="tt-row"><span class="tt-label">Δ Biomassa</span><span class="tt-val" style="color:${dColor}">${d.dBm}</span></div>
     <div class="tt-sep"></div>
     <div class="tt-row"><span class="tt-label">Rend. Real</span><span class="tt-val">${d.rend}</span></div>
-    <div class="tt-row"><span class="tt-label">Bactéria</span><span class="tt-val">${d.bact} kg</span></div>
-    <div class="tt-row"><span class="tt-label">Mole</span><span class="tt-val">${d.mole} kg</span></div>`;
+    <div class="tt-row"><span class="tt-label">Bactéria Real</span><span class="tt-val">${d.bact} kg</span></div>
+    <div class="tt-row"><span class="tt-label">Mole Real</span><span class="tt-val">${d.mole} kg</span></div>`;
   t.style.display='block'; moveTT(e);
 }
 function moveTT(e){const t=document.getElementById('tooltip');t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-10)+'px';}
 function hideTT(){document.getElementById('tooltip').style.display='none';}
 document.addEventListener('mousemove',e=>{const t=document.getElementById('tooltip');if(t.style.display!=='none')moveTT(e);});
 
-/* ── VIEW ── */
+/* ─── VIEW ── */
 function setView(v) {
   currentView=v;
   document.getElementById('vb-cards').classList.toggle('active',v==='cards');
@@ -421,7 +484,7 @@ function setView(v) {
 }
 function renderView(){ currentView==='cards'?renderCards():renderTable(); }
 
-/* ── CARDS ── */
+/* ─── CARDS ── */
 function renderCards() {
   document.getElementById('view-cards').style.display='';
   document.getElementById('view-tabela').style.display='none';
@@ -431,29 +494,32 @@ function renderCards() {
   em.style.display='none';
 
   el.innerHTML = filtered.map(r=>{
-    const al=alertLevel(r);
-    const bc=al==='alert-high'?'badge-red':al==='alert-mid'?'badge-yellow':'badge-green';
-    const bt=al==='alert-high'?'⚠ Alerta':al==='alert-mid'?'~ Atenção':'✓ OK';
+    const al = alertLevel(r);
+    const bc = al==='alert-high'?'badge-red':al==='alert-mid'?'badge-yellow':'badge-green';
+    const bt = al==='alert-high'?'⚠ Alerta':al==='alert-mid'?'~ Atenção':'✓ OK';
 
-    const dBm   = dPct(r.bm_rom,r.bm_real);
-    const dPm   = dPct(r.pm_prev,r.pm_real);
-    const dRend = dPct(r.rend_prev,r.rend_real);
+    const dBm   = dPct(r.bm_prev,   r.bm_real);
+    const dPm   = dPct(r.pm_prev,   r.pm_real);
+    const dRend = dPct(r.rend_prev, r.rend_real);
+    const d500  = dPct(r.desc500g_prev||0.01, r.desc500g_real||0);
+    const dBact = dPct(r.bact_prev||0.01,     r.bact_real||0);
+    const dMole = dPct(r.mole_prev||0.01,     r.mole_real||0);
 
     const rows = [
-      {n:'Biomassa (kg)',    pv:f0(r.bm_rom),  rv:f0(r.bm_real),  dp:dBm,   da:signAbs(r.bm_real-r.bm_rom,0), bad:false},
-      {n:'Rend. Pot. (%)',   pv:fPct(r.rend_prev), rv:fPct(r.rend_real), dp:dRend, da:signAbs(r.rend_real-r.rend_prev), bad:false},
-      {n:'Peso Médio (kg)',  pv:f3(r.pm_prev), rv:f3(r.pm_real),  dp:dPm,   da:signAbs(r.pm_real-r.pm_prev,3), bad:false},
-      {n:'Mortalidade (kg)', pv:f2(r.mort_prev),rv:f2(r.mort_real),dp:dPct(r.mort_prev||0.01,r.mort_real),da:signAbs(r.mort_real-r.mort_prev), bad:true},
-      {n:'Desc. <400g (kg)', pv:'—',           rv:f2(r.desc400),  dp:null,  da:'',  bad:true},
-      {n:'Bactéria (kg)',    pv:'—',           rv:f1(r.bact),     dp:null,  da:'',  bad:true},
-      {n:'Mole (kg)',        pv:'—',           rv:f1(r.mole),     dp:null,  da:'',  bad:true},
+      {n:'Biomassa (kg)',    pv:f0(r.bm_prev),          rv:f0(r.bm_real),          dp:dBm,   da:signAbs(r.bm_real-r.bm_prev,0), bad:false},
+      {n:'Rend. Pot. (%)',   pv:fPct(r.rend_prev),      rv:fPct(r.rend_real),      dp:dRend, da:signAbs(r.rend_real-r.rend_prev), bad:false},
+      {n:'Peso Médio (kg)',  pv:f3(r.pm_prev),          rv:f3(r.pm_real),          dp:dPm,   da:signAbs(r.pm_real-r.pm_prev,3), bad:false},
+      {n:'Mortalidade (kg)', pv:f2(r.mort_prev||0),     rv:f2(r.mort_real||0),     dp:null,  da:'', bad:true},
+      {n:'Desc. <500g (kg)', pv:f2(r.desc500g_prev||0), rv:f2(r.desc500g_real||0), dp:d500,  da:signAbs((r.desc500g_real||0)-(r.desc500g_prev||0)), bad:true},
+      {n:'Bactéria (kg)',    pv:f2(r.bact_prev||0),     rv:f1(r.bact_real||0),     dp:dBact, da:signAbs((r.bact_real||0)-(r.bact_prev||0)), bad:true},
+      {n:'Mole (kg)',        pv:f2(r.mole_prev||0),     rv:f1(r.mole_real||0),     dp:dMole, da:signAbs((r.mole_real||0)-(r.mole_prev||0)), bad:true},
     ];
 
     return `<div class="card ${al}">
       <div class="card-header">
         <div>
           <div class="card-title">${r.prod}</div>
-          <div class="card-sub">Tanques: ${r.tanques} · NF ${r.nf}</div>
+          <div class="card-sub">Lote: ${r.lote} · Seq ${r.seq} · Sem ${r.sem}</div>
           <div class="card-sub2">${r.cod}</div>
         </div>
         <span class="card-badge ${bc}">${bt}</span>
@@ -463,11 +529,11 @@ function renderCards() {
           <span class="mh">Indicador</span>
           <span class="mh">Previsto</span>
           <span class="mh">Realizado</span>
-          <span class="mh">Dif%</span>
-          <span class="mh">Dif</span>
+          <span class="mh">Δ%</span>
+          <span class="mh">Δ abs</span>
         </div>
         ${rows.map(m=>{
-          const dc = m.dp==null ? '' : difCls(m.dp, m.bad);
+          const dc    = m.dp==null ? '' : difCls(m.dp, m.bad);
           const dpTxt = m.dp==null ? '—' : sign(m.dp);
           return `<div class="metric-row">
             <span class="metric-name">${m.n}</span>
@@ -479,39 +545,37 @@ function renderCards() {
         }).join('')}
       </div>
       <div class="card-footer">
-        <span class="cf-item">Motorista <span>${r.motorista}</span></span>
-        <span class="cf-item">Veículo <span>${r.veiculo}</span></span>
-        <span class="cf-item">Km <span>${f0(r.km_tot)}</span></span>
-        <span class="cf-item">O₂ <span>${r.o2} L</span></span>
-        <span class="cf-item">Bm Aprov. <span>${f1(r.bm_aprov)} kg</span></span>
-        <span class="cf-item">R$ Vivo <span>R$ ${f2(r.rs_kg)}/kg</span></span>
+        <span class="cf-item">Data <span>${fDate(r.data)}</span></span>
+        <span class="cf-item">Bm Prev <span>${f0(r.bm_prev)} kg</span></span>
+        <span class="cf-item">Bm Real <span>${f0(r.bm_real)} kg</span></span>
+        <span class="cf-item">Rend <span>${fPct(r.rend_real)}</span></span>
       </div>
     </div>`;
   }).join('');
 }
 
-/* ── TABLE ── */
+/* ─── TABLE ── */
 function renderTable() {
   document.getElementById('view-cards').style.display='none';
   document.getElementById('view-tabela').style.display='';
-  const em=document.getElementById('empty-msg');
-  const tb=document.getElementById('tbl-body');
+  const em = document.getElementById('empty-msg');
+  const tb = document.getElementById('tbl-body');
   if(!filtered.length){tb.innerHTML='';em.style.display='';return;}
   em.style.display='none';
 
-  tb.innerHTML=filtered.map(r=>{
-    const al=alertLevel(r);
-    const pc=al==='alert-high'?'pill-red':al==='alert-mid'?'pill-yellow':'pill-green';
-    const pt=al==='alert-high'?'Alerta':al==='alert-mid'?'Atenção':'OK';
-    const dBm=dPct(r.bm_rom,r.bm_real);
-    const dPm=dPct(r.pm_prev,r.pm_real);
-    const dRd=dPct(r.rend_prev,r.rend_real);
+  tb.innerHTML = filtered.map(r=>{
+    const al  = alertLevel(r);
+    const pc  = al==='alert-high'?'pill-red':al==='alert-mid'?'pill-yellow':'pill-green';
+    const pt  = al==='alert-high'?'Alerta':al==='alert-mid'?'Atenção':'OK';
+    const dBm = dPct(r.bm_prev, r.bm_real);
+    const dPm = dPct(r.pm_prev, r.pm_real);
+    const dRd = dPct(r.rend_prev, r.rend_real);
     return `<tr>
       <td class="td-prod">${r.prod}</td>
-      <td class="td-cod">${r.cod}</td>
+      <td class="td-cod">${r.lote}</td>
       <td>${fDate(r.data)}</td>
       <td>${r.sem}</td>
-      <td>${f0(r.bm_rom)}</td>
+      <td>${f0(r.bm_prev)}</td>
       <td>${f0(r.bm_real)}</td>
       <td class="${difCls(dBm)}">${sign(dBm)}</td>
       <td>${f3(r.pm_prev)}</td>
@@ -520,36 +584,48 @@ function renderTable() {
       <td>${fPct(r.rend_prev)}</td>
       <td>${fPct(r.rend_real)}</td>
       <td class="${difCls(dRd)}">${sign(dRd)}</td>
-      <td>${f2(r.mort_real)}</td>
-      <td>${f2(r.desc400)}</td>
-      <td>${f1(r.bact)}</td>
-      <td>${f1(r.mole)}</td>
-      <td>${r.motorista}</td>
-      <td>${f0(r.km_tot)}</td>
+      <td>${f2(r.mort_real||0)}</td>
+      <td>${f2(r.desc500g_prev||0)}</td>
+      <td class="${difCls(-(r.desc500g_real||0)+(r.desc500g_prev||0),true)}">${f2(r.desc500g_real||0)}</td>
+      <td>${f2(r.bact_prev||0)}</td>
+      <td class="${(r.bact_real||0)>(r.bact_prev||0)*2?'dif-neg':''}">${f1(r.bact_real||0)}</td>
+      <td>${f2(r.mole_prev||0)}</td>
+      <td class="${(r.mole_real||0)>(r.mole_prev||0)*2?'dif-neg':''}">${f1(r.mole_real||0)}</td>
       <td><span class="pill ${pc}">${pt}</span></td>
     </tr>`;
   }).join('');
 }
 
-/* ── EXPORT CSV ── */
+/* ─── EXPORT CSV ── */
 function exportCSV() {
-  const h = ['Data','Semana','Prod','Tanques','NF','Cód Abate','Bm Rom(kg)','Bm Real(kg)','Δ Bm%','PM Prev','PM Real','Δ PM%','Rend Prev%','Rend Real%','Δ Rend%','Mort Real','Desc<400g','Bactéria','Mole','Motorista','Veículo','Km Tot','O2','Bm Aprov','R$/kg'];
+  const h = ['Data','Semana','Seq','Prod','Lote','Cód Abate',
+    'Bm Prev(kg)','Bm Real(kg)','Δ Bm%',
+    'PM Prev','PM Real','Δ PM%',
+    'Rend Prev%','Rend Real%','Δ Rend%',
+    'Mort Prev','Mort Real',
+    'Desc<500g Prev','Desc<500g Real',
+    'Bact Prev','Bact Real',
+    'Mole Prev','Mole Real',
+    'Status'];
   const rows = filtered.map(r=>[
-    r.data,r.sem,r.prod,r.tanques,r.nf,r.cod,
-    r.bm_rom,r.bm_real,dPct(r.bm_rom,r.bm_real).toFixed(1)+'%',
-    r.pm_prev,r.pm_real,dPct(r.pm_prev,r.pm_real).toFixed(1)+'%',
-    r.rend_prev+'%',r.rend_real+'%',dPct(r.rend_prev,r.rend_real).toFixed(1)+'%',
-    r.mort_real,r.desc400,r.bact,r.mole,
-    r.motorista,r.veiculo,r.km_tot,r.o2,r.bm_aprov,r.rs_kg
+    r.data, r.sem, r.seq, r.prod, r.lote, r.cod,
+    r.bm_prev, r.bm_real, dPct(r.bm_prev,r.bm_real).toFixed(1)+'%',
+    r.pm_prev, r.pm_real, dPct(r.pm_prev,r.pm_real).toFixed(1)+'%',
+    r.rend_prev+'%', r.rend_real+'%', dPct(r.rend_prev,r.rend_real).toFixed(1)+'%',
+    r.mort_prev||0, r.mort_real||0,
+    r.desc500g_prev||0, r.desc500g_real||0,
+    r.bact_prev||0, r.bact_real||0,
+    r.mole_prev||0, r.mole_real||0,
+    alertLevel(r)==='ok'?'OK':alertLevel(r)==='alert-mid'?'Atenção':'Alerta'
   ].join(';'));
-  const csv = [h.join(';'),...rows].join('\n');
-  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const csv = [h.join(';'), ...rows].join('\n');
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'),{href:url,download:`devolutiva_${new Date().toISOString().slice(0,10)}.csv`});
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-/* ── INIT ── */
+/* ─── INIT ── */
 function refresh() {
   document.getElementById('sb-updated').textContent = 'Atualizado: '+new Date().toLocaleString('pt-BR');
   document.getElementById('ts-label').textContent = new Date().toLocaleDateString('pt-BR');
@@ -569,17 +645,13 @@ refresh();
 
 <style>
 @media print {
-  .topbar,.filterbar,.statusbar,.chart-section,.top-actions{display:none!important}
+  .topbar,.filterbar,.statusbar,.chart-section,.top-actions,.load-banner{display:none!important}
   .card{break-inside:avoid;border:1px solid #999!important;border-left:3px solid #999!important;margin-bottom:8px}
   .card.alert-high{border-left-color:#c00!important}
   .card.alert-mid{border-left-color:#840!important}
   .card.ok{border-left-color:#060!important}
-  body,html{background:#fff!important;color:#000!important}
-  .card-body,.card-header,.card-footer{background:#fff!important}
-  .metric-name,.card-title,.card-sub,.card-sub2,.cf-item{color:#333!important}
-  .metric-prev,.metric-real{color:#000!important}
-  .dif-neg{color:#c00!important}
-  .dif-ok{color:#060!important}
-  .dif-pos{color:#840!important}
+  body{background:#fff;color:#111}
+  .metric-name,.metric-prev,.metric-real,.metric-dpct,.metric-dabs{color:#111!important}
+  .card-title,.card-sub,.card-sub2{color:#111!important}
 }
 </style>
