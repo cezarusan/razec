@@ -151,43 +151,48 @@ def _norm_data(val):
 def construir_indice_descarte(df_desc: pd.DataFrame) -> dict:
     """
     Pré-processa o Descarte-ETP em um dicionário:
-    { (data, subcateg): total_peixevivkg }
-    para consultas rápidas por data.
+    { (data, seqlot, subcateg): total_peixevivokg }
+    SeqLot do Descarte-ETP (col Lote, valores 1/2/3 por dia) bate com SeqLot do rendimento.
     """
-    col_data = col_subcateg = col_valor = None
+    col_data = col_lote = col_subcateg = col_valor = None
     for c in df_desc.columns:
         cl = str(c).lower().replace(" ", "")
         if cl == "data" and col_data is None:
             col_data = c
+        if cl == "lote" and col_lote is None:
+            col_lote = c
         if "subcateg" in cl and col_subcateg is None:
             col_subcateg = c
         if "peixevivo" in cl and col_valor is None:
             col_valor = c
 
-    if not col_data or not col_subcateg or not col_valor:
+    if not col_data or not col_lote or not col_subcateg or not col_valor:
         return {}
 
     idx = {}
     for _, row in df_desc.iterrows():
         d = _norm_data(row[col_data])
+        try:
+            seq = int(float(str(row[col_lote]).strip()))
+        except (ValueError, TypeError):
+            continue
         sub = str(row[col_subcateg]).strip() if pd.notna(row[col_subcateg]) else ""
         val = pd.to_numeric(row[col_valor], errors='coerce')
         if pd.isna(val):
             val = 0.0
-        key = (d, sub)
+        key = (d, seq, sub)
         idx[key] = idx.get(key, 0.0) + float(val)
     return idx
 
 
-def somar_descarte_idx(indice: dict, data, subcategs: list, n_lotes_dia: int) -> float:
-    """
-    Soma descartes do dia para as SubCateg indicadas e divide pelo número de lotes do dia.
-    Descarte-ETP agrupa por data sem identificar o lote individual.
-    """
+def somar_descarte_idx(indice: dict, data, seqlot, subcategs: list) -> float:
+    """Soma descartes para Data + SeqLot + SubCateg."""
     d = _norm_data(data)
-    total = sum(indice.get((d, sub), 0.0) for sub in subcategs)
-    if n_lotes_dia > 0:
-        total = total / n_lotes_dia
+    try:
+        seq = int(float(str(seqlot).strip()))
+    except (ValueError, TypeError):
+        return 0.0
+    total = sum(indice.get((d, seq, sub), 0.0) for sub in subcategs)
     return round(total, 3)
 
 
@@ -381,8 +386,7 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Coluna AA armazena decimal (ex: 0.4750 = 47.50%) — converte para %
         if 0 < rend_real < 1:
             rend_real = round(rend_real * 100, 4)
-        data_date = _norm_data(data)
-        n_lotes_dia = lotes_por_dia.get(data_date, 1)
+        seqlot = row.get(mapa.get("seqlot", ""), None)
 
         # Formata data
         if isinstance(data, datetime):
@@ -395,10 +399,10 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Cód. Abate
         cod_abate = f"{data_fmt} - {unid} - {lote}"
 
-        # Descartes — total do dia dividido pelo nº de lotes (Descarte-ETP não tem ID de lote individual)
-        desc_500g = somar_descarte_idx(indice_desc, data, SUBCATEG_500G, n_lotes_dia)
-        desc_bact = somar_descarte_idx(indice_desc, data, SUBCATEG_BACT, n_lotes_dia)
-        desc_mole = somar_descarte_idx(indice_desc, data, SUBCATEG_MOLE, n_lotes_dia)
+        # Descartes — junta por Data + SeqLot (= Lote no Descarte-ETP, valor 1/2/3 por dia)
+        desc_500g = somar_descarte_idx(indice_desc, data, seqlot, SUBCATEG_500G)
+        desc_bact = somar_descarte_idx(indice_desc, data, seqlot, SUBCATEG_BACT)
+        desc_mole = somar_descarte_idx(indice_desc, data, seqlot, SUBCATEG_MOLE)
 
         # Previstos calculados
         desc_500g_prev = round(bm_real * DESC_500G_PERC, 2)
