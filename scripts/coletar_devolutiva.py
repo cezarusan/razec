@@ -320,7 +320,7 @@ def solicitar_pm_previsto(lote, data, unid, automatico=False) -> float:
 def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
               mapa: dict, lote_filtro=None, simulacao=False,
               pm_manual: dict = None, automatico=False,
-              codfor_unid: dict = None) -> list:
+              codfor_unid: dict = None, data_inicio=None) -> list:
     """Processa cada linha do rendimento e retorna lista de dicts prontos para gravar."""
     resultados = []
 
@@ -359,6 +359,11 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
 
         if lote_filtro and lote != str(lote_filtro):
             continue
+
+        if data_inicio:
+            data_row = _norm_data(row.get(mapa["data"]))
+            if data_row and data_row < data_inicio:
+                continue
 
         data   = row.get(mapa["data"])
         codfor = str(row.get(mapa.get("codfor", ""), "")).strip()
@@ -568,10 +573,14 @@ def configurar_log(automatico: bool):
 
 def main():
     parser = argparse.ArgumentParser(description="Coleta dados para Devolutiva Pisciculturas")
-    parser.add_argument("--simulacao",   action="store_true", help="Processa mas não grava no Excel")
-    parser.add_argument("--automatico",  action="store_true", help="Sem perguntas — para agendamento diário")
-    parser.add_argument("--inspecionar", action="store_true", help="Mostra estrutura dos arquivos fonte")
-    parser.add_argument("--lote",        type=str, default=None, help="Processa somente este lote")
+    parser.add_argument("--simulacao",    action="store_true", help="Processa mas não grava no Excel")
+    parser.add_argument("--automatico",   action="store_true", help="Sem perguntas — para agendamento diário")
+    parser.add_argument("--inspecionar",  action="store_true", help="Mostra estrutura dos arquivos fonte")
+    parser.add_argument("--lote",         type=str, default=None, help="Processa somente este lote")
+    parser.add_argument("--data-inicio",  type=str, default=None, dest="data_inicio",
+                        help="Processa somente lotes a partir desta data (DD/MM/AAAA ou AAAA-MM-DD)")
+    parser.add_argument("--ultimos",      type=int, default=None,
+                        help="Mostra somente os últimos N lotes (por data)")
     args = parser.parse_args()
 
     configurar_log(args.automatico)
@@ -639,13 +648,34 @@ def main():
         print(f"\n⚠  pm_previsto.xlsx não encontrado — PM Previsto será 0 para todos os lotes.")
         print(f"   Crie o arquivo em: {ARQUIVOS['pm_config']}")
 
+    # Filtro de data início
+    data_inicio = None
+    if args.data_inicio:
+        try:
+            for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+                try:
+                    data_inicio = datetime.strptime(args.data_inicio, fmt).date()
+                    break
+                except ValueError:
+                    continue
+            if not data_inicio:
+                print(f"⚠  Data inválida: {args.data_inicio}. Use DD/MM/AAAA ou AAAA-MM-DD.")
+        except Exception:
+            pass
+
     # Processamento
     resultados = processar(df_rend, df_desc, mapa,
                            lote_filtro=args.lote,
                            simulacao=args.simulacao,
                            pm_manual=pm_config,
                            automatico=args.automatico,
-                           codfor_unid=codfor_map)
+                           codfor_unid=codfor_map,
+                           data_inicio=data_inicio)
+
+    # Filtro --ultimos N
+    if args.ultimos and resultados:
+        resultados_ord = sorted(resultados, key=lambda r: r["Data"])
+        resultados = resultados_ord[-args.ultimos:]
 
     # Exibe resultado
     imprimir_resultado(resultados)
