@@ -58,7 +58,7 @@ COLS_RENDIMENTO = {
     "mort_real": "L",          # col L — Mortalidade Sangria
     "pm_real":   "O",          # col O — Biometria = PM Realizado
     "rend_real": "AA",         # col AA — Rend. Pot. Bruto
-    "idlote":    "idlote",     # col AG — chave numérica usada no Descarte-ETP
+    "seqlot":    "SeqLot",     # col B — sequência do abate no dia, igual a Lote no Descarte-ETP
 }
 
 # Valores fixos
@@ -135,18 +135,25 @@ def mapear_colunas_rendimento(df: pd.DataFrame) -> dict:
         "mort_real": get_col(COLS_RENDIMENTO["mort_real"], col_letra_para_idx("L")),
         "pm_real":   get_col(COLS_RENDIMENTO["pm_real"],   col_letra_para_idx("O")),
         "rend_real": get_col(COLS_RENDIMENTO["rend_real"], col_letra_para_idx("AA")),
-        "idlote":    get_col(COLS_RENDIMENTO["idlote"],    col_letra_para_idx("AG")),
+        "seqlot":    get_col(COLS_RENDIMENTO["seqlot"],    col_letra_para_idx("B")),
     }
 
 
-def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
-    """Soma PeixeVivoKg para um lote e lista de SubCateg."""
+def somar_descarte(df_desc: pd.DataFrame, data, seqlot, subcategs: list) -> float:
+    """
+    Soma PeixeVivoKg para um abate (Data + SeqLot) e lista de SubCateg.
+    Descarte-ETP usa Data (col A) + Lote sequencial do dia (col B, valores 1/2/3...)
+    que corresponde a Data + SeqLot do rendimentoLote3.
+    """
+    col_data = None
     col_lote = None
     col_subcateg = None
     col_valor = None
 
     for c in df_desc.columns:
         cl = str(c).lower().replace(" ", "")
+        if cl == "data" and col_data is None:
+            col_data = c
         if "lote" in cl and col_lote is None:
             col_lote = c
         if "subcateg" in cl and col_subcateg is None:
@@ -154,21 +161,31 @@ def somar_descarte(df_desc: pd.DataFrame, lote, subcategs: list) -> float:
         if "peixevivo" in cl and col_valor is None:
             col_valor = c
 
-    if not col_lote or not col_subcateg or not col_valor:
-        logging.warning(f"Colunas de descarte não encontradas: lote={col_lote}, subcateg={col_subcateg}, valor={col_valor}")
+    if not col_data or not col_lote or not col_subcateg or not col_valor:
+        logging.warning(f"Colunas de descarte não encontradas: data={col_data}, lote={col_lote}, subcateg={col_subcateg}, valor={col_valor}")
         return 0.0
 
-    # Normaliza lote para comparação: converte tudo para string sem decimais
-    # Ex: 2805.0 → "2805", "2805" → "2805", 2805 → "2805"
-    def _norm_lote(val):
+    def _norm_int(val):
         try:
-            return str(int(float(str(val).strip())))
+            return int(float(str(val).strip()))
         except (ValueError, TypeError):
-            return str(val).strip()
+            return None
 
-    col_lote_norm = df_desc[col_lote].map(_norm_lote)
-    lote_cmp = _norm_lote(lote)
-    mask = (col_lote_norm == lote_cmp) & (df_desc[col_subcateg].isin(subcategs))
+    def _norm_data(val):
+        if isinstance(val, datetime):
+            return val.date()
+        try:
+            return pd.to_datetime(val).date()
+        except Exception:
+            return str(val)
+
+    data_cmp = _norm_data(data)
+    seqlot_cmp = _norm_int(seqlot)
+
+    col_data_norm = df_desc[col_data].map(_norm_data)
+    col_lote_norm = df_desc[col_lote].map(_norm_int)
+
+    mask = (col_data_norm == data_cmp) & (col_lote_norm == seqlot_cmp) & (df_desc[col_subcateg].isin(subcategs))
     total = pd.to_numeric(df_desc.loc[mask, col_valor], errors='coerce').sum()
     return round(float(total) if not pd.isna(total) else 0.0, 3)
 
@@ -345,12 +362,7 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Coluna AA armazena decimal (ex: 0.4750 = 47.50%) — converte para %
         if 0 < rend_real < 1:
             rend_real = round(rend_real * 100, 4)
-        # idlote é a chave numérica usada no Descarte-ETP (coluna AG do rendimento)
-        idlote_raw = row.get(mapa.get("idlote", ""), None)
-        if idlote_raw is None or (isinstance(idlote_raw, float) and pd.isna(idlote_raw)):
-            idlote = lote
-        else:
-            idlote = idlote_raw
+        seqlot = row.get(mapa.get("seqlot", ""), None)
 
         # Formata data
         if isinstance(data, datetime):
@@ -363,10 +375,10 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         # Cód. Abate
         cod_abate = f"{data_fmt} - {unid} - {lote}"
 
-        # Descartes — usa idlote (número sequencial) que bate com coluna Lote do Descarte-ETP
-        desc_500g = somar_descarte(df_desc, idlote, SUBCATEG_500G)
-        desc_bact = somar_descarte(df_desc, idlote, SUBCATEG_BACT)
-        desc_mole = somar_descarte(df_desc, idlote, SUBCATEG_MOLE)
+        # Descartes — junta por Data + SeqLot (=Lote no Descarte-ETP)
+        desc_500g = somar_descarte(df_desc, data, seqlot, SUBCATEG_500G)
+        desc_bact = somar_descarte(df_desc, data, seqlot, SUBCATEG_BACT)
+        desc_mole = somar_descarte(df_desc, data, seqlot, SUBCATEG_MOLE)
 
         # Previstos calculados
         desc_500g_prev = round(bm_real * DESC_500G_PERC, 2)
