@@ -579,6 +579,7 @@ def main():
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
     print(f"║   {datetime.now().strftime('%d/%m/%Y %H:%M')}                               ║")
+    print("║   versao: 2026-08-04-v8                          ║")
     print("╚══════════════════════════════════════════════════╝")
 
     if args.simulacao:
