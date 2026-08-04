@@ -21,8 +21,12 @@ def achar_pasta():
     return None
 
 def baixar(url, destino):
+    import time
     print(f"   baixando {os.path.basename(destino)}...", end=" ")
-    urllib.request.urlretrieve(url, destino)
+    url_cb = url + f"?t={int(time.time())}"
+    req = urllib.request.Request(url_cb, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
+    with urllib.request.urlopen(req) as resp, open(destino, "wb") as f:
+        f.write(resp.read())
     print("OK")
 
 def main():
