@@ -207,6 +207,10 @@ def carregar_codfor_unidades() -> dict:
     Se o arquivo não existir, cria um modelo para preenchimento.
     """
     caminho = ARQUIVOS.get("codfor_unid", "")
+    if not caminho or not os.path.exists(caminho):
+        pasta = achar_pasta()
+        if pasta:
+            caminho = os.path.join(pasta, "codfor_unidades.xlsx")
     if not caminho:
         return {}
 
@@ -272,8 +276,14 @@ def carregar_pm_config() -> dict:
       → retorna {lote_str: pm}
     Todos os formatos coexistem no mesmo dict de retorno.
     """
+    # Tenta o caminho fixo primeiro; se não achar, usa achar_pasta() dinâmico
     caminho = ARQUIVOS.get("pm_config", "")
     if not caminho or not os.path.exists(caminho):
+        pasta = achar_pasta()
+        if pasta:
+            caminho = os.path.join(pasta, "pm_previsto.xlsx")
+    if not caminho or not os.path.exists(caminho):
+        logging.warning("pm_previsto.xlsx não encontrado — PM Previsto será 0")
         return {}
     try:
         df = pd.read_excel(caminho, sheet_name=0, header=0, dtype=str)
