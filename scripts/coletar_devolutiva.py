@@ -290,16 +290,20 @@ def carregar_pm_config() -> dict:
     """
     # Tenta o caminho fixo primeiro; se não achar, usa achar_pasta() dinâmico
     caminho = ARQUIVOS.get("pm_config", "")
+    print(f"\n[PM] Procurando pm_previsto.xlsx em: {caminho}")
     if not caminho or not os.path.exists(caminho):
         pasta = achar_pasta()
         if pasta:
             caminho = os.path.join(pasta, "pm_previsto.xlsx")
+            print(f"[PM] Fallback para: {caminho}")
     if not caminho or not os.path.exists(caminho):
-        logging.warning("pm_previsto.xlsx não encontrado — PM Previsto será 0")
+        print(f"[PM] ARQUIVO NAO ENCONTRADO — PM Previsto sera 0")
         return {}
+    print(f"[PM] Arquivo encontrado: {caminho}")
     try:
         df = pd.read_excel(caminho, sheet_name=0, header=0, dtype=str)
         cols = [str(c).strip().lower() for c in df.columns]
+        print(f"[PM] Colunas lidas: {list(df.columns)}")
         resultado = {}
 
         # Formato novo: 3 colunas — Semana | Unid. Produtora | PM Previsto
@@ -316,9 +320,10 @@ def carregar_pm_config() -> dict:
                     resultado[(sem, unid)] = pm   # lookup preciso
                     # fallback por unidade (último valor vence — usa a mais recente)
                     resultado[unid] = pm
+                    print(f"[PM] Carregado: sem={sem} unid='{unid}' pm={pm}")
                 except (ValueError, TypeError):
                     pass
-            logging.info(f"PM config (Semana×Unidade) carregado: {len(resultado)} entradas")
+            print(f"[PM] Total carregado: {len(resultado)} entradas")
         else:
             # Formato legado: Lote | PM Previsto
             for _, row in df.iterrows():
