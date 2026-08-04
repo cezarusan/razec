@@ -265,49 +265,106 @@ def _criar_codfor_modelo(caminho: str):
 
 def carregar_pm_config() -> dict:
     """
-    Lê pm_previsto.xlsx e retorna dict {lote: pm_previsto}.
-    O arquivo deve ter duas colunas: Lote | PM Previsto (kg)
+    Lê pm_previsto.xlsx.
+    Formato novo (prioritário): Semana | Unid. Produtora | PM Previsto (kg)
+      → retorna {(semana_int, unid): pm}  e  {unid: pm}  (média por unidade)
+    Formato legado: Lote | PM Previsto (kg)
+      → retorna {lote_str: pm}
+    Todos os formatos coexistem no mesmo dict de retorno.
     """
     caminho = ARQUIVOS.get("pm_config", "")
     if not caminho or not os.path.exists(caminho):
         return {}
     try:
         df = pd.read_excel(caminho, sheet_name=0, header=0, dtype=str)
+        cols = [str(c).strip().lower() for c in df.columns]
         resultado = {}
-        for _, row in df.iterrows():
-            lote = str(row.iloc[0]).strip()
-            try:
-                pm = float(str(row.iloc[1]).replace(",", "."))
-                resultado[lote] = pm
-            except (ValueError, IndexError):
-                pass
-        logging.info(f"PM config carregado: {len(resultado)} lotes")
+
+        # Formato novo: 3 colunas — Semana | Unid. Produtora | PM Previsto
+        if len(df.columns) >= 3 and any("sem" in c for c in cols):
+            for _, row in df.iterrows():
+                sem_str  = str(row.iloc[0]).strip()
+                unid     = str(row.iloc[1]).strip()
+                pm_str   = str(row.iloc[2]).strip().replace(",", ".")
+                if sem_str.lower() in ("nan", "") or unid.lower() in ("nan", ""):
+                    continue
+                try:
+                    sem = int(float(sem_str))
+                    pm  = float(pm_str)
+                    resultado[(sem, unid)] = pm   # lookup preciso
+                    # fallback por unidade (último valor vence — usa a mais recente)
+                    resultado[unid] = pm
+                except (ValueError, TypeError):
+                    pass
+            logging.info(f"PM config (Semana×Unidade) carregado: {len(resultado)} entradas")
+        else:
+            # Formato legado: Lote | PM Previsto
+            for _, row in df.iterrows():
+                lote = str(row.iloc[0]).strip()
+                try:
+                    pm = float(str(row.iloc[1]).replace(",", "."))
+                    resultado[lote] = pm
+                except (ValueError, IndexError):
+                    pass
+            logging.info(f"PM config (por Lote) carregado: {len(resultado)} lotes")
+
         return resultado
     except Exception as e:
         logging.warning(f"Não foi possível ler pm_previsto.xlsx: {e}")
         return {}
 
 
-def criar_pm_config_modelo():
-    """Cria um arquivo modelo de pm_previsto.xlsx se não existir."""
+def criar_pm_config_modelo(unidades: list = None):
+    """
+    Cria pm_previsto.xlsx com formato Semana × Unid. Produtora.
+    Se o arquivo já existir, não sobrescreve.
+    """
     caminho = ARQUIVOS.get("pm_config", "")
     if not caminho or os.path.exists(caminho):
         return
     try:
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "PM Previsto"
-        ws.append(["Lote", "PM Previsto (kg)"])
-        ws.append(["2805", "0.929"])
-        ws.append(["2806", "0.929"])
-        ws.column_dimensions["A"].width = 15
-        ws.column_dimensions["B"].width = 20
-        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+
+        # Cabeçalho
+        header = ["Semana", "Unid. Produtora", "PM Previsto (kg)"]
+        ws.append(header)
+
+        # Estilo do cabeçalho
+        from openpyxl.styles import PatternFill, Font, Alignment
+        hdr_fill = PatternFill("solid", fgColor="1F4E79")
+        hdr_font = Font(bold=True, color="FFFFFF")
+        for cell in ws[1]:
+            cell.fill = hdr_fill
+            cell.font = hdr_font
+            cell.alignment = Alignment(horizontal="center")
+
+        # Linhas de exemplo com as unidades cadastradas (ou padrão)
+        if not unidades:
+            unidades = ["BTJ STC", "BTJ ILHA", "BTJ SUD", "SANTA HELENA", "PURO PEIXE"]
+
+        from datetime import date
+        semana_atual = date.today().isocalendar()[1]
+        for sem in range(max(1, semana_atual - 1), semana_atual + 3):
+            for unid in unidades:
+                ws.append([sem, unid, 0.929])
+
+        ws.column_dimensions["A"].width = 12
+        ws.column_dimensions["B"].width = 25
+        ws.column_dimensions["C"].width = 20
+
+        # Instrução
+        ws["E1"] = "Preencha o PM Previsto (kg/peixe) para cada Semana e Unidade Produtora"
+        ws["E1"].font = Font(italic=True, color="555555")
+        ws.column_dimensions["E"].width = 60
+
         wb.save(caminho)
-        print(f"   📄 Arquivo modelo criado: {caminho}")
-        print(f"      Preencha o PM Previsto de cada lote nesse arquivo antes de rodar.")
+        print(f"\n   📄 Planilha PM Previsto criada: {caminho}")
+        print(f"      Preencha o PM esperado por semana e unidade produtora.")
     except Exception as e:
-        print(f"   ⚠  Não foi possível criar modelo: {e}")
+        print(f"   ⚠  Não foi possível criar pm_previsto.xlsx: {e}")
 
 
 def solicitar_pm_previsto(lote, data, unid, automatico=False) -> float:
@@ -413,19 +470,23 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         desc_bact_prev = round(bm_real * DESC_BACT_PERC, 2)
         desc_mole_prev = round(bm_real * DESC_MOLE_PERC, 2)
 
-        # PM Previsto — lê do config ou pede manualmente
-        if pm_manual and lote in pm_manual:
-            pm_prev = pm_manual[lote]
-        elif simulacao:
-            pm_prev = 0.0
-        else:
-            pm_prev = solicitar_pm_previsto(lote, data_fmt, unid, automatico=automatico)
-
         # Semana ISO e sequência para o dashboard
         try:
             sem = _norm_data(data).isocalendar()[1] if data else 0
         except Exception:
             sem = 0
+
+        # PM Previsto — lookup por (semana, unidade) > unidade > lote
+        pm_prev = 0.0
+        if pm_manual:
+            if (sem, unid) in pm_manual:
+                pm_prev = pm_manual[(sem, unid)]
+            elif unid in pm_manual:
+                pm_prev = pm_manual[unid]
+            elif lote in pm_manual:
+                pm_prev = pm_manual[lote]
+        if pm_prev == 0.0 and not simulacao:
+            pm_prev = solicitar_pm_previsto(lote, data_fmt, unid, automatico=automatico)
         try:
             seq_int = int(float(str(seqlot).strip())) if seqlot is not None else 0
         except (ValueError, TypeError):
@@ -663,7 +724,7 @@ def main():
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
     print(f"║   {datetime.now().strftime('%d/%m/%Y %H:%M')}                               ║")
-    print("║   versao: 2026-08-04-v10                         ║")
+    print("║   versao: 2026-08-04-v11                         ║")
     print("╚══════════════════════════════════════════════════╝")
 
     if args.simulacao:
@@ -693,8 +754,9 @@ def main():
         logging.error(msg)
         sys.exit(1)
 
-    # Cria modelo de PM se não existir
-    criar_pm_config_modelo()
+    # Cria modelo de PM se não existir (passa unidades cadastradas para pré-preencher)
+    unidades_lista = list(codfor_map.values()) if codfor_map else []
+    criar_pm_config_modelo(unidades=unidades_lista or None)
 
     # Leitura
     df_rend = ler_rendimento(ARQUIVOS["rendimento"])
@@ -718,7 +780,12 @@ def main():
     # PM Previsto do arquivo de config
     pm_config = carregar_pm_config()
     if pm_config:
-        print(f"\n📄 PM Previsto carregado para {len(pm_config)} lote(s): {', '.join(pm_config.keys())}")
+        entradas = [f"{k}" for k in pm_config.keys() if isinstance(k, tuple)]
+        unids    = [k for k in pm_config.keys() if isinstance(k, str)]
+        if entradas:
+            print(f"\n📄 PM Previsto carregado: {len(entradas)} combinações Semana×Unidade")
+        else:
+            print(f"\n📄 PM Previsto carregado para {len(unids)} lote(s)")
     elif args.automatico:
         print(f"\n⚠  pm_previsto.xlsx não encontrado — PM Previsto será 0 para todos os lotes.")
         print(f"   Crie o arquivo em: {ARQUIVOS['pm_config']}")
