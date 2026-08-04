@@ -724,7 +724,7 @@ def main():
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
     print(f"║   {datetime.now().strftime('%d/%m/%Y %H:%M')}                               ║")
-    print("║   versao: 2026-08-04-v11                         ║")
+    print("║   versao: 2026-08-04-v12                         ║")
     print("╚══════════════════════════════════════════════════╝")
 
     if args.simulacao:
@@ -754,10 +754,6 @@ def main():
         logging.error(msg)
         sys.exit(1)
 
-    # Cria modelo de PM se não existir (passa unidades cadastradas para pré-preencher)
-    unidades_lista = list(codfor_map.values()) if codfor_map else []
-    criar_pm_config_modelo(unidades=unidades_lista or None)
-
     # Leitura
     df_rend = ler_rendimento(ARQUIVOS["rendimento"])
     df_desc = ler_descarte(ARQUIVOS["descarte"], ABA_DESCARTE)
@@ -770,6 +766,10 @@ def main():
 
     # Cadastro CodFor → Unid. Produtora
     codfor_map = carregar_codfor_unidades()
+
+    # Cria modelo de PM se não existir (após carregar unidades para pré-preencher)
+    unidades_lista = list(codfor_map.values()) if codfor_map else []
+    criar_pm_config_modelo(unidades=unidades_lista or None)
     if codfor_map:
         print(f"\n🏭 Unidades cadastradas: {', '.join(codfor_map.values())}")
     else:
