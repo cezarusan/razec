@@ -652,8 +652,8 @@ def main():
     parser.add_argument("--lote",         type=str, default=None, help="Processa somente este lote")
     parser.add_argument("--data-inicio",  type=str, default=None, dest="data_inicio",
                         help="Processa somente lotes a partir desta data (DD/MM/AAAA ou AAAA-MM-DD)")
-    parser.add_argument("--ultimos",      type=int, default=None,
-                        help="Mostra somente os últimos N lotes (por data)")
+    parser.add_argument("--ultimos",      type=int, default=100,
+                        help="Mostra somente os últimos N lotes (por data) — padrão: 100")
     parser.add_argument("--exportar-json", action="store_true", dest="exportar_json",
                         help="Exporta resultado para JSON (para o dashboard HTML)")
     args = parser.parse_args()
@@ -663,7 +663,7 @@ def main():
     print("╔══════════════════════════════════════════════════╗")
     print("║   BTJ Foods — Coleta Devolutiva Pisciculturas    ║")
     print(f"║   {datetime.now().strftime('%d/%m/%Y %H:%M')}                               ║")
-    print("║   versao: 2026-08-04-v9                          ║")
+    print("║   versao: 2026-08-04-v10                         ║")
     print("╚══════════════════════════════════════════════════╝")
 
     if args.simulacao:
@@ -747,7 +747,7 @@ def main():
                            codfor_unid=codfor_map,
                            data_inicio=data_inicio)
 
-    # Filtro --ultimos N
+    # Filtro --ultimos N (padrão 100)
     if args.ultimos and resultados:
         resultados_ord = sorted(resultados, key=lambda r: r["Data"])
         resultados = resultados_ord[-args.ultimos:]
