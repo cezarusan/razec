@@ -346,9 +346,11 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         if 0 < rend_real < 1:
             rend_real = round(rend_real * 100, 4)
         # idlote é a chave numérica usada no Descarte-ETP (coluna AG do rendimento)
-        idlote = row.get(mapa.get("idlote", ""), None)
-        if pd.isna(idlote) if idlote is not None else True:
-            idlote = lote  # fallback para o lote formatado
+        idlote_raw = row.get(mapa.get("idlote", ""), None)
+        if idlote_raw is None or (isinstance(idlote_raw, float) and pd.isna(idlote_raw)):
+            idlote = lote
+        else:
+            idlote = idlote_raw
 
         # Formata data
         if isinstance(data, datetime):
@@ -501,13 +503,16 @@ def inspecionar(caminho_rend: str, caminho_desc: str, aba_desc: str):
             for v in unicas:
                 print(f"      • {v}")
 
-        # Mostra formato do lote
+        # Mostra formato do lote (início, meio e fim do arquivo)
         col_lote = next((c for c in df.columns if "lote" in str(c).lower()), None)
         if col_lote:
-            exemplos = df[col_lote].dropna().astype(str).unique()[:5]
-            print(f"\n   Exemplos de Lote na coluna '{col_lote}':")
-            for v in exemplos:
-                print(f"      • {v}")
+            serie = df[col_lote].dropna().astype(str)
+            n = len(serie)
+            indices = list(dict.fromkeys([0, 1, 2, n//2, n-3, n-2, n-1]))
+            print(f"\n   Exemplos de Lote na coluna '{col_lote}' (total {n} registros):")
+            for i in indices:
+                if 0 <= i < n:
+                    print(f"      linha {i+2}: {serie.iloc[i]}")
     except Exception as e:
         print(f"   ❌ Erro: {e}")
 
