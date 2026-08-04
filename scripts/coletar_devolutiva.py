@@ -12,6 +12,7 @@ Uso:
 
 import sys
 import os
+import glob
 import argparse
 import json
 import logging
@@ -94,6 +95,17 @@ def ler_rendimento(caminho: str) -> pd.DataFrame:
     df = pd.read_excel(caminho, sheet_name=0, header=0)
     print(f"   {len(df)} linhas encontradas | colunas: {list(df.columns[:10])}{'...' if len(df.columns)>10 else ''}")
     return df
+
+
+def achar_pasta() -> str:
+    """Localiza a pasta de Originação na rede, tolerando variações de acento."""
+    for p in [r"P:\FOODS\PCP\31 - Originação", r"P:\FOODS\PCP\31 - Originacao"]:
+        if os.path.isdir(p):
+            return p
+    for p in glob.glob(r"P:\FOODS\PCP\31*"):
+        if os.path.isdir(p):
+            return p
+    return None
 
 
 def ler_descarte(caminho: str, aba: str) -> pd.DataFrame:
