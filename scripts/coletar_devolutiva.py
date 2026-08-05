@@ -310,7 +310,7 @@ def carregar_pm_config() -> dict:
         if len(df.columns) >= 3 and any("sem" in c for c in cols):
             for _, row in df.iterrows():
                 sem_str  = str(row.iloc[0]).strip()
-                unid     = str(row.iloc[1]).strip()
+                unid     = str(row.iloc[1]).strip().replace('\xa0', ' ')
                 pm_str   = str(row.iloc[2]).strip().replace(",", ".")
                 if sem_str.lower() in ("nan", "") or unid.lower() in ("nan", ""):
                     continue
