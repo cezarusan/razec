@@ -836,7 +836,7 @@ def main():
 
     # Filtro --ultimos N (padrão 100)
     if args.ultimos and resultados:
-        resultados_ord = sorted(resultados, key=lambda r: r["Data"])
+        resultados_ord = sorted(resultados, key=lambda r: r["Data ISO"])
         resultados = resultados_ord[-args.ultimos:]
 
     # Exibe resultado
