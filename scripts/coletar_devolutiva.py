@@ -429,6 +429,7 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
         print("❌ Coluna de Lote não encontrada. Verifique COLS_RENDIMENTO['lote'].")
         return []
 
+    print(f"\n[DIAG] Total de linhas no rendimento: {len(df_rend)}")
     for _, row in df_rend.iterrows():
         lote = row.get(col_lote)
         if pd.isna(lote) or lote == "":
@@ -452,6 +453,7 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
                 continue
 
         data   = row.get(mapa["data"])
+        print(f"[DIAG] Processando lote={lote} data={_norm_data(data)} seqlot={row.get(mapa.get('seqlot',''), '?')}")
         codfor = str(row.get(mapa.get("codfor", ""), "")).strip()
         if codfor_unid and codfor in codfor_unid:
             unid = codfor_unid[codfor]
