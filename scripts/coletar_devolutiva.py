@@ -58,8 +58,8 @@ COLS_RENDIMENTO = {
     "lote":      "Lote",       # col C — identificador principal do lote
     "data":      "Data",       # col A
     "codfor":    "CodFor",     # col D — usado para resolver Unid. Produtora via cadastro
-    "bm_prev":   "H",          # col H — Biomassa Previsto (Peso Recebido Est.)
-    "bm_real":   "I",          # col I — Biomassa Realizado (Peixe Cavalo)
+    "bm_prev":   "I",          # col I — Peixe Cavalo (PROVISÓRIO — fonte real do Previsto a definir)
+    "bm_real":   "H",          # col H — Peso Recebido (Realizado confirmado pelo usuário)
     "mort_real": "L",          # col L — Mortalidade Sangria
     "pm_real":   "O",          # col O — Biometria = PM Realizado
     "rend_real": "AA",         # col AA — Rend. Pot. Bruto
