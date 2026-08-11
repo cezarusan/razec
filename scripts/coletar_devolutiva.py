@@ -375,7 +375,14 @@ def carregar_bm_previsto() -> dict:
             d = _norm_data(row[col_data])
             try:
                 seq = int(float(str(row[col_lote]).strip()))
-                qt  = float(str(row[col_qt]).replace(".", "").replace(",", "."))
+                # Usa pd.to_numeric primeiro — se o pandas já leu como número, usa direto
+                # sem string manipulation que corromperia "5022.0" → "50220"
+                qt_raw = row[col_qt]
+                qt = pd.to_numeric(qt_raw, errors='coerce')
+                if pd.isna(qt):
+                    # Só faz replace se vier como texto com separador de milhar (ex: "5.022")
+                    qt = float(str(qt_raw).replace(".", "").replace(",", "."))
+                qt = float(qt)
                 if seq > 0 and qt > 0:
                     resultado[(d, seq)] = qt
             except (ValueError, TypeError):
