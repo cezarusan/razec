@@ -39,8 +39,8 @@ ARQUIVOS = {
     "pm_config":    r"P:\FOODS\PCP\31 - Originacao\pm_previsto.xlsx",
     # Cadastro de CodFor → Unid. Produtora (duas colunas: CodFor | Unid. Produtora)
     "codfor_unid":  r"P:\FOODS\PCP\31 - Originacao\codfor_unidades.xlsx",
-    # Biomassa Previsto — colunas: DATA | LOTE(seq) | Fornecedor | Qt. Fornecedor
-    "bm_previsto":  r"P:\FOODS\PCP\31 - Originacao\Indicadores - Doc. recepção pescado.xlsx",
+    # Biomassa Previsto — colunas: DATA | LOTE(seq) | Fornecedor | Qt. Fornecedor (col D)
+    "bm_previsto":  r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade\Indicadores - Doc. recepção pescado.xlsx",
 }
 
 # Pasta onde o log diário é gravado
@@ -344,9 +344,16 @@ def carregar_bm_previsto() -> dict:
     """
     caminho = ARQUIVOS.get("bm_previsto", "")
     if not caminho or not os.path.exists(caminho):
-        pasta = achar_pasta()
-        if pasta:
-            caminho = os.path.join(pasta, "Indicadores - Doc. recepção pescado.xlsx")
+        # Tenta pasta Qualidade primeiro, depois Originacao como fallback
+        for tentativa in [
+            r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade",
+            achar_pasta(),
+        ]:
+            if tentativa and os.path.isdir(tentativa):
+                c = os.path.join(tentativa, "Indicadores - Doc. recepção pescado.xlsx")
+                if os.path.exists(c):
+                    caminho = c
+                    break
     if not caminho or not os.path.exists(caminho):
         return {}
     try:
