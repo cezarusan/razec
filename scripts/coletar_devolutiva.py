@@ -39,6 +39,8 @@ ARQUIVOS = {
     "pm_config":    r"P:\FOODS\PCP\31 - Originacao\pm_previsto.xlsx",
     # Cadastro de CodFor → Unid. Produtora (duas colunas: CodFor | Unid. Produtora)
     "codfor_unid":  r"P:\FOODS\PCP\31 - Originacao\codfor_unidades.xlsx",
+    # Biomassa Previsto — colunas: DATA | LOTE(seq) | Fornecedor | Qt. Fornecedor
+    "bm_previsto":  r"P:\FOODS\PCP\31 - Originacao\Indicadores - Doc. recepção pescado.xlsx",
 }
 
 # Pasta onde o log diário é gravado
@@ -334,6 +336,50 @@ def carregar_pm_config() -> dict:
         return {}
 
 
+def carregar_bm_previsto() -> dict:
+    """
+    Lê 'Indicadores - Doc. recepção pescado.xlsx'.
+    Colunas esperadas: DATA | LOTE (seq 1/2/3) | Fornecedor | Qt. Fornecedor
+    Retorna dict { (date, seq_int): qt_fornecedor_kg }
+    """
+    caminho = ARQUIVOS.get("bm_previsto", "")
+    if not caminho or not os.path.exists(caminho):
+        pasta = achar_pasta()
+        if pasta:
+            caminho = os.path.join(pasta, "Indicadores - Doc. recepção pescado.xlsx")
+    if not caminho or not os.path.exists(caminho):
+        return {}
+    try:
+        df = pd.read_excel(caminho, sheet_name=0, header=0)
+        resultado = {}
+        col_data = col_lote = col_qt = None
+        for c in df.columns:
+            cl = str(c).strip().lower().replace(" ", "")
+            if col_data is None and cl == "data":
+                col_data = c
+            if col_lote is None and cl == "lote":
+                col_lote = c
+            if col_qt is None and "qt.fornecedor" in cl.replace(".", ""):
+                col_qt = c
+        if not col_data or not col_lote or not col_qt:
+            logging.warning(f"Colunas não encontradas em bm_previsto: data={col_data} lote={col_lote} qt={col_qt}")
+            return {}
+        for _, row in df.iterrows():
+            d = _norm_data(row[col_data])
+            try:
+                seq = int(float(str(row[col_lote]).strip()))
+                qt  = float(str(row[col_qt]).replace(".", "").replace(",", "."))
+                if seq > 0 and qt > 0:
+                    resultado[(d, seq)] = qt
+            except (ValueError, TypeError):
+                pass
+        logging.info(f"Bm Previsto carregado: {len(resultado)} registros")
+        return resultado
+    except Exception as e:
+        logging.warning(f"Não foi possível ler bm_previsto: {e}")
+        return {}
+
+
 def criar_pm_config_modelo(unidades: list = None):
     """
     Cria pm_previsto.xlsx com formato Semana × Unid. Produtora.
@@ -406,7 +452,8 @@ def solicitar_pm_previsto(lote, data, unid, automatico=False) -> float:
 def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
               mapa: dict, lote_filtro=None, simulacao=False,
               pm_manual: dict = None, automatico=False,
-              codfor_unid: dict = None, data_inicio=None) -> list:
+              codfor_unid: dict = None, data_inicio=None,
+              bm_previsto: dict = None) -> list:
     """Processa cada linha do rendimento e retorna lista de dicts prontos para gravar."""
     resultados = []
 
@@ -459,7 +506,14 @@ def processar(df_rend: pd.DataFrame, df_desc: pd.DataFrame,
             unid = f"CodFor:{codfor}"   # fallback: mostra o código até cadastrar
         else:
             unid = ""
-        bm_prev  = pd.to_numeric(row.get(mapa["bm_prev"]),  errors='coerce') or 0
+        # bm_prev vem do arquivo "Indicadores - Doc. recepção pescado" por (data, seqlot)
+        _data_norm = _norm_data(row.get(mapa["data"]))
+        _seq_tmp   = row.get(mapa.get("seqlot", ""), None)
+        try:
+            _seq_tmp = int(float(str(_seq_tmp).strip())) if _seq_tmp is not None else 0
+        except (ValueError, TypeError):
+            _seq_tmp = 0
+        bm_prev = (bm_previsto or {}).get((_data_norm, _seq_tmp), 0.0)
         bm_real  = pd.to_numeric(row.get(mapa["bm_real"]),  errors='coerce') or 0
         mort_real= pd.to_numeric(row.get(mapa["mort_real"]), errors='coerce') or 0
         pm_real  = pd.to_numeric(row.get(mapa["pm_real"]),  errors='coerce') or 0
@@ -825,6 +879,13 @@ def main():
         except Exception:
             pass
 
+    # Biomassa Previsto do arquivo Indicadores - Doc. recepção pescado
+    bm_prev_map = carregar_bm_previsto()
+    if bm_prev_map:
+        print(f"\n⚖  Bm Previsto carregado: {len(bm_prev_map)} registros")
+    else:
+        print(f"\n⚠  Bm Previsto não encontrado — verifique: {ARQUIVOS.get('bm_previsto','')}")
+
     # Processamento
     resultados = processar(df_rend, df_desc, mapa,
                            lote_filtro=args.lote,
@@ -832,7 +893,8 @@ def main():
                            pm_manual=pm_config,
                            automatico=args.automatico,
                            codfor_unid=codfor_map,
-                           data_inicio=data_inicio)
+                           data_inicio=data_inicio,
+                           bm_previsto=bm_prev_map)
 
     # Filtro --ultimos N (padrão 100)
     if args.ultimos and resultados:
