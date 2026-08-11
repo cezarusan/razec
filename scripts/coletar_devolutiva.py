@@ -40,7 +40,7 @@ ARQUIVOS = {
     # Cadastro de CodFor → Unid. Produtora (duas colunas: CodFor | Unid. Produtora)
     "codfor_unid":  r"P:\FOODS\PCP\31 - Originacao\codfor_unidades.xlsx",
     # Biomassa Previsto — colunas: DATA | LOTE(seq) | Fornecedor | Qt. Fornecedor (col D)
-    "bm_previsto":  r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade\Indicadores - Doc. recepção pescado.xlsx",
+    "bm_previsto":  r"P:\FOODS\PCP\31 - Originacao\Indicadores - Doc. recepção pescado.xlsx",
 }
 
 # Pasta onde o log diário é gravado
