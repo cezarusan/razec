@@ -343,18 +343,35 @@ def carregar_bm_previsto() -> dict:
     Retorna dict { (date, seq_int): qt_fornecedor_kg }
     """
     caminho = ARQUIVOS.get("bm_previsto", "")
+    print(f"\n[BM] Procurando arquivo em: {caminho}")
     if not caminho or not os.path.exists(caminho):
-        # Tenta pasta Qualidade primeiro, depois Originacao como fallback
-        for tentativa in [
-            r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade",
-            achar_pasta(),
-        ]:
-            if tentativa and os.path.isdir(tentativa):
-                c = os.path.join(tentativa, "Indicadores - Doc. recepção pescado.xlsx")
+        # Tenta pasta Qualidade com variações de nome (com/sem acento)
+        pasta_qual = r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade"
+        nomes = [
+            "Indicadores - Doc. recepção pescado.xlsx",
+            "Indicadores - Doc. recepcao pescado.xlsx",
+            "Indicadores - Doc. recep\u00e7\u00e3o pescado.xlsx",
+        ]
+        for pasta in [pasta_qual, achar_pasta()]:
+            if not pasta or not os.path.isdir(pasta):
+                continue
+            # Lista todos os arquivos da pasta para diagnóstico
+            try:
+                arqs = [f for f in os.listdir(pasta) if "indicador" in f.lower() or "recepcao" in f.lower() or "recep" in f.lower()]
+                if arqs:
+                    print(f"[BM] Arquivos encontrados em {pasta}: {arqs}")
+            except Exception:
+                pass
+            for nome in nomes:
+                c = os.path.join(pasta, nome)
                 if os.path.exists(c):
                     caminho = c
+                    print(f"[BM] Arquivo encontrado: {c}")
                     break
+            if caminho and os.path.exists(caminho):
+                break
     if not caminho or not os.path.exists(caminho):
+        print(f"[BM] ARQUIVO NAO ENCONTRADO — Biomassa Previsto sera 0")
         return {}
     try:
         df = pd.read_excel(caminho, sheet_name=0, header=0)
