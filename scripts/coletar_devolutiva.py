@@ -354,13 +354,20 @@ def carregar_bm_previsto() -> dict:
         resultado = {}
         col_data = col_lote = col_qt = None
         for c in df.columns:
-            cl = str(c).strip().lower().replace(" ", "")
+            cl = str(c).strip().lower().replace(" ", "").replace(".", "")
             if col_data is None and cl == "data":
                 col_data = c
             if col_lote is None and cl == "lote":
                 col_lote = c
-            if col_qt is None and "qt.fornecedor" in cl.replace(".", ""):
+            if col_qt is None and "qtfornecedor" in cl:
                 col_qt = c
+        # fallback posicional se nomes não baterem: DATA=col0, LOTE=col1, Qt.Forn=col3
+        if col_data is None and len(df.columns) > 0:
+            col_data = df.columns[0]
+        if col_lote is None and len(df.columns) > 1:
+            col_lote = df.columns[1]
+        if col_qt is None and len(df.columns) > 3:
+            col_qt = df.columns[3]
         if not col_data or not col_lote or not col_qt:
             logging.warning(f"Colunas não encontradas em bm_previsto: data={col_data} lote={col_lote} qt={col_qt}")
             return {}
@@ -373,7 +380,11 @@ def carregar_bm_previsto() -> dict:
                     resultado[(d, seq)] = qt
             except (ValueError, TypeError):
                 pass
-        logging.info(f"Bm Previsto carregado: {len(resultado)} registros")
+        print(f"   Bm Previsto: cols detectadas → data='{col_data}' lote='{col_lote}' qt='{col_qt}'")
+        print(f"   Bm Previsto: {len(resultado)} registros carregados")
+        if resultado:
+            exemplo = next(iter(resultado.items()))
+            print(f"   Exemplo: {exemplo}")
         return resultado
     except Exception as e:
         logging.warning(f"Não foi possível ler bm_previsto: {e}")
