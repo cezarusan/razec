@@ -8,6 +8,7 @@ import sys
 import glob
 import subprocess
 import json
+import shutil
 
 URL = "https://raw.githubusercontent.com/cezarusan/razec/claude/pisciculturas-dashboard-devolutiva-kfazaq"
 
@@ -49,6 +50,21 @@ def main():
     html_base  = os.path.join(pasta,   "devolutiva-pisciculturas.html")
     json_path  = os.path.join(pasta,   "devolutiva_dados.json")
     html_final = os.path.join(pasta,   "devolutiva_dashboard_atual.html")
+
+    # 0. Sincroniza arquivo de Biomassa Previsto da pasta Qualidade → Originacao
+    BM_ORIGEM  = r"P:\FOODS\QUALIDADE\35 - Indicadores da Qualidade\Indicadores - Doc. recepção pescado.xlsx"
+    BM_DESTINO = os.path.join(pasta, "Indicadores - Doc. recepção pescado.xlsx")
+    print("\n[0/3] Sincronizando Biomassa Previsto...")
+    try:
+        if os.path.exists(BM_ORIGEM):
+            shutil.copy2(BM_ORIGEM, BM_DESTINO)
+            print(f"   OK — arquivo copiado da pasta Qualidade")
+        elif os.path.exists(BM_DESTINO):
+            print(f"   Pasta Qualidade sem acesso — usando copia local existente")
+        else:
+            print(f"   AVISO — arquivo nao encontrado em nenhuma das pastas")
+    except Exception as e:
+        print(f"   Aviso: nao foi possivel copiar ({e}) — usando copia local se existir")
 
     # 1. Baixa arquivos atualizados
     print("\n[1/3] Baixando arquivos atualizados do GitHub...")
