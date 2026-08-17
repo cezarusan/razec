@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise de Produção – BTJ Aqua</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0d1b2a;--navy2:#152234;--sidebar:#0b1825;--card:#132136;--accent:#1d8cf8;--green:#28c76f;--red:#ea5455;--yellow:#ff9f43;--muted:#8ca0bb;--border:#1e3a5c;--text:#e8f0fe;--white:#fff}
+body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;font-size:12px}
+.sidebar{width:190px;min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;align-items:center;padding:14px 0;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto}
+.logo img{width:115px;height:auto;margin-bottom:14px;border-radius:6px}
+nav{width:100%}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;border-left:3px solid transparent;transition:all .2s;width:100%}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(29,140,248,.1)}
+.nav-item svg{width:13px;height:13px;flex-shrink:0}
+.filters{padding:11px;width:100%;border-top:1px solid var(--border);margin-top:10px}
+.fl{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:9px 0 4px;display:flex;align-items:center;gap:5px}
+.fl:first-child{margin-top:0}
+.filter-tabs{display:flex;gap:3px;margin-bottom:8px}
+.ftab{flex:1;background:var(--navy2);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 0;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:all .2s}
+.ftab:hover{border-color:var(--accent);color:var(--text)}
+.ftab.active{background:rgba(29,140,248,.18);border-color:var(--accent);color:var(--accent)}
+.fsec{display:none}.fsec.show{display:block}
+.date-input{width:100%;background:var(--navy2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 7px;font-size:10px;outline:none;font-family:inherit;cursor:pointer;margin-bottom:4px}
+.date-input:hover,.date-input:focus{border-color:var(--accent)}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:pointer}
+.cb-list{display:flex;flex-direction:column;gap:2px;max-height:190px;overflow-y:auto;padding-right:2px}
+.cb-list::-webkit-scrollbar{width:3px}.cb-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.cb-row{display:flex;align-items:center;gap:6px;padding:3px 4px;border-radius:4px;cursor:pointer;font-size:9.5px;color:var(--text)}
+.cb-row:hover{background:rgba(255,255,255,.05)}
+.cb-row input{accent-color:var(--accent);cursor:pointer;width:11px;height:11px;flex-shrink:0}
+.cb-row label{cursor:pointer;line-height:1.2}
+.mes-header{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:5px 4px 2px;border-top:1px solid var(--border);margin-top:3px}
+.mes-header:first-child{border-top:none;margin-top:0;padding-top:2px}
+.presets{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.pbtn{background:var(--navy2);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 6px;font-size:8.5px;cursor:pointer;font-family:inherit;transition:all .2s}
+.pbtn:hover,.pbtn.active{border-color:var(--accent);color:var(--accent);background:rgba(29,140,248,.1)}
+.sel-all{display:flex;gap:4px;margin-bottom:5px}
+.sel-btn{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 0;font-size:8px;cursor:pointer;font-family:inherit;text-align:center;transition:all .2s}
+.sel-btn:hover{border-color:var(--accent);color:var(--accent)}
+.apply-btn{width:100%;margin-top:10px;background:var(--accent);border:none;color:#fff;border-radius:6px;padding:7px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.apply-btn:hover{opacity:.85}
+.main{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:10px;padding:12px 18px;border:1px solid var(--border)}
+.header h1{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.period-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(29,140,248,.1);border:1px solid rgba(29,140,248,.25);border-radius:20px;padding:4px 11px;font-size:10px;font-weight:600;color:var(--accent);margin-top:5px}
+.header-right{text-align:right;font-size:9px;color:var(--muted)}
+.header-right strong{display:block;color:var(--text);font-size:11px}
+.comp-group{display:flex;flex-direction:column;gap:3px}
+.comp-label{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+select.comp-sel{background:var(--navy2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:10px;font-weight:600;cursor:pointer;outline:none;font-family:inherit}
+.kpi-row{display:grid;grid-template-columns:repeat(11,1fr);gap:6px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:9px 8px;display:flex;flex-direction:column;gap:2px;transition:border-color .2s}
+.kpi:hover{border-color:var(--accent)}
+.kpi-lbl{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);line-height:1.3}
+.kpi-icon{font-size:18px;margin:2px 0}
+.kpi-val{font-size:17px;font-weight:800;letter-spacing:-1px;color:var(--white);line-height:1}
+.kpi-meta{font-size:7.5px;color:var(--muted)}
+.kpi-delta{display:flex;align-items:center;gap:2px;font-size:8.5px;font-weight:700;margin-top:2px}
+.kpi-delta.up{color:var(--green)}.kpi-delta.down{color:var(--red)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:12px}
+.card-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px;text-align:center}
+.chart-wrap{position:relative;height:148px}
+.bottom-row{display:grid;grid-template-columns:1fr 1fr 1.3fr 1fr;gap:8px}
+.bar-list{display:flex;flex-direction:column;gap:9px}
+.bar-item{display:flex;flex-direction:column;gap:2px}
+.bar-lbl{display:flex;justify-content:space-between;font-size:9.5px}
+.bar-lbl span:last-child{font-weight:700;color:var(--accent)}
+.bar-bg{background:rgba(255,255,255,.08);border-radius:3px;height:7px}
+.bar-fill{height:7px;border-radius:3px;background:linear-gradient(90deg,#1d8cf8,#00c9a7);transition:width .5s}
+.gauge-center{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:2px}
+.gauge-canvas-wrap{position:relative;width:180px;height:108px}
+.gauge-canvas-wrap canvas{position:absolute;top:0;left:0}
+.gauge-val{font-size:28px;font-weight:800;color:var(--white);line-height:1;margin-top:2px}
+.gauge-unit{font-size:9px;color:var(--muted);margin-top:1px}
+.gauge-badge{color:#fff;font-size:8px;font-weight:700;padding:3px 12px;border-radius:20px;margin-top:5px;background:var(--green);letter-spacing:.4px}
+.gauge-badge.warn{background:var(--yellow)}.gauge-badge.bad{background:var(--red)}
+.gauge-meta{font-size:8px;color:var(--muted);margin-top:2px}
+.flow-list{display:flex;flex-direction:column;gap:5px}
+.flow-item{display:flex;align-items:center;gap:6px}
+.flow-lbl{font-size:9px;width:118px;flex-shrink:0}
+.flow-bar-bg{flex:1;background:rgba(255,255,255,.08);border-radius:3px;height:12px}
+.flow-bar-fill{height:12px;border-radius:3px;transition:width .5s}
+.flow-num{font-size:9px;font-weight:700;width:50px;text-align:right;flex-shrink:0}
+.flow-pct{font-size:8px;color:var(--muted);width:40px;text-align:right;flex-shrink:0}
+.qual-list{display:flex;flex-direction:column;gap:7px}
+.qual-item{display:flex;align-items:center;gap:7px}
+.qual-icon{font-size:13px;width:18px;text-align:center}
+.qual-name{font-size:9px;flex:1}
+.qual-val{font-size:9px;font-weight:700;width:42px;text-align:right}
+.qual-badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:7px}
+.qual-badge.g{background:rgba(40,199,111,.15);color:#4ade80}
+.qual-badge.y{background:rgba(255,159,67,.15);color:var(--yellow)}
+.qual-badge.r{background:rgba(234,84,85,.15);color:var(--red)}
+.table-row{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:8px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:4px 4px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{font-size:9px;padding:4px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot.g{background:var(--green)}.dot.y{background:var(--yellow)}.dot.r{background:var(--red)}
+.analise-list{display:flex;flex-direction:column;gap:9px}
+.analise-item{display:flex;gap:8px;align-items:flex-start}
+.analise-icon{font-size:14px;flex-shrink:0}
+.analise-text{font-size:9.5px;line-height:1.5}
+[data-pages]{transition:opacity .15s}
+[data-pages].page-hidden{display:none!important}
+.chart-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.chart-modal-overlay.open{display:flex}
+.chart-modal-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:92vw;max-width:1300px;height:80vh;display:flex;flex-direction:column;gap:12px;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.chart-modal-header{display:flex;align-items:center;justify-content:space-between}
+.chart-modal-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text)}
+.chart-modal-close{background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--muted);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1}
+.chart-modal-close:hover{background:rgba(234,84,85,.2);border-color:var(--red);color:var(--red)}
+.chart-modal-body{flex:1;position:relative;min-height:0}
+.chart-modal-body canvas{position:absolute;inset:0}
+.card-title{position:relative;cursor:default}
+.chart-card{cursor:pointer;transition:border-color .2s}
+.chart-card:hover{border-color:var(--accent)}
+.chart-card:hover .expand-icon{opacity:1}
+.expand-icon{position:absolute;right:0;top:0;font-size:11px;opacity:0;transition:opacity .2s;color:var(--accent)}
+.gran-badge{display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;background:rgba(29,140,248,.15);color:var(--accent);border:1px solid rgba(29,140,248,.3);vertical-align:middle}
+
+/* ── DRAG-AND-DROP ───────────────────────────────────────────────── */
+.kpi[draggable="true"]{cursor:grab;user-select:none}
+.kpi[draggable="true"]:hover{border-color:var(--accent);box-shadow:0 0 0 2px rgba(29,140,248,.25)}
+.kpi[draggable="true"]:active{cursor:grabbing}
+.kpi.kpi-dragging{opacity:.45;transform:scale(.96);transition:transform .1s}
+.chart-card.drop-target{border-color:#f6ad55!important;background:rgba(246,173,85,.07)!important;box-shadow:0 0 0 2px rgba(246,173,85,.35)!important}
+.drop-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#f6ad55;letter-spacing:.5px;pointer-events:none;opacity:0;transition:opacity .15s;text-transform:uppercase}
+.chart-card.drop-target .drop-hint{opacity:1}
+.chart-card{position:relative}
+
+/* ── SINGLE-SCREEN LAYOUT ────────────────────────────────────────── */
+html,body{height:100%;overflow:hidden}
+body{min-height:unset}
+.main{overflow:hidden;padding:6px;gap:4px}
+.header{padding:7px 14px}
+.header h1{font-size:15px}
+.header-right{font-size:8px}
+.header-right strong{font-size:10px}
+.period-badge{padding:3px 9px;font-size:9px}
+.kpi-row{gap:3px}
+.kpi{padding:5px 6px;gap:1px;border-radius:7px}
+.kpi-lbl{font-size:6.5px}
+.kpi-icon{font-size:13px;margin:1px 0}
+.kpi-val{font-size:13px}
+.kpi-meta{font-size:6px;display:none}
+.kpi-delta{font-size:7px;margin-top:0}
+.card{padding:7px}
+.card-title{font-size:8px;margin-bottom:5px}
+.dash-content{flex:1;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:hidden}
+.dash-content>[data-pages]{display:flex;flex-direction:column;min-height:0}
+.dash-content>[data-pages]:nth-child(1){flex:3}
+.dash-content>[data-pages]:nth-child(2){flex:2.5}
+.dash-content>[data-pages]:nth-child(3){flex:2.5}
+.dash-content>[data-pages]:nth-child(4){flex:1.5;min-height:0}
+.charts-row,.charts-row2{height:100%;gap:5px}
+.chart-card{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.chart-wrap{flex:1;height:unset;min-height:0}
+.bottom-row{height:100%;gap:5px}
+.bar-list{gap:6px}
+.bar-item{gap:1px}
+.bar-lbl{font-size:8.5px}
+.bar-bg{height:6px}
+.bar-fill{height:6px}
+.flow-list{gap:4px}
+.flow-item{gap:5px}
+.flow-lbl{font-size:8px;width:105px}
+.flow-bar-bg{height:10px}
+.flow-bar-fill{height:10px}
+.flow-num{font-size:8px}
+.flow-pct{font-size:7px}
+.qual-list{gap:5px}
+.qual-item{gap:5px}
+.qual-name{font-size:8px}
+.qual-val{font-size:8px}
+.gauge-val{font-size:22px}
+.gauge-canvas-wrap{width:150px;height:90px}
+.gauge-center{gap:1px}
+.gauge-meta{font-size:7px}
+.gauge-badge{font-size:7px;padding:2px 8px}
+.analise-list{gap:6px}
+.analise-text{font-size:8.5px}
+.table-row{height:100%;gap:5px}
+.table-row>div:first-child>div{max-height:unset;overflow-y:auto}
+table th,table td{font-size:7.5px;padding:2px 4px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><img src="data:image/jpeg;base64,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" alt="BTJ Aqua"/><!--OLDLOGO_REMOVED data:image/png;base64,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--></div>
+  <nav>
+    <div class="nav-item active" data-page="visao" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V6h-8z"/></svg>Visão Geral</div>
+    <div class="nav-item" data-page="producao" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>Produção</div>
+    <div class="nav-item" data-page="rendimentos" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>Rendimentos</div>
+    <div class="nav-item" data-page="eficiencias" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Eficiências</div>
+    <div class="nav-item" data-page="qualidade" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>Qualidade</div>
+    <div class="nav-item" data-page="comparativos" onclick="navTo(this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>Comparativos</div>
+  </nav>
+  <div class="filters">
+    <div class="fl">⚡ Período rápido</div>
+    <div class="presets">
+      <button class="pbtn" data-preset="hoje" onclick="applyPreset(this)">Ult. dia</button>
+      <button class="pbtn" data-preset="semana" onclick="applyPreset(this)">Ult. sem.</button>
+      <button class="pbtn" data-preset="mes" onclick="applyPreset(this)">Ult. mês</button>
+      <button class="pbtn" data-preset="tudo" onclick="applyPreset(this)">Tudo</button>
+    </div>
+    
+    <div style="padding: 10px; margin-bottom: 20px; border: 1px solid #00bfff; border-radius: 5px; background-color: #1a2235;">
+        <label for="input-excel" style="color: #fff; display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
+            📥 Atualizar Dados (Excel):
+        </label>
+        <input type="file" id="input-excel" accept=".xlsx" style="color: #fff; width: 100%;" />
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="switchTab('dias',this)">📅 Dias</button>
+      <button class="ftab" onclick="switchTab('semanas',this)">📆 Sems.</button>
+      <button class="ftab" onclick="switchTab('meses',this)">🗓 Meses</button>
+    </div>
+    
+    <div class="fsec show" id="sec-dias">
+      <div class="fl" style="margin-top:0">De</div>
+      <input type="date" class="date-input" id="dateFrom" value="2026-01-01" onchange="onDateChange()"/>
+      <div class="fl">Até</div>
+      <input type="date" class="date-input" id="dateTo" value="2026-06-18" onchange="onDateChange()"/>
+    </div>
+    
+    <div class="fsec" id="sec-semanas">
+      <div class="sel-all">
+        <button class="sel-btn" onclick="selAll('week',true)">Todas</button>
+        <button class="sel-btn" onclick="selAll('week',false)">Limpar</button>
+      </div>
+      <div class="cb-list" id="weekList"></div>
+    </div>
+    
+    <div class="fsec" id="sec-meses">
+      <div class="sel-all">
+        <button class="sel-btn" onclick="selAll('month',true)">Todos</button>
+        <button class="sel-btn" onclick="selAll('month',false)">Limpar</button>
+      </div>
+      <div class="cb-list" id="monthList"></div>
+    </div>
+    
+    <button class="apply-btn" onclick="applyFilters()">✔ Aplicar filtros</button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="header">
+    <div>
+      <h1>ANÁLISE DE PRODUÇÃO</h1>
+      <div class="period-badge">📅 <span id="periodLabel">–</span> <span class="gran-badge" id="granBadge">–</span></div>
+    </div>
+    
+    <div class="header-right">
+      <span>Última atualização:</span><strong id="headerUpdateTime">05/06/2026 08:00</strong>
+      <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end">
+        <button onclick="exportarHTML()" style="font-size:9px;padding:3px 9px;background:#1d8cf8;color:#fff;border:none;border-radius:6px;cursor:pointer">⬇ Exportar HTML</button>
+        <button onclick="limparDados()" style="font-size:9px;padding:3px 9px;background:#ea4455;color:#fff;border:none;border-radius:6px;cursor:pointer">🗑 Limpar dados</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="kpi-row" data-pages="visao producao rendimentos eficiencias qualidade comparativos">
+    <div class="kpi"><div class="kpi-lbl">Peixe Vivo (kg)</div><div class="kpi-icon">🐟</div><div class="kpi-val" id="kv-peixe">–</div><div class="kpi-meta">Meta: ≥ 60.000 kg</div><div class="kpi-delta" id="kd-peixe">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Unid. Peixes</div><div class="kpi-icon">🔢</div><div class="kpi-val" id="kv-unid">–</div><div class="kpi-meta">unidades abatidas</div><div class="kpi-delta" id="kd-unid">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Biometria (kg)</div><div class="kpi-icon">⚖️</div><div class="kpi-val" id="kv-bio">–</div><div class="kpi-meta">peso médio biometria</div><div class="kpi-delta" id="kd-bio">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">PAC Resfriado (kg)</div><div class="kpi-icon">❄️</div><div class="kpi-val" id="kv-pac">–</div><div class="kpi-meta">Meta: ≥ 19.000 kg</div><div class="kpi-delta" id="kd-pac">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Rendimento Potencial (%)</div><div class="kpi-icon">🎯</div><div class="kpi-val" id="kv-rp">–</div><div class="kpi-meta">Meta: ≥ 46,00%</div><div class="kpi-delta" id="kd-rp">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Rendimento Operacional (%)</div><div class="kpi-icon">⚙️</div><div class="kpi-val" id="kv-ro">–</div><div class="kpi-meta">Meta: ≥ 45,00%</div><div class="kpi-delta" id="kd-ro">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Eficiência PotEQM (%)</div><div class="kpi-icon">🏭</div><div class="kpi-val" id="kv-efp">–</div><div class="kpi-meta">Meta: ≥ 68,00%</div><div class="kpi-delta" id="kd-efp">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Eficiência Resfriado (%)</div><div class="kpi-icon">🧊</div><div class="kpi-val" id="kv-efr">–</div><div class="kpi-meta">Meta: ≥ 95,00%</div><div class="kpi-delta" id="kd-efr">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Mortalidade (%)</div><div class="kpi-icon">💀</div><div class="kpi-val" id="kv-mort">–</div><div class="kpi-meta">Meta: ≤ 0,10%</div><div class="kpi-delta" id="kd-mort">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Mortalidade (kg)</div><div class="kpi-icon">⚖️</div><div class="kpi-val" id="kv-mort-kg">–</div><div class="kpi-meta">Mortalidade × Peixe Vivo</div><div class="kpi-delta" id="kd-mort-kg">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Bem Estar Animal (%)</div><div class="kpi-icon">💚</div><div class="kpi-val" id="kv-bea">–</div><div class="kpi-meta">Meta: ≥ 95,00%</div><div class="kpi-delta" id="kd-bea">–</div></div>
+  </div>
+
+  <div class="dash-content">
+
+    <div data-pages="visao producao">
+      <div class="charts-row">
+        <div class="card chart-card" onclick="openModal('cPeixe',document.getElementById('titlePeixe').textContent)"><div class="card-title" id="titlePeixe">Peixe Vivo (kg)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPeixe"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cPac',document.getElementById('titlePac').textContent)"><div class="card-title" id="titlePac">PAC Resfriado (kg)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPac"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cRend',document.getElementById('titleRend').textContent)"><div class="card-title" id="titleRend">Rendimentos (%)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cRend"></canvas></div></div>
+      </div>
+    </div>
+
+    <div data-pages="visao rendimentos producao">
+      <div class="charts-row2">
+        <div class="card chart-card" onclick="openModal('cUnh',document.getElementById('titleUnh').textContent)"><div class="card-title" id="titleUnh">KGH & UNH<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cUnh"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cProd',document.getElementById('titleProd').textContent)"><div class="card-title" id="titleProd">Unidade/Hora × KG/Hora<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cProd"></canvas></div></div>
+      </div>
+    </div>
+
+    <div data-pages="visao eficiencias qualidade">
+      <div class="bottom-row">
+        <div class="card"><div class="card-title">Eficiência das Etapas (%)</div><div class="bar-list" id="barEfic"></div></div>
+        <div class="card" style="display:flex;flex-direction:column">
+          <div class="card-title">KG/HR – KG/Homem/Hora</div>
+          <div class="gauge-center">
+            <div class="gauge-canvas-wrap">
+              <canvas id="cGaugeBg2" width="150" height="90"></canvas>
+              <canvas id="cGauge2"   width="150" height="90"></canvas>
+            </div>
+            <div class="gauge-val" id="gaugeVal2">–</div>
+            <div class="gauge-unit">kg/hh</div>
+            <div class="gauge-badge" id="gaugeBadge2">–</div>
+            <div class="gauge-meta">Meta: ≥ 30 kg/hh</div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column">
+          <div class="card-title">UND/HR – Und/Homem/Hora</div>
+          <div class="gauge-center">
+            <div class="gauge-canvas-wrap">
+              <canvas id="cGaugeBg3" width="150" height="90"></canvas>
+              <canvas id="cGauge3"   width="150" height="90"></canvas>
+            </div>
+            <div class="gauge-val" id="gaugeVal3">–</div>
+            <div class="gauge-unit">und/hh</div>
+            <div class="gauge-badge" id="gaugeBadge3">–</div>
+            <div class="gauge-meta">Meta: ≥ 25 und/hh</div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title">Fluxo de Conversão (kg)</div><div class="flow-list" id="flowList"></div></div>
+        <div class="card"><div class="card-title">Qualidade do Processo</div><div class="qual-list" id="qualList"></div></div>
+      </div>
+    </div>
+
+    <div data-pages="visao comparativos producao rendimentos eficiencias qualidade">
+      <div class="table-row">
+        <div class="card" style="display:flex;flex-direction:column;min-height:0">
+          <div class="card-title" style="margin-bottom:5px;flex-shrink:0" id="tableTitle">Resumo por Dia</div>
+          <div style="overflow-x:auto;overflow-y:auto;flex:1;min-height:0">
+            <table><thead><tr id="tableHead"></tr></thead><tbody id="tableBody"></tbody></table>
+          </div>
+        </div>
+        <div class="card"><div class="card-title" style="margin-bottom:6px">Análise Gerencial</div><div class="analise-list" id="analiseList"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const DAILY = [{"date": "2026-01-05", "mes": "2026.01", "semana": "2026.02", "semana_num": 2, "peixeVivo": 16011.0608, "pacResfriado": 4845.0, "unidadePeixes": 13752.0072, "biometria": 1.1643, "rendPotencial": 0.4531, "rendOperacional": null, "mortalidade": 0.0036, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9308, "kgh": null, "unh": null, "unidadeHora": 56.9143, "kgHora": 65.5202, "eficSkinner": -0.1691, "couroSkinner": null, "gwPac": -1.0047, "gwPxv": -0.304, "rendMRN": null}, {"date": "2026-01-06", "mes": "2026.01", "semana": "2026.02", "semana_num": 2, "peixeVivo": 16744.0925, "pacResfriado": 4970.0, "unidadePeixes": 13927.1482, "biometria": 1.2023, "rendPotencial": 0.4529, "rendOperacional": null, "mortalidade": 0.0024, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9316, "kgh": null, "unh": null, "unidadeHora": 63.4385, "kgHora": 75.581, "eficSkinner": -0.0545, "couroSkinner": null, "gwPac": -1.0057, "gwPxv": -0.2985, "rendMRN": null}, {"date": "2026-01-07", "mes": "2026.01", "semana": "2026.02", "semana_num": 2, "peixeVivo": 16639.0146, "pacResfriado": 4970.0, "unidadePeixes": 15742.1175, "biometria": 1.057, "rendPotencial": 0.4523, "rendOperacional": null, "mortalidade": 0.0056, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9465, "kgh": null, "unh": null, "unidadeHora": 66.6091, "kgHora": 69.8026, "eficSkinner": -0.0476, "couroSkinner": null, "gwPac": -1.0029, "gwPxv": -0.2996, "rendMRN": null}, {"date": "2026-01-08", "mes": "2026.01", "semana": "2026.02", "semana_num": 2, "peixeVivo": 16624.4344, "pacResfriado": 4890.0, "unidadePeixes": 14085.8775, "biometria": 1.1802, "rendPotencial": 0.4517, "rendOperacional": null, "mortalidade": 0.0007, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9297, "kgh": null, "unh": null, "unidadeHora": 67.0822, "kgHora": 76.5339, "eficSkinner": -0.0733, "couroSkinner": null, "gwPac": -1.0045, "gwPxv": -0.2955, "rendMRN": null}, {"date": "2026-01-09", "mes": "2026.01", "semana": "2026.02", "semana_num": 2, "peixeVivo": 16678.733, "pacResfriado": 5252.0, "unidadePeixes": 12505.2982, "biometria": 1.3337, "rendPotencial": 0.4548, "rendOperacional": null, "mortalidade": 0.0, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9859, "kgh": null, "unh": null, "unidadeHora": 62.5888, "kgHora": 83.5654, "eficSkinner": -0.1227, "couroSkinner": null, "gwPac": -1.0023, "gwPxv": -0.3156, "rendMRN": null}, {"date": "2026-01-12", "mes": "2026.01", "semana": "2026.03", "semana_num": 3, "peixeVivo": 16636.5008, "pacResfriado": 5185.0, "unidadePeixes": 14227.6891, "biometria": 1.1693, "rendPotencial": 0.453, "rendOperacional": null, "mortalidade": 0.0025, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9737, "kgh": null, "unh": null, "unidadeHora": 62.491, "kgHora": 71.5342, "eficSkinner": null, "couroSkinner": null, "gwPac": -1.0019, "gwPxv": -0.3123, "rendMRN": null}, {"date": "2026-01-13", "mes": "2026.01", "semana": "2026.03", "semana_num": 3, "peixeVivo": 16734.0372, "pacResfriado": 5100.0, "unidadePeixes": 13438.0435, "biometria": 1.2453, "rendPotencial": 0.457, "rendOperacional": null, "mortalidade": 0.0064, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9696, "kgh": null, "unh": null, "unidadeHora": 67.2764, "kgHora": 83.5766, "eficSkinner": -0.3052, "couroSkinner": null, "gwPac": -1.0, "gwPxv": -0.3048, "rendMRN": null}, {"date": "2026-01-14", "mes": "2026.01", "semana": "2026.03", "semana_num": 3, "peixeVivo": 16849.6732, "pacResfriado": 5174.0, "unidadePeixes": 13121.521, "biometria": 1.2841, "rendPotencial": 0.4579, "rendOperacional": null, "mortalidade": 0.0034, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.953, "kgh": null, "unh": null, "unidadeHora": 71.0215, "kgHora": 89.4138, "eficSkinner": -0.1049, "couroSkinner": null, "gwPac": -1.0042, "gwPxv": -0.3083, "rendMRN": null}, {"date": "2026-01-15", "mes": "2026.01", "semana": "2026.03", "semana_num": 3, "peixeVivo": 17152.8406, "pacResfriado": 5110.0, "unidadePeixes": 15493.9373, "biometria": 1.1071, "rendPotencial": 0.4493, "rendOperacional": null, "mortalidade": 0.0036, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9525, "kgh": null, "unh": null, "unidadeHora": 68.8474, "kgHora": 74.7448, "eficSkinner": -0.1166, "couroSkinner": null, "gwPac": -1.0085, "gwPxv": -0.3005, "rendMRN": null}, {"date": "2026-01-16", "mes": "2026.01", "semana": "2026.03", "semana_num": 3, "peixeVivo": 16850.176, "pacResfriado": 5226.0, "unidadePeixes": 12896.213, "biometria": 1.3066, "rendPotencial": 0.4555, "rendOperacional": null, "mortalidade": 0.003, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9398, "kgh": null, "unh": null, "unidadeHora": 66.5683, "kgHora": 86.8662, "eficSkinner": -0.0652, "couroSkinner": null, "gwPac": -1.0075, "gwPxv": -0.3125, "rendMRN": null}, {"date": "2026-01-19", "mes": "2026.01", "semana": "2026.04", "semana_num": 4, "peixeVivo": 16143.7908, "pacResfriado": 4930.0, "unidadePeixes": 13424.2251, "biometria": 1.2026, "rendPotencial": 0.4501, "rendOperacional": null, "mortalidade": 0.0159, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9472, "kgh": null, "unh": null, "unidadeHora": 61.8619, "kgHora": 73.0911, "eficSkinner": -0.1852, "couroSkinner": null, "gwPac": -1.0045, "gwPxv": -0.3068, "rendMRN": null}, {"date": "2026-01-20", "mes": "2026.01", "semana": "2026.04", "semana_num": 4, "peixeVivo": 16819.0045, "pacResfriado": 5215.0, "unidadePeixes": 13539.4491, "biometria": 1.2422, "rendPotencial": 0.4547, "rendOperacional": null, "mortalidade": 0.0024, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9551, "kgh": null, "unh": null, "unidadeHora": 69.2212, "kgHora": 85.7875, "eficSkinner": -0.0989, "couroSkinner": null, "gwPac": -1.0029, "gwPxv": -0.311, "rendMRN": null}, {"date": "2026-01-21", "mes": "2026.01", "semana": "2026.04", "semana_num": 4, "peixeVivo": 15515.8371, "pacResfriado": 4729.0, "unidadePeixes": 15014.5811, "biometria": 1.0334, "rendPotencial": 0.4483, "rendOperacional": null, "mortalidade": 0.0016, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9649, "kgh": null, "unh": null, "unidadeHora": 74.1604, "kgHora": 75.8169, "eficSkinner": -0.1864, "couroSkinner": null, "gwPac": -1.0045, "gwPxv": -0.3062, "rendMRN": null}, {"date": "2026-01-22", "mes": "2026.01", "semana": "2026.04", "semana_num": 4, "peixeVivo": 16058.8235, "pacResfriado": 5020.0, "unidadePeixes": 14385.9665, "biometria": 1.1163, "rendPotencial": 0.453, "rendOperacional": null, "mortalidade": 0.0, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9663, "kgh": null, "unh": null, "unidadeHora": 75.3401, "kgHora": 83.7525, "eficSkinner": -0.1599, "couroSkinner": null, "gwPac": -1.0052, "gwPxv": -0.3142, "rendMRN": null}, {"date": "2026-01-23", "mes": "2026.01", "semana": "2026.04", "semana_num": 4, "peixeVivo": 17118.1498, "pacResfriado": 5309.0, "unidadePeixes": 14735.627, "biometria": 1.1617, "rendPotencial": 0.4524, "rendOperacional": null, "mortalidade": 0.0, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9646, "kgh": null, "unh": null, "unidadeHora": 75.9125, "kgHora": 87.2767, "eficSkinner": -0.7827, "couroSkinner": null, "gwPac": -1.0046, "gwPxv": -0.3116, "rendMRN": null}, {"date": "2026-01-26", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": 16704.8768, "pacResfriado": 5073.0, "unidadePeixes": 14211.1793, "biometria": 1.1755, "rendPotencial": 0.4545, "rendOperacional": null, "mortalidade": 0.0, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9363, "kgh": null, "unh": null, "unidadeHora": 73.491, "kgHora": 85.2234, "eficSkinner": -0.0591, "couroSkinner": null, "gwPac": -1.003, "gwPxv": -0.3046, "rendMRN": null}, {"date": "2026-01-27", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": 16913.0216, "pacResfriado": 5345.0, "unidadePeixes": 13532.7074, "biometria": 1.2498, "rendPotencial": 0.4555, "rendOperacional": null, "mortalidade": 0.0, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9657, "kgh": null, "unh": null, "unidadeHora": 77.6537, "kgHora": 96.2459, "eficSkinner": -0.3114, "couroSkinner": null, "gwPac": -1.0059, "gwPxv": -0.3179, "rendMRN": null}, {"date": "2026-01-28", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": 16796.8829, "pacResfriado": 5046.0, "unidadePeixes": 15685.8954, "biometria": 1.0708, "rendPotencial": 0.4522, "rendOperacional": null, "mortalidade": 0.0027, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9369, "kgh": null, "unh": null, "unidadeHora": 81.5966, "kgHora": 85.5748, "eficSkinner": -0.0531, "couroSkinner": null, "gwPac": -1.0062, "gwPxv": -0.3023, "rendMRN": null}, {"date": "2026-01-29", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": 16561.5887, "pacResfriado": 4950.0, "unidadePeixes": 15419.2773, "biometria": 1.0741, "rendPotencial": 0.4494, "rendOperacional": null, "mortalidade": 0.0033, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9201, "kgh": null, "unh": null, "unidadeHora": 72.379, "kgHora": 76.9577, "eficSkinner": -0.0557, "couroSkinner": null, "gwPac": -1.0043, "gwPxv": -0.3002, "rendMRN": null}, {"date": "2026-01-30", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": 17167.4208, "pacResfriado": 5231.0, "unidadePeixes": 16286.4039, "biometria": 1.0541, "rendPotencial": 0.4504, "rendOperacional": null, "mortalidade": 0.0036, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.9518, "kgh": null, "unh": null, "unidadeHora": 77.6299, "kgHora": 81.7411, "eficSkinner": -0.1219, "couroSkinner": null, "gwPac": -1.003, "gwPxv": -0.3155, "rendMRN": null}, {"date": "2026-01-31", "mes": "2026.01", "semana": "2026.05", "semana_num": 5, "peixeVivo": null, "pacResfriado": null, "unidadePeixes": null, "biometria": null, "rendPotencial": null, "rendOperacional": null, "mortalidade": null, "bemEstar": null, "eficPotencial": null, "eficResfriado": null, "kgh": null, "unh": null, "unidadeHora": null, "kgHora": null, "eficSkinner": null, "couroSkinner": null, "gwPac": null, "gwPxv": null, "rendMRN": null}, {"date": "2026-02-02", "mes": "2026.02", "semana": "2026.06", "semana_num": 6, "peixeVivo": 16914.5299, "pacResfriado": 5260.0, "unidadePeixes": 14980.0669, "biometria": 1.1291, "rendPotencial": 0.451, "rendOperacional": 0.4427, "mortalidade": 0.0, "bemEstar": 0.9971, "eficPotencial": 0.9816, "eficResfriado": 0.9538, "kgh": null, "unh": null, "unidadeHora": 80.8414, "kgHora": 91.3597, "eficSkinner": 0.8888, "couroSkinner": 0.0459, "gwPac": 0.0787, "gwPxv": 0.0245, "rendMRN": 0.8903}, {"date": "2026-02-03", "mes": "2026.02", "semana": "2026.06", "semana_num": 6, "peixeVivo": 16120.1609, "pacResfriado": 4980.0, "unidadePeixes": 15362.288, "biometria": 1.0493, "rendPotencial": 0.4521, "rendOperacional": 0.4429, "mortalidade": 0.0031, "bemEstar": 0.9961, "eficPotencial": 0.9797, "eficResfriado": 0.9495, "kgh": null, "unh": null, "unidadeHora": 83.1675, "kgHora": 86.7741, "eficSkinner": 0.8928, "couroSkinner": 0.0444, "gwPac": 0.0763, "gwPxv": 0.0236, "rendMRN": 0.8876}, {"date": "2026-02-04", "mes": "2026.02", "semana": "2026.06", "semana_num": 6, "peixeVivo": 14387.1292, "pacResfriado": 4287.0, "unidadePeixes": 13657.1936, "biometria": 1.0534, "rendPotencial": 0.4483, "rendOperacional": 0.4386, "mortalidade": 0.0088, "bemEstar": 0.9895, "eficPotencial": 0.9784, "eficResfriado": 0.9418, "kgh": null, "unh": null, "unidadeHora": 74.1965, "kgHora": 82.5679, "eficSkinner": 0.8892, "couroSkinner": 0.0454, "gwPac": 0.0806, "gwPxv": 0.024, "rendMRN": 0.8897}, {"date": "2026-02-05", "mes": "2026.02", "semana": "2026.06", "semana_num": 6, "peixeVivo": 15491.2016, "pacResfriado": 4680.0, "unidadePeixes": 13811.9043, "biometria": 1.1216, "rendPotencial": 0.4527, "rendOperacional": 0.4413, "mortalidade": 0.0118, "bemEstar": 0.9767, "eficPotencial": 0.9749, "eficResfriado": 0.924, "kgh": null, "unh": null, "unidadeHora": 78.5245, "kgHora": 87.8602, "eficSkinner": 0.8868, "couroSkinner": 0.0466, "gwPac": 0.0826, "gwPxv": 0.0249, "rendMRN": 0.8913}, {"date": "2026-02-06", "mes": "2026.02", "semana": "2026.06", "semana_num": 6, "peixeVivo": 17523.8813, "pacResfriado": 5249.0, "unidadePeixes": 15144.3489, "biometria": 1.1571, "rendPotencial": 0.4536, "rendOperacional": 0.4409, "mortalidade": 0.0042, "bemEstar": 0.990, "eficPotencial": 0.972, "eficResfriado": 0.9186, "kgh": null, "unh": null, "unidadeHora": 76.5584, "kgHora": 86.7347, "eficSkinner": 0.8852, "couroSkinner": 0.0472, "gwPac": 0.0994, "gwPxv": 0.0298, "rendMRN": 0.8943}, {"date": "2026-02-09", "mes": "2026.02", "semana": "2026.07", "semana_num": 7, "peixeVivo": 15126.1941, "pacResfriado": 4725.0, "unidadePeixes": 13866.0053, "biometria": 1.0909, "rendPotencial": 0.4536, "rendOperacional": 0.4437, "mortalidade": 0.0114, "bemEstar": 0.9821, "eficPotencial": 0.9783, "eficResfriado": 0.9483, "kgh": null, "unh": null, "unidadeHora": 71.0951, "kgHora": 77.3326, "eficSkinner": 0.8915, "couroSkinner": 0.0448, "gwPac": 0.0767, "gwPxv": 0.0244, "rendMRN": 0.8905}, {"date": "2026-02-10", "mes": "2026.02", "semana": "2026.07", "semana_num": 7, "peixeVivo": 17921.5686, "pacResfriado": 5440.0, "unidadePeixes": 15946.5673, "biometria": 1.1239, "rendPotencial": 0.4523, "rendOperacional": 0.4411, "mortalidade": 0.0021, "bemEstar": 0.9937, "eficPotencial": 0.9753, "eficResfriado": 0.9344, "kgh": null, "unh": null, "unidadeHora": 70.864, "kgHora": 79.5004, "eficSkinner": 0.8897, "couroSkinner": 0.0454, "gwPac": 0.0865, "gwPxv": 0.0262, "rendMRN": 0.8944}, {"date": "2026-02-11", "mes": "2026.02", "semana": "2026.07", "semana_num": 7, "peixeVivo": 16805.4299, "pacResfriado": 5287.0, "unidadePeixes": 15015.3327, "biometria": 1.1192, "rendPotencial": 0.4565, "rendOperacional": 0.4441, "mortalidade": 0.0036, "bemEstar": 0.9906, "eficPotencial": 0.9729, "eficResfriado": 0.9501, "kgh": null, "unh": null, "unidadeHora": 75.0254, "kgHora": 83.1506, "eficSkinner": 0.8855, "couroSkinner": 0.0475, "gwPac": 0.0575, "gwPxv": 0.0181, "rendMRN": 0.8948}, {"date": "2026-02-12", "mes": "2026.02", "semana": "2026.07", "semana_num": 7, "peixeVivo": 16918.0493, "pacResfriado": 5095.0, "unidadePeixes": 16578.2966, "biometria": 1.0205, "rendPotencial": 0.4492, "rendOperacional": 0.4385, "mortalidade": 0.0028, "bemEstar": 0.9854, "eficPotencial": 0.9763, "eficResfriado": 0.9287, "kgh": null, "unh": null, "unidadeHora": 79.7625, "kgHora": 79.7444, "eficSkinner": 0.8989, "couroSkinner": 0.0411, "gwPac": 0.0786, "gwPxv": 0.0236, "rendMRN": 0.8909}, {"date": "2026-02-13", "mes": "2026.02", "semana": "2026.07", "semana_num": 7, "peixeVivo": 17375.5656, "pacResfriado": 5466.0, "unidadePeixes": 17642.8217, "biometria": 0.9849, "rendPotencial": 0.4491, "rendOperacional": 0.4383, "mortalidade": 0.0052, "bemEstar": 0.9892, "eficPotencial": 0.9761, "eficResfriado": 0.952, "kgh": null, "unh": null, "unidadeHora": 73.6892, "kgHora": 71.7825, "eficSkinner": 0.8795, "couroSkinner": 0.0493, "gwPac": 0.0552, "gwPxv": 0.0174, "rendMRN": 0.9032}, {"date": "2026-02-16", "mes": "2026.02", "semana": "2026.08", "semana_num": 8, "peixeVivo": 17815.9879, "pacResfriado": 5375.0, "unidadePeixes": 15162.7734, "biometria": 1.175, "rendPotencial": 0.4615, "rendOperacional": 0.4506, "mortalidade": 0.0024, "bemEstar": 0.9932, "eficPotencial": 0.9764, "eficResfriado": 0.9198, "kgh": null, "unh": null, "unidadeHora": 67.0036, "kgHora": 78.488, "eficSkinner": 0.89, "couroSkinner": 0.0463, "gwPac": 0.1087, "gwPxv": 0.0328, "rendMRN": 0.8865}, {"date": "2026-02-17", "mes": "2026.02", "semana": "2026.08", "semana_num": 8, "peixeVivo": 16428.356, "pacResfriado": 4735.0, "unidadePeixes": 16747.5251, "biometria": 0.9809, "rendPotencial": 0.4464, "rendOperacional": 0.4371, "mortalidade": 0.0057, "bemEstar": 0.9802, "eficPotencial": 0.9792, "eficResfriado": 0.908, "kgh": null, "unh": null, "unidadeHora": 75.1413, "kgHora": 73.1452, "eficSkinner": 0.8869, "couroSkinner": 0.046, "gwPac": 0.0986, "gwPxv": 0.0284, "rendMRN": 0.8907}, {"date": "2026-02-18", "mes": "2026.02", "semana": "2026.08", "semana_num": 8, "peixeVivo": 16655.6058, "pacResfriado": 4944.0, "unidadePeixes": 16318.2487, "biometria": 1.0207, "rendPotencial": 0.457, "rendOperacional": 0.4454, "mortalidade": 0.0097, "bemEstar": 0.9775, "eficPotencial": 0.9747, "eficResfriado": 0.8999, "kgh": null, "unh": null, "unidadeHora": 78.3618, "kgHora": 79.1918, "eficSkinner": 0.871, "couroSkinner": 0.0536, "gwPac": 0.0888, "gwPxv": 0.0263, "rendMRN": 0.8888}, {"date": "2026-02-19", "mes": "2026.02", "semana": "2026.08", "semana_num": 8, "peixeVivo": 16490.6988, "pacResfriado": 4860.0, "unidadePeixes": 17301.3096, "biometria": 0.9531, "rendPotencial": 0.4566, "rendOperacional": 0.4429, "mortalidade": 0.0139, "bemEstar": 0.9685, "eficPotencial": 0.9699, "eficResfriado": 0.8909, "kgh": null, "unh": null, "unidadeHora": 71.8054, "kgHora": 68.302, "eficSkinner": 0.8852, "couroSkinner": 0.0475, "gwPac": 0.0826, "gwPxv": 0.0243, "rendMRN": 0.8904}, {"date": "2026-02-20", "mes": "2026.02", "semana": "2026.08", "semana_num": 8, "peixeVivo": 16680.7441, "pacResfriado": 4900.0, "unidadePeixes": 16833.3231, "biometria": 0.9909, "rendPotencial": 0.4529, "rendOperacional": 0.4421, "mortalidade": 0.0066, "bemEstar": 0.9828, "eficPotencial": 0.9762, "eficResfriado": 0.9289, "kgh": null, "unh": null, "unidadeHora": 70.9201, "kgHora": 68.3191, "eficSkinner": 0.892, "couroSkinner": 0.0446, "gwPac": 0.0934, "gwPxv": 0.0274, "rendMRN": 0.8926}, {"date": "2026-02-23", "mes": "2026.02", "semana": "2026.09", "semana_num": 9, "peixeVivo": 16483.6601, "pacResfriado": 5035.0, "unidadePeixes": 14809.8508, "biometria": 1.113, "rendPotencial": 0.4534, "rendOperacional": 0.4405, "mortalidade": 0.0029, "bemEstar": 0.9921, "eficPotencial": 0.9716, "eficResfriado": 0.9482, "kgh": null, "unh": null, "unidadeHora": 63.9265, "kgHora": 70.4563, "eficSkinner": 0.8845, "couroSkinner": 0.0475, "gwPac": 0.0703, "gwPxv": 0.0214, "rendMRN": 0.8944}, {"date": "2026-02-24", "mes": "2026.02", "semana": "2026.09", "semana_num": 9, "peixeVivo": 16569.1302, "pacResfriado": 4850.0, "unidadePeixes": 15165.6041, "biometria": 1.0925, "rendPotencial": 0.452, "rendOperacional": 0.4389, "mortalidade": 0.0042, "bemEstar": 0.9875, "eficPotencial": 0.971, "eficResfriado": 0.9298, "kgh": null, "unh": null, "unidadeHora": 70.376, "kgHora": 76.1135, "eficSkinner": 0.89, "couroSkinner": 0.045, "gwPac": 0.0745, "gwPxv": 0.0218, "rendMRN": 0.8917}, {"date": "2026-02-25", "mes": "2026.02", "semana": "2026.09", "semana_num": 9, "peixeVivo": 16206.6365, "pacResfriado": 4897.0, "unidadePeixes": 14897.2977, "biometria": 1.0879, "rendPotencial": 0.4507, "rendOperacional": 0.439, "mortalidade": 0.0057, "bemEstar": 0.9864, "eficPotencial": 0.9741, "eficResfriado": 0.9411, "kgh": null, "unh": null, "unidadeHora": 65.8067, "kgHora": 70.1667, "eficSkinner": 0.8915, "couroSkinner": 0.0445, "gwPac": 0.0742, "gwPxv": 0.0229, "rendMRN": 0.8929}, {"date": "2026-02-26", "mes": "2026.02", "semana": "2026.09", "semana_num": 9, "peixeVivo": 16665.6611, "pacResfriado": 4980.0, "unidadePeixes": 16043.0521, "biometria": 1.0388, "rendPotencial": 0.4515, "rendOperacional": 0.4408, "mortalidade": 0.0011, "bemEstar": 0.9524, "eficPotencial": 0.9763, "eficResfriado": 0.9328, "kgh": null, "unh": null, "unidadeHora": 67.8091, "kgHora": 70.5157, "eficSkinner": 0.8917, "couroSkinner": 0.0447, "gwPac": 0.0308, "gwPxv": 0.0092, "rendMRN": 0.8908}, {"date": "2026-02-27", "mes": "2026.02", "semana": "2026.09", "semana_num": 9, "peixeVivo": 16748.1146, "pacResfriado": 5233.0, "unidadePeixes": 16824.3635, "biometria": 0.9955, "rendPotencial": 0.4533, "rendOperacional": 0.442, "mortalidade": 0.0019, "bemEstar": 0.9617, "eficPotencial": 0.975, "eficResfriado": 0.9464, "kgh": null, "unh": null, "unidadeHora": 75.1878, "kgHora": 75.0393, "eficSkinner": 0.8926, "couroSkinner": 0.0444, "gwPac": 0.0344, "gwPxv": 0.0107, "rendMRN": 0.8925}, {"date": "2026-03-02", "mes": "2026.03", "semana": "2026.10", "semana_num": 10, "peixeVivo": 14447.461, "pacResfriado": 4415.0, "unidadePeixes": 15745.2406, "biometria": 0.9176, "rendPotencial": 0.4532, "rendOperacional": 0.4421, "mortalidade": 0.0, "bemEstar": 0.9523, "eficPotencial": 0.9756, "eficResfriado": 0.9339, "kgh": null, "unh": null, "unidadeHora": 69.6734, "kgHora": 63.5271, "eficSkinner": 0.8873, "couroSkinner": 0.0466, "gwPac": 0.0304, "gwPxv": 0.0095, "rendMRN": 0.8949}, {"date": "2026-03-03", "mes": "2026.03", "semana": "2026.10", "semana_num": 10, "peixeVivo": 14014.0774, "pacResfriado": 4290.0, "unidadePeixes": 14425.8411, "biometria": 0.9715, "rendPotencial": 0.4513, "rendOperacional": 0.4411, "mortalidade": 0.0, "bemEstar": 0.974, "eficPotencial": 0.9774, "eficResfriado": 0.9346, "kgh": null, "unh": null, "unidadeHora": 70.1294, "kgHora": 67.8708, "eficSkinner": 0.8974, "couroSkinner": 0.0423, "gwPac": 0.0279, "gwPxv": 0.0085, "rendMRN": 0.8937}, {"date": "2026-03-04", "mes": "2026.03", "semana": "2026.10", "semana_num": 10, "peixeVivo": 13768.728, "pacResfriado": 4233.0, "unidadePeixes": 13043.7149, "biometria": 1.0556, "rendPotencial": 0.4476, "rendOperacional": 0.4382, "mortalidade": 0.0, "bemEstar": 0.9732, "eficPotencial": 0.979, "eficResfriado": 0.9477, "kgh": null, "unh": null, "unidadeHora": 73.7718, "kgHora": 77.7383, "eficSkinner": 0.8984, "couroSkinner": 0.0416, "gwPac": 0.0421, "gwPxv": 0.0129, "rendMRN": 0.8894}, {"date": "2026-03-05", "mes": "2026.03", "semana": "2026.10", "semana_num": 10, "peixeVivo": 13869.281, "pacResfriado": 4135.0, "unidadePeixes": 15250.9772, "biometria": 0.9094, "rendPotencial": 0.4425, "rendOperacional": 0.4329, "mortalidade": 0.0, "bemEstar": 0.977, "eficPotencial": 0.9783, "eficResfriado": 0.93, "kgh": null, "unh": null, "unidadeHora": 75.1029, "kgHora": 67.6151, "eficSkinner": 0.9004, "couroSkinner": 0.0402, "gwPac": 0.0462, "gwPxv": 0.0138, "rendMRN": 0.8905}, {"date": "2026-03-06", "mes": "2026.03", "semana": "2026.10", "semana_num": 10, "peixeVivo": 14920.0603, "pacResfriado": 4756.0, "unidadePeixes": 15299.7729, "biometria": 0.9752, "rendPotencial": 0.4474, "rendOperacional": 0.4377, "mortalidade": 0.0, "bemEstar": 0.9848, "eficPotencial": 0.9784, "eficResfriado": 0.961, "kgh": null, "unh": null, "unidadeHora": 85.0581, "kgHora": 83.0673, "eficSkinner": 0.8954, "couroSkinner": 0.0428, "gwPac": 0.0239, "gwPxv": 0.0076, "rendMRN": 0.8892}, {"date": "2026-03-09", "mes": "2026.03", "semana": "2026.11", "semana_num": 11, "peixeVivo": 14397.1845, "pacResfriado": 4525.0, "unidadePeixes": 13242.8495, "biometria": 1.0872, "rendPotencial": 0.4558, "rendOperacional": 0.4461, "mortalidade": 0.0, "bemEstar": 0.9784, "eficPotencial": 0.9789, "eficResfriado": 0.9506, "kgh": null, "unh": null, "unidadeHora": 74.3939, "kgHora": 80.2145, "eficSkinner": 0.8893, "couroSkinner": 0.0462, "gwPac": 0.0267, "gwPxv": 0.0084, "rendMRN": 0.8913}, {"date": "2026-03-10", "mes": "2026.03", "semana": "2026.11", "semana_num": 11, "peixeVivo": 14287.5817, "pacResfriado": 4265.0, "unidadePeixes": 16116.9733, "biometria": 0.8865, "rendPotencial": 0.4475, "rendOperacional": 0.4372, "mortalidade": 0.0, "bemEstar": 0.9623, "eficPotencial": 0.9769, "eficResfriado": 0.9324, "kgh": null, "unh": null, "unidadeHora": 80.9322, "kgHora": 71.6716, "eficSkinner": 0.8915, "couroSkinner": 0.0443, "gwPac": 0.0386, "gwPxv": 0.0115, "rendMRN": 0.8935}, {"date": "2026-03-11", "mes": "2026.03", "semana": "2026.11", "semana_num": 11, "peixeVivo": 15268.9794, "pacResfriado": 4630.0, "unidadePeixes": 15807.9554, "biometria": 0.9659, "rendPotencial": 0.4483, "rendOperacional": 0.4403, "mortalidade": 0.0, "bemEstar": 0.9543, "eficPotencial": 0.9822, "eficResfriado": 0.9316, "kgh": null, "unh": null, "unidadeHora": 72.0517, "kgHora": 69.5, "eficSkinner": 0.9015, "couroSkinner": 0.0405, "gwPac": 0.0413, "gwPxv": 0.0125, "rendMRN": 0.8944}, {"date": "2026-03-12", "mes": "2026.03", "semana": "2026.11", "semana_num": 11, "peixeVivo": 14480.6435, "pacResfriado": 4270.0, "unidadePeixes": 15209.3708, "biometria": 0.9521, "rendPotencial": 0.4474, "rendOperacional": 0.4399, "mortalidade": 0.0, "bemEstar": 0.922, "eficPotencial": 0.9833, "eficResfriado": 0.9011, "kgh": null, "unh": null, "unidadeHora": 77.6106, "kgHora": 73.7925, "eficSkinner": 0.8956, "couroSkinner": 0.0429, "gwPac": 0.0322, "gwPxv": 0.0095, "rendMRN": 0.8926}, {"date": "2026-03-13", "mes": "2026.03", "semana": "2026.11", "semana_num": 11, "peixeVivo": 14987.4309, "pacResfriado": 4576.0, "unidadePeixes": 15092.0692, "biometria": 0.9931, "rendPotencial": 0.451, "rendOperacional": 0.4396, "mortalidade": 0.0, "bemEstar": 0.9599, "eficPotencial": 0.9748, "eficResfriado": 0.9337, "kgh": null, "unh": null, "unidadeHora": 78.804, "kgHora": 77.8877, "eficSkinner": 0.8919, "couroSkinner": 0.0445, "gwPac": 0.0322, "gwPxv": 0.0101, "rendMRN": 0.8897}, {"date": "2026-03-16", "mes": "2026.03", "semana": "2026.12", "semana_num": 12, "peixeVivo": 14021.1161, "pacResfriado": 4295.0, "unidadePeixes": 13935.3924, "biometria": 1.0062, "rendPotencial": 0.4481, "rendOperacional": 0.4371, "mortalidade": 0.0, "bemEstar": 0.9609, "eficPotencial": 0.9754, "eficResfriado": 0.9398, "kgh": null, "unh": null, "unidadeHora": 73.5004, "kgHora": 72.1917, "eficSkinner": 0.8971, "couroSkinner": 0.042, "gwPac": 0.0313, "gwPxv": 0.0096, "rendMRN": 0.8942}, {"date": "2026-03-17", "mes": "2026.03", "semana": "2026.12", "semana_num": 12, "peixeVivo": 13896.4304, "pacResfriado": 4145.0, "unidadePeixes": 14472.1363, "biometria": 0.9602, "rendPotencial": 0.448, "rendOperacional": 0.439, "mortalidade": 0.0, "bemEstar": 0.9157, "eficPotencial": 0.98, "eficResfriado": 0.9227, "kgh": null, "unh": null, "unidadeHora": 83.7495, "kgHora": 80.1518, "eficSkinner": 0.8979, "couroSkinner": 0.0416, "gwPac": 0.0381, "gwPxv": 0.0114, "rendMRN": 0.8958}, {"date": "2026-03-18", "mes": "2026.03", "semana": "2026.12", "semana_num": 12, "peixeVivo": 12805.4299, "pacResfriado": 3986.0, "unidadePeixes": 12917.9047, "biometria": 0.9913, "rendPotencial": 0.4484, "rendOperacional": 0.4399, "mortalidade": 0.0027, "bemEstar": 0.9666, "eficPotencial": 0.9811, "eficResfriado": 0.94, "kgh": null, "unh": null, "unidadeHora": 78.3324, "kgHora": 77.4674, "eficSkinner": 0.8923, "couroSkinner": 0.0442, "gwPac": 0.0176, "gwPxv": 0.0055, "rendMRN": 0.8952}, {"date": "2026-03-19", "mes": "2026.03", "semana": "2026.12", "semana_num": 12, "peixeVivo": 14570.1357, "pacResfriado": 4380.0, "unidadePeixes": 16157.2149, "biometria": 0.9018, "rendPotencial": 0.4497, "rendOperacional": 0.44, "mortalidade": 0.0066, "bemEstar": 0.9403, "eficPotencial": 0.9784, "eficResfriado": 0.9225, "kgh": null, "unh": null, "unidadeHora": 79.6838, "kgHora": 71.7135, "eficSkinner": 0.8982, "couroSkinner": 0.0418, "gwPac": 0.0181, "gwPxv": 0.0054, "rendMRN": 0.8911}, {"date": "2026-03-20", "mes": "2026.03", "semana": "2026.12", "semana_num": 12, "peixeVivo": 15469.0799, "pacResfriado": 4866.0, "unidadePeixes": 14918.6441, "biometria": 1.0369, "rendPotencial": 0.4471, "rendOperacional": 0.4388, "mortalidade": 0.0, "bemEstar": 0.9727, "eficPotencial": 0.9814, "eficResfriado": 0.9586, "kgh": null, "unh": null, "unidadeHora": 74.1705, "kgHora": 76.571, "eficSkinner": 0.8895, "couroSkinner": 0.0453, "gwPac": 0.0165, "gwPxv": 0.0052, "rendMRN": 0.8961}, {"date": "2026-03-23", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14904.9774, "pacResfriado": 4625.0, "unidadePeixes": 14745.1268, "biometria": 1.0108, "rendPotencial": 0.4504, "rendOperacional": 0.441, "mortalidade": 0.0042, "bemEstar": 0.9502, "eficPotencial": 0.9792, "eficResfriado": 0.9493, "kgh": null, "unh": null, "unidadeHora": 73.8381, "kgHora": 74.0725, "eficSkinner": 0.895, "couroSkinner": 0.0432, "gwPac": 0.0152, "gwPxv": 0.0047, "rendMRN": 0.8985}, {"date": "2026-03-24", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14953.2428, "pacResfriado": 4685.0, "unidadePeixes": 13877.0464, "biometria": 1.0776, "rendPotencial": 0.4514, "rendOperacional": 0.442, "mortalidade": 0.008, "bemEstar": 0.9361, "eficPotencial": 0.9792, "eficResfriado": 0.9523, "kgh": null, "unh": null, "unidadeHora": 70.8911, "kgHora": 76.3963, "eficSkinner": 0.8906, "couroSkinner": 0.0451, "gwPac": 0.0164, "gwPxv": 0.0051, "rendMRN": 0.8888}, {"date": "2026-03-25", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14849.6732, "pacResfriado": 4543.0, "unidadePeixes": 15091.6182, "biometria": 0.984, "rendPotencial": 0.4476, "rendOperacional": 0.4363, "mortalidade": 0.0071, "bemEstar": 0.9576, "eficPotencial": 0.9746, "eficResfriado": 0.9441, "kgh": null, "unh": null, "unidadeHora": 68.2717, "kgHora": 67.1482, "eficSkinner": 0.8903, "couroSkinner": 0.0446, "gwPac": 0.0261, "gwPxv": 0.008, "rendMRN": 0.8852}, {"date": "2026-03-26", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14843.64, "pacResfriado": 4620.0, "unidadePeixes": 15263.3236, "biometria": 0.9725, "rendPotencial": 0.4494, "rendOperacional": 0.4387, "mortalidade": 0.0073, "bemEstar": 0.9594, "eficPotencial": 0.9761, "eficResfriado": 0.9451, "kgh": null, "unh": null, "unidadeHora": 79.065, "kgHora": 76.5382, "eficSkinner": 0.8934, "couroSkinner": 0.0437, "gwPac": 0.0153, "gwPxv": 0.0047, "rendMRN": 0.8912}, {"date": "2026-03-27", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14451.4832, "pacResfriado": 4448.0, "unidadePeixes": 16315.1673, "biometria": 0.8858, "rendPotencial": 0.4411, "rendOperacional": 0.4304, "mortalidade": 0.0064, "bemEstar": 0.9655, "eficPotencial": 0.9756, "eficResfriado": 0.9584, "kgh": null, "unh": null, "unidadeHora": 77.1275, "kgHora": 68.0963, "eficSkinner": 0.8849, "couroSkinner": 0.0463, "gwPac": 0.0091, "gwPxv": 0.0028, "rendMRN": 0.8875}, {"date": "2026-03-28", "mes": "2026.03", "semana": "2026.13", "semana_num": 13, "peixeVivo": 14205.1282, "pacResfriado": 4470.0, "unidadePeixes": 15697.8436, "biometria": 0.9049, "rendPotencial": 0.4428, "rendOperacional": 0.433, "mortalidade": 0.0, "bemEstar": 0.9658, "eficPotencial": 0.9779, "eficResfriado": 0.9537, "kgh": null, "unh": null, "unidadeHora": 81.506, "kgHora": 71.6877, "eficSkinner": 0.8912, "couroSkinner": 0.044, "gwPac": 0.0027, "gwPxv": 0.0008, "rendMRN": 0.8907}, {"date": "2026-03-29", "mes": "2026.03", "semana": "2026.14", "semana_num": 14, "peixeVivo": 13877.3253, "pacResfriado": 4126.0, "unidadePeixes": 14619.509, "biometria": 0.9492, "rendPotencial": 0.4472, "rendOperacional": 0.4385, "mortalidade": 0.0028, "bemEstar": 0.9395, "eficPotencial": 0.9807, "eficResfriado": 0.9116, "kgh": null, "unh": null, "unidadeHora": 74.313, "kgHora": 70.5892, "eficSkinner": 0.8957, "couroSkinner": 0.0426, "gwPac": 0.0161, "gwPxv": 0.0048, "rendMRN": 0.8875}, {"date": "2026-03-30", "mes": "2026.03", "semana": "2026.14", "semana_num": 14, "peixeVivo": 14782.8054, "pacResfriado": 4435.0, "unidadePeixes": 16417.1836, "biometria": 0.9004, "rendPotencial": 0.4452, "rendOperacional": 0.4367, "mortalidade": 0.0, "bemEstar": 0.9588, "eficPotencial": 0.9809, "eficResfriado": 0.9102, "kgh": null, "unh": null, "unidadeHora": 79.6376, "kgHora": 71.7232, "eficSkinner": 0.8965, "couroSkinner": 0.0421, "gwPac": 0.0183, "gwPxv": 0.0058, "rendMRN": 0.894}, {"date": "2026-03-31", "mes": "2026.03", "semana": "2026.14", "semana_num": 14, "peixeVivo": 16890.8999, "pacResfriado": 4760.0, "unidadePeixes": 16389.5922, "biometria": 1.0306, "rendPotencial": 0.4412, "rendOperacional": 0.4329, "mortalidade": 0.0016, "bemEstar": 0.966, "eficPotencial": 0.9811, "eficResfriado": 0.9293, "kgh": null, "unh": null, "unidadeHora": 79.5372, "kgHora": 81.0404, "eficSkinner": 0.8841, "couroSkinner": 0.0468, "gwPac": 0.0222, "gwPxv": 0.0062, "rendMRN": 0.8907}, {"date": "2026-04-01", "mes": "2026.04", "semana": "2026.14", "semana_num": 14, "peixeVivo": 15759.6782, "pacResfriado": 4917.0, "unidadePeixes": 13267.0172, "biometria": 1.1879, "rendPotencial": 0.4536, "rendOperacional": 0.4439, "mortalidade": 0.0022, "bemEstar": 0.9725, "eficPotencial": 0.9788, "eficResfriado": 0.9514, "kgh": null, "unh": null, "unidadeHora": 75.0036, "kgHora": 88.2542, "eficSkinner": 0.8918, "couroSkinner": 0.0449, "gwPac": 0.0232, "gwPxv": 0.0072, "rendMRN": 0.8876}, {"date": "2026-04-02", "mes": "2026.04", "semana": "2026.14", "semana_num": 14, "peixeVivo": 13085.9729, "pacResfriado": 4204.0, "unidadePeixes": 13075.6991, "biometria": 1.0008, "rendPotencial": 0.4478, "rendOperacional": 0.4383, "mortalidade": 0.0, "bemEstar": 0.9844, "eficPotencial": 0.9789, "eficResfriado": 0.9636, "kgh": null, "unh": null, "unidadeHora": 81.2044, "kgHora": 81.0159, "eficSkinner": 0.8909, "couroSkinner": 0.0447, "gwPac": 0.0304, "gwPxv": 0.01, "rendMRN": 0.9027}, {"date": "2026-04-06", "mes": "2026.04", "semana": "2026.15", "semana_num": 15, "peixeVivo": 12490.6988, "pacResfriado": 3825.0, "unidadePeixes": 13618.3171, "biometria": 0.9172, "rendPotencial": 0.449, "rendOperacional": 0.439, "mortalidade": 0.0, "bemEstar": 0.9366, "eficPotencial": 0.9777, "eficResfriado": 0.9226, "kgh": null, "unh": null, "unidadeHora": 66.749, "kgHora": 60.5366, "eficSkinner": 0.8974, "couroSkinner": 0.0421, "gwPac": 0.0075, "gwPxv": 0.0023, "rendMRN": 0.8879}, {"date": "2026-04-07", "mes": "2026.04", "semana": "2026.15", "semana_num": 15, "peixeVivo": 10001.0055, "pacResfriado": 3084.79, "unidadePeixes": 11335.2601, "biometria": 0.8823, "rendPotencial": 0.4452, "rendOperacional": 0.4316, "mortalidade": 0.007, "bemEstar": 0.961, "eficPotencial": 0.9694, "eficResfriado": 0.9472, "kgh": null, "unh": null, "unidadeHora": 73.7099, "kgHora": 64.9916, "eficSkinner": 0.8889, "couroSkinner": 0.0448, "gwPac": 0.0085, "gwPxv": 0.0026, "rendMRN": 0.8887}, {"date": "2026-04-08", "mes": "2026.04", "semana": "2026.15", "semana_num": 15, "peixeVivo": 12586.2242, "pacResfriado": 3867.0, "unidadePeixes": 14770.6855, "biometria": 0.8521, "rendPotencial": 0.4472, "rendOperacional": 0.4353, "mortalidade": 0.0095, "bemEstar": 0.9559, "eficPotencial": 0.9732, "eficResfriado": 0.9518, "kgh": null, "unh": null, "unidadeHora": 69.4141, "kgHora": 58.64, "eficSkinner": 0.8961, "couroSkinner": 0.0422, "gwPac": 0.0028, "gwPxv": 0.0008, "rendMRN": 0.8868}, {"date": "2026-04-09", "mes": "2026.04", "semana": "2026.15", "semana_num": 15, "peixeVivo": 12790.3469, "pacResfriado": 4115.0, "unidadePeixes": 12219.9794, "biometria": 1.0467, "rendPotencial": 0.4547, "rendOperacional": 0.4453, "mortalidade": 0.0, "bemEstar": 0.9909, "eficPotencial": 0.9793, "eficResfriado": 0.9705, "kgh": null, "unh": null, "unidadeHora": 73.2061, "kgHora": 75.2788, "eficSkinner": 0.8919, "couroSkinner": 0.0451, "gwPac": 0.0087, "gwPxv": 0.0028, "rendMRN": 0.8878}, {"date": "2026-04-10", "mes": "2026.04", "semana": "2026.15", "semana_num": 15, "peixeVivo": 10083.459, "pacResfriado": 3196.0, "unidadePeixes": 10497.3547, "biometria": 0.9606, "rendPotencial": 0.4468, "rendOperacional": 0.4383, "mortalidade": 0.0272, "bemEstar": 0.9227, "eficPotencial": 0.9808, "eficResfriado": 0.9405, "kgh": null, "unh": null, "unidadeHora": 79.1592, "kgHora": 76.054, "eficSkinner": 0.8961, "couroSkinner": 0.0425, "gwPac": 0.0038, "gwPxv": 0.0012, "rendMRN": 0.8897}, {"date": "2026-04-13", "mes": "2026.04", "semana": "2026.16", "semana_num": 16, "peixeVivo": 12414.2785, "pacResfriado": 3910.0, "unidadePeixes": 13079.8236, "biometria": 0.9491, "rendPotencial": 0.4459, "rendOperacional": 0.4356, "mortalidade": 0.0063, "bemEstar": 0.958, "eficPotencial": 0.9771, "eficResfriado": 0.954, "kgh": null, "unh": null, "unidadeHora": 69.4726, "kgHora": 65.8654, "eficSkinner": 0.8963, "couroSkinner": 0.0422, "gwPac": 0.0122, "gwPxv": 0.0038, "rendMRN": 0.8892}, {"date": "2026-04-14", "mes": "2026.04", "semana": "2026.16", "semana_num": 16, "peixeVivo": 9322.2725, "pacResfriado": 2870.0, "unidadePeixes": 10771.3566, "biometria": 0.8655, "rendPotencial": 0.445, "rendOperacional": 0.4355, "mortalidade": 0.0371, "bemEstar": 0.8884, "eficPotencial": 0.9787, "eficResfriado": 0.9291, "kgh": null, "unh": null, "unidadeHora": 73.7825, "kgHora": 63.4802, "eficSkinner": 0.9007, "couroSkinner": 0.0403, "gwPac": 0.0115, "gwPxv": 0.0035, "rendMRN": 0.8885}, {"date": "2026-04-15", "mes": "2026.04", "semana": "2026.16", "semana_num": 16, "peixeVivo": 12356.9633, "pacResfriado": 3788.0, "unidadePeixes": 13545.3412, "biometria": 0.9123, "rendPotencial": 0.4499, "rendOperacional": 0.4414, "mortalidade": 0.0, "bemEstar": 0.9217, "eficPotencial": 0.9812, "eficResfriado": 0.9266, "kgh": null, "unh": null, "unidadeHora": 80.974, "kgHora": 69.161, "eficSkinner": 0.8989, "couroSkinner": 0.0416, "gwPac": 0.0166, "gwPxv": 0.0051, "rendMRN": 0.8876}, {"date": "2026-04-16", "mes": "2026.04", "semana": "2026.16", "semana_num": 16, "peixeVivo": 13456.008, "pacResfriado": 4065.0, "unidadePeixes": 15305.9923, "biometria": 0.8791, "rendPotencial": 0.4414, "rendOperacional": 0.4309, "mortalidade": 0.0048, "bemEstar": 0.9383, "eficPotencial": 0.9764, "eficResfriado": 0.9289, "kgh": null, "unh": null, "unidadeHora": 86.1995, "kgHora": 70.6534, "eficSkinner": 0.8959, "couroSkinner": 0.0419, "gwPac": 0.0037, "gwPxv": 0.0011, "rendMRN": 0.8872}, {"date": "2026-04-17", "mes": "2026.04", "semana": "2026.16", "semana_num": 16, "peixeVivo": 12597.2851, "pacResfriado": 3836.0, "unidadePeixes": 13084.4201, "biometria": 0.9628, "rendPotencial": 0.4511, "rendOperacional": 0.4428, "mortalidade": 0.0126, "bemEstar": 0.8876, "eficPotencial": 0.9815, "eficResfriado": 0.9236, "kgh": null, "unh": null, "unidadeHora": 82.9256, "kgHora": 74.2913, "eficSkinner": 0.8919, "couroSkinner": 0.0445, "gwPac": 0.0041, "gwPxv": 0.0013, "rendMRN": 0.8838}, {"date": "2026-04-20", "mes": "2026.04", "semana": "2026.17", "semana_num": 17, "peixeVivo": 11804.9271, "pacResfriado": 3715.0, "unidadePeixes": 12812.0931, "biometria": 0.9214, "rendPotencial": 0.4439, "rendOperacional": 0.4345, "mortalidade": 0.0, "bemEstar": 0.9591, "eficPotencial": 0.9788, "eficResfriado": 0.9486, "kgh": null, "unh": null, "unidadeHora": 76.1952, "kgHora": 65.7436, "eficSkinner": 0.8974, "couroSkinner": 0.0417, "gwPac": 0.0118, "gwPxv": 0.0037, "rendMRN": 0.8817}, {"date": "2026-04-21", "mes": "2026.04", "semana": "2026.17", "semana_num": 17, "peixeVivo": 13166.4153, "pacResfriado": 3980.0, "unidadePeixes": 15055.9351, "biometria": 0.8745, "rendPotencial": 0.4462, "rendOperacional": 0.4357, "mortalidade": 0.0, "bemEstar": 0.9586, "eficPotencial": 0.9765, "eficResfriado": 0.9398, "kgh": null, "unh": null, "unidadeHora": 85.0997, "kgHora": 69.4651, "eficSkinner": 0.8983, "couroSkinner": 0.0414, "gwPac": 0.0099, "gwPxv": 0.003, "rendMRN": 0.8881}, {"date": "2026-04-23", "mes": "2026.04", "semana": "2026.17", "semana_num": 17, "peixeVivo": 13940.6737, "pacResfriado": 4069.0, "unidadePeixes": 15002.5186, "biometria": 0.9292, "rendPotencial": 0.4453, "rendOperacional": 0.4365, "mortalidade": 0.0046, "bemEstar": 0.9064, "eficPotencial": 0.9801, "eficResfriado": 0.9163, "kgh": null, "unh": null, "unidadeHora": 74.6987, "kgHora": 64.4753, "eficSkinner": 0.9006, "couroSkinner": 0.0401, "gwPac": 0.0128, "gwPxv": 0.0037, "rendMRN": 0.8877}, {"date": "2026-04-24", "mes": "2026.04", "semana": "2026.17", "semana_num": 17, "peixeVivo": 13789.8441, "pacResfriado": 4183.0, "unidadePeixes": 13182.1238, "biometria": 1.0461, "rendPotencial": 0.4474, "rendOperacional": 0.4395, "mortalidade": 0.0, "bemEstar": 0.9329, "eficPotencial": 0.9823, "eficResfriado": 0.9395, "kgh": null, "unh": null, "unidadeHora": 82.2442, "kgHora": 77.2896, "eficSkinner": 0.8959, "couroSkinner": 0.0426, "gwPac": 0.0061, "gwPxv": 0.0019, "rendMRN": 0.8874}, {"date": "2026-04-27", "mes": "2026.04", "semana": "2026.18", "semana_num": 18, "peixeVivo": 11940.6737, "pacResfriado": 3550.0, "unidadePeixes": 12734.8282, "biometria": 0.9376, "rendPotencial": 0.4407, "rendOperacional": 0.4311, "mortalidade": 0.0, "bemEstar": 0.963, "eficPotencial": 0.9781, "eficResfriado": 0.9221, "kgh": null, "unh": null, "unidadeHora": 73.5507, "kgHora": 64.128, "eficSkinner": 0.9011, "couroSkinner": 0.0395, "gwPac": 0.0094, "gwPxv": 0.0028, "rendMRN": 0.8898}, {"date": "2026-04-28", "mes": "2026.04", "semana": "2026.18", "semana_num": 18, "peixeVivo": 13637.0035, "pacResfriado": 4160.0, "unidadePeixes": 14331.2323, "biometria": 0.9516, "rendPotencial": 0.448, "rendOperacional": 0.4367, "mortalidade": 0.0, "bemEstar": 0.9492, "eficPotencial": 0.9747, "eficResfriado": 0.9458, "kgh": null, "unh": null, "unidadeHora": 89.9193, "kgHora": 79.52, "eficSkinner": 0.9005, "couroSkinner": 0.0405, "gwPac": 0.013, "gwPxv": 0.004, "rendMRN": 0.883}, {"date": "2026-04-29", "mes": "2026.04", "semana": "2026.18", "semana_num": 18, "peixeVivo": 13098.0392, "pacResfriado": 4044.0, "unidadePeixes": 12909.2104, "biometria": 1.0146, "rendPotencial": 0.4544, "rendOperacional": 0.4434, "mortalidade": 0.0, "bemEstar": 0.9211, "eficPotencial": 0.9756, "eficResfriado": 0.9239, "kgh": null, "unh": null, "unidadeHora": 86.7306, "kgHora": 81.0749, "eficSkinner": 0.9006, "couroSkinner": 0.0412, "gwPac": 0.0124, "gwPxv": 0.0038, "rendMRN": 0.8761}, {"date": "2026-04-30", "mes": "2026.04", "semana": "2026.18", "semana_num": 18, "peixeVivo": 12557.0639, "pacResfriado": 3602.0, "unidadePeixes": 14317.447, "biometria": 0.877, "rendPotencial": 0.4443, "rendOperacional": 0.4335, "mortalidade": 0.0, "bemEstar": 0.9148, "eficPotencial": 0.9756, "eficResfriado": 0.8986, "kgh": null, "unh": null, "unidadeHora": 93.3214, "kgHora": 76.7229, "eficSkinner": 0.8959, "couroSkinner": 0.0421, "gwPac": 0.0148, "gwPxv": 0.0042, "rendMRN": 0.8867}, {"date": "2026-05-04", "mes": "2026.05", "semana": "2026.19", "semana_num": 19, "peixeVivo": 12632.4786, "pacResfriado": 3925.0, "unidadePeixes": 12861.3347, "biometria": 0.9822, "rendPotencial": 0.4495, "rendOperacional": 0.4385, "mortalidade": 0.0, "bemEstar": 0.9467, "eficPotencial": 0.9756, "eficResfriado": 0.9353, "kgh": null, "unh": null, "unidadeHora": 85.371, "kgHora": 78.4598, "eficSkinner": 0.8929, "couroSkinner": 0.0438, "gwPac": 0.0165, "gwPxv": 0.0053, "rendMRN": 0.8898}, {"date": "2026-05-05", "mes": "2026.05", "semana": "2026.19", "semana_num": 19, "peixeVivo": 13078.9341, "pacResfriado": 3980.0, "unidadePeixes": 13041.2974, "biometria": 1.0029, "rendPotencial": 0.4579, "rendOperacional": 0.4408, "mortalidade": 0.0129, "bemEstar": 0.9111, "eficPotencial": 0.9625, "eficResfriado": 0.9323, "kgh": null, "unh": null, "unidadeHora": 82.1491, "kgHora": 76.535, "eficSkinner": 0.8989, "couroSkinner": 0.0413, "gwPac": 0.0111, "gwPxv": 0.0034, "rendMRN": 0.8813}, {"date": "2026-05-06", "mes": "2026.05", "semana": "2026.19", "semana_num": 19, "peixeVivo": 12941.1765, "pacResfriado": 3734.0, "unidadePeixes": 15248.8332, "biometria": 0.8487, "rendPotencial": 0.4567, "rendOperacional": 0.4377, "mortalidade": 0.0, "bemEstar": 0.9444, "eficPotencial": 0.9583, "eficResfriado": 0.9034, "kgh": null, "unh": null, "unidadeHora": 81.8607, "kgHora": 64.1592, "eficSkinner": 0.899, "couroSkinner": 0.0413, "gwPac": 0.008, "gwPxv": 0.0023, "rendMRN": 0.8793}, {"date": "2026-05-07", "mes": "2026.05", "semana": "2026.19", "semana_num": 19, "peixeVivo": 12858.723, "pacResfriado": 3755.0, "unidadePeixes": 15289.323, "biometria": 0.841, "rendPotencial": 0.4457, "rendOperacional": 0.4331, "mortalidade": 0.0, "bemEstar": 0.9473, "eficPotencial": 0.9717, "eficResfriado": 0.9146, "kgh": null, "unh": null, "unidadeHora": 76.3949, "kgHora": 60.2725, "eficSkinner": 0.8996, "couroSkinner": 0.0406, "gwPac": 0.0113, "gwPxv": 0.0033, "rendMRN": 0.8819}, {"date": "2026-05-08", "mes": "2026.05", "semana": "2026.19", "semana_num": 19, "peixeVivo": 12964.3037, "pacResfriado": 4166.0, "unidadePeixes": 13896.5292, "biometria": 0.9329, "rendPotencial": 0.4682, "rendOperacional": 0.4579, "mortalidade": 0.004, "bemEstar": 0.9404, "eficPotencial": 0.9779, "eficResfriado": 0.9413, "kgh": null, "unh": null, "unidadeHora": 93.2372, "kgHora": 81.3364, "eficSkinner": 0.9048, "couroSkinner": 0.0407, "gwPac": 0.0172, "gwPxv": 0.0055, "rendMRN": 0.8533}, {"date": "2026-05-11", "mes": "2026.05", "semana": "2026.20", "semana_num": 20, "peixeVivo": 10123.6802, "pacResfriado": 2800.0, "unidadePeixes": 12444.4561, "biometria": 0.8135, "rendPotencial": 0.4434, "rendOperacional": 0.4326, "mortalidade": 0.0143, "bemEstar": 0.9182, "eficPotencial": 0.9756, "eficResfriado": 0.8485, "kgh": null, "unh": null, "unidadeHora": 82.5324, "kgHora": 60.8412, "eficSkinner": 0.8951, "couroSkinner": 0.0423, "gwPac": 0.0227, "gwPxv": 0.0062, "rendMRN": 0.8781}, {"date": "2026-05-12", "mes": "2026.05", "semana": "2026.20", "semana_num": 20, "peixeVivo": 12979.3866, "pacResfriado": 4115.0, "unidadePeixes": 12169.2313, "biometria": 1.0666, "rendPotencial": 0.4558, "rendOperacional": 0.4438, "mortalidade": 0.0, "bemEstar": 0.9776, "eficPotencial": 0.9738, "eficResfriado": 0.9497, "kgh": 19.2859, "unh": 18.0821, "unidadeHora": 81.8319, "kgHora": 81.0005, "eficSkinner": 0.8982, "couroSkinner": 0.0422, "gwPac": 0.0205, "gwPxv": 0.0065, "rendMRN": 0.8864}, {"date": "2026-05-13", "mes": "2026.05", "semana": "2026.20", "semana_num": 20, "peixeVivo": 12628.4565, "pacResfriado": 3922.0, "unidadePeixes": 12850.6054, "biometria": 0.9827, "rendPotencial": 0.4647, "rendOperacional": 0.4546, "mortalidade": 0.0, "bemEstar": 0.9714, "eficPotencial": 0.9783, "eficResfriado": 0.9412, "kgh": 21.5945, "unh": 21.9744, "unidadeHora": 97.2555, "kgHora": 85.3671, "eficSkinner": 0.8998, "couroSkinner": 0.0426, "gwPac": -0.001, "gwPxv": 0.0085, "rendMRN": 0.8543}, {"date": "2026-05-14", "mes": "2026.05", "semana": "2026.20", "semana_num": 20, "peixeVivo": 13095.0226, "pacResfriado": 4045.0, "unidadePeixes": 12931.5818, "biometria": 1.0126, "rendPotencial": 0.4712, "rendOperacional": 0.4605, "mortalidade": 0.0, "bemEstar": 0.9641, "eficPotencial": 0.9773, "eficResfriado": 0.9337, "kgh": 22.1587, "unh": 21.8821, "unidadeHora": 91.4382, "kgHora": 86.6558, "eficSkinner": 0.9033, "couroSkinner": 0.0416, "gwPac": -0.0061, "gwPxv": 0.004, "rendMRN": 0.8532}, {"date": "2026-05-15", "mes": "2026.05", "semana": "2026.20", "semana_num": 20, "peixeVivo": 13784.8165, "pacResfriado": 4326.0, "unidadePeixes": 13540.7076, "biometria": 1.018, "rendPotencial": 0.4718, "rendOperacional": 0.461, "mortalidade": 0.0, "bemEstar": 0.9637, "eficPotencial": 0.9772, "eficResfriado": 0.9443, "kgh": 21.3475, "unh": 20.9695, "unidadeHora": 87.5383, "kgHora": 83.4206, "eficSkinner": 0.8938, "couroSkinner": 0.0458, "gwPac": -0.0034, "gwPxv": 0.0063, "rendMRN": 0.8472}, {"date": "2026-05-18", "mes": "2026.05", "semana": "2026.21", "semana_num": 21, "peixeVivo": 12730.0151, "pacResfriado": 3695.0, "unidadePeixes": 14109.2649, "biometria": 0.9022, "rendPotencial": 0.4662, "rendOperacional": 0.4582, "mortalidade": 0.0, "bemEstar": 0.9042, "eficPotencial": 0.9829, "eficResfriado": 0.8964, "kgh": 20.5605, "unh": 22.7881, "unidadeHora": 87.6967, "kgHora": 74.1928, "eficSkinner": 0.8945, "couroSkinner": 0.045, "gwPac": 0.0052, "gwPxv": 0.0082, "rendMRN": 0.8601}, {"date": "2026-05-19", "mes": "2026.05", "semana": "2026.21", "semana_num": 21, "peixeVivo": 12762.1921, "pacResfriado": 3870.0, "unidadePeixes": 12339.9349, "biometria": 1.0342, "rendPotencial": 0.4708, "rendOperacional": 0.4573, "mortalidade": 0.0, "bemEstar": 0.9801, "eficPotencial": 0.9713, "eficResfriado": 0.9458, "kgh": 24.8275, "unh": 24.0061, "unidadeHora": 88.4588, "kgHora": 84.7828, "eficSkinner": 0.8892, "couroSkinner": 0.0474, "gwPac": 0.006, "gwPxv": 0.0083, "rendMRN": 0.8523}, {"date": "2026-05-20", "mes": "2026.05", "semana": "2026.21", "semana_num": 21, "peixeVivo": 11992.9613, "pacResfriado": 3653.0, "unidadePeixes": 10212.117, "biometria": 1.1744, "rendPotencial": 0.4716, "rendOperacional": 0.4605, "mortalidade": 0.0, "bemEstar": 0.9513, "eficPotencial": 0.9766, "eficResfriado": 0.9427, "kgh": 25.4763, "unh": 21.6933, "unidadeHora": 85.4007, "kgHora": 93.8742, "eficSkinner": 0.8973, "couroSkinner": 0.0442, "gwPac": 0.0046, "gwPxv": 0.0078, "rendMRN": 0.8468}, {"date": "2026-05-21", "mes": "2026.05", "semana": "2026.21", "semana_num": 21, "peixeVivo": 10281.5485, "pacResfriado": 2900.0, "unidadePeixes": 12003.2447, "biometria": 0.8566, "rendPotencial": 0.4662, "rendOperacional": 0.457, "mortalidade": 0.0, "bemEstar": 0.9066, "eficPotencial": 0.9802, "eficResfriado": 0.8674, "kgh": 21.5313, "unh": 25.1368, "unidadeHora": 90.5426, "kgHora": 72.4373, "eficSkinner": 0.8972, "couroSkinner": 0.0439, "gwPac": 0.0113, "gwPxv": 0.0094, "rendMRN": 0.8579}, {"date": "2026-05-22", "mes": "2026.05", "semana": "2026.21", "semana_num": 21, "peixeVivo": 11041.7295, "pacResfriado": 3278.0, "unidadePeixes": 10809.4465, "biometria": 1.0215, "rendPotencial": 0.4675, "rendOperacional": 0.4585, "mortalidade": 0.0, "bemEstar": 0.9553, "eficPotencial": 0.9807, "eficResfriado": 0.9211, "kgh": 23.7772, "unh": 23.277, "unidadeHora": 84.9973, "kgHora": 80.3068, "eficSkinner": 0.8864, "couroSkinner": 0.0487, "gwPac": -0.0022, "gwPxv": 0.0052, "rendMRN": 0.8587}, {"date": "2026-05-25", "mes": "2026.05", "semana": "2026.22", "semana_num": 22, "peixeVivo": 12807.4409, "pacResfriado": 3875.0, "unidadePeixes": 14333.7319, "biometria": 0.8935, "rendPotencial": 0.4627, "rendOperacional": 0.4524, "mortalidade": 0.0, "bemEstar": 0.9786, "eficPotencial": 0.9777, "eficResfriado": 0.9444, "kgh": 20.68, "unh": 23.1444, "unidadeHora": 86.1361, "kgHora": 72.137, "eficSkinner": 0.8922, "couroSkinner": 0.0455, "gwPac": -0.004, "gwPxv": 0.0039, "rendMRN": 0.8534}, {"date": "2026-05-26", "mes": "2026.05", "semana": "2026.22", "semana_num": 22, "peixeVivo": 13260.9351, "pacResfriado": 3849.0, "unidadePeixes": 14791.4381, "biometria": 0.8965, "rendPotencial": 0.4583, "rendOperacional": 0.4503, "mortalidade": 0.0, "bemEstar": 0.9796, "eficPotencial": 0.9825, "eficResfriado": 0.9302, "kgh": 24.2231, "unh": 27.0188, "unidadeHora": 89.2351, "kgHora": 74.9674, "eficSkinner": 0.8926, "couroSkinner": 0.0452, "gwPac": 0.0186, "gwPxv": 0.0089, "rendMRN": 0.8505}, {"date": "2026-05-27", "mes": "2026.05", "semana": "2026.22", "semana_num": 22, "peixeVivo": 8739.0649, "pacResfriado": 2727.0, "unidadePeixes": 7254.51, "biometria": 1.2046, "rendPotencial": 0.4694, "rendOperacional": 0.4604, "mortalidade": 0.0, "bemEstar": 0.9848, "eficPotencial": 0.9809, "eficResfriado": 0.9618, "kgh": 15.7645, "unh": 13.0865, "unidadeHora": 78.5088, "kgHora": 87.2548, "eficSkinner": 0.8848, "couroSkinner": 0.0496, "gwPac": 0.0116, "gwPxv": 0.0084, "rendMRN": 0.8518}, {"date": "2026-05-28", "mes": "2026.05", "semana": "2026.22", "semana_num": 22, "peixeVivo": 13156.36, "pacResfriado": 3990.0, "unidadePeixes": 13119.8703, "biometria": 1.0028, "rendPotencial": 0.4705, "rendOperacional": 0.462, "mortalidade": 0.0, "bemEstar": 0.9712, "eficPotencial": 0.982, "eficResfriado": 0.944, "kgh": 26.5392, "unh": 26.4656, "unidadeHora": 92.4719, "kgHora": 86.6334, "eficSkinner": 0.9003, "couroSkinner": 0.043, "gwPac": 0.0137, "gwPxv": 0.0084, "rendMRN": 0.8536}, {"date": "2026-05-29", "mes": "2026.05", "semana": "2026.22", "semana_num": 22, "peixeVivo": 11943.6903, "pacResfriado": 3645.0, "unidadePeixes": 10616.417, "biometria": 1.125, "rendPotencial": 0.4743, "rendOperacional": 0.4671, "mortalidade": 0.0, "bemEstar": 0.9004, "eficPotencial": 0.9847, "eficResfriado": 0.9219, "kgh": 25.4762, "unh": 22.6451, "unidadeHora": 86.8485, "kgHora": 91.2677, "eficSkinner": 0.8932, "couroSkinner": 0.0466, "gwPac": -0.0017, "gwPxv": 0.0035, "rendMRN": 0.8471}, {"date": "2026-06-01", "mes": "2026.06", "semana": "2026.23", "semana_num": 23, "peixeVivo": 15530.4173, "pacResfriado": 4655.0, "unidadePeixes": 13967.354, "biometria": 1.1119, "rendPotencial": 0.4788, "rendOperacional": 0.4748, "mortalidade": 0.0, "bemEstar": 0.9614, "eficPotencial": 0.9917, "eficResfriado": 0.9312, "kgh": 22.2467, "unh": 20.0077, "unidadeHora": 83.7575, "kgHora": 81.2768, "eficSkinner": 0.896, "couroSkinner": 0.0462, "gwPac": 0.0069, "gwPxv": 0.0069, "rendMRN": 0.8515}, {"date": "2026-06-02", "mes": "2026.06", "semana": "2026.23", "semana_num": 23, "peixeVivo": 15729.5123, "pacResfriado": 4830.0, "unidadePeixes": 15464.4463, "biometria": 1.0171, "rendPotencial": 0.4562, "rendOperacional": 0.4489, "mortalidade": 0.0, "bemEstar": 0.975, "eficPotencial": 0.9839, "eficResfriado": 0.952, "kgh": 22.1184, "unh": 21.7457, "unidadeHora": 81.3291, "kgHora": 76.7149, "eficSkinner": 0.9003, "couroSkinner": 0.0416, "gwPac": 0.0099, "gwPxv": 0.0076, "rendMRN": 0.882}, {"date": "2026-06-04", "mes": "2026.06", "semana": "2026.23", "semana_num": 23, "peixeVivo": 15751.634, "pacResfriado": 4964.0, "unidadePeixes": 13662.9937, "biometria": 1.1529, "rendPotencial": 0.4567, "rendOperacional": 0.4485, "mortalidade": 0.0, "bemEstar": 0.9821, "eficPotencial": 0.9819, "eficResfriado": 0.9582, "kgh": 23.1534, "unh": 20.0833, "unidadeHora": 85.7019, "kgHora": 77.5565, "eficSkinner": 0.9086, "couroSkinner": 0.0379, "gwPac": 0.0124, "gwPxv": 0.0073, "rendMRN": 0.8915}, {"date": "2026-06-05", "mes": "2026.06", "semana": "2026.23", "semana_num": 23, "peixeVivo": 14369.0297, "pacResfriado": 4793.0, "unidadePeixes": 11264.2474, "biometria": 1.2756, "rendPotencial": 0.4599, "rendOperacional": 0.4513, "mortalidade": 0.0, "bemEstar": 0.9957, "eficPotencial": 0.9814, "eficResfriado": 0.9794, "kgh": 24.1341, "unh": 18.9193, "unidadeHora": 74.3652, "kgHora": 88.3662, "eficSkinner": 0.8971, "couroSkinner": 0.0435, "gwPac": 0.0039, "gwPxv": 0.0067, "rendMRN": 0.8861}];
+const WEEKS_AGG = [{"semana": "2026.02", "semana_num": 2, "mes": "2026.01", "from": "2026-01-05", "to": "2026-01-09", "label": "S2 (05/01 – 09/01)", "peixeVivo": 82697.34, "pacResfriado": 24927.0, "unidadePeixes": 70012.45, "biometria": 1.1875, "rendPotencial": 0.45296, "rendOperacional": null, "mortalidade": 0.003069, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.945013, "kgh": null, "unh": null, "unidadeHora": 63.3266, "kgHora": 74.2006, "eficSkinner": null, "couroSkinner": null, "gwPac": null, "gwPxv": null, "rendMRN": null}, {"semana": "2026.03", "semana_num": 3, "mes": "2026.01", "from": "2026-01-12", "to": "2026-01-16", "label": "S3 (12/01 – 16/01)", "peixeVivo": 84223.23, "pacResfriado": 25795.0, "unidadePeixes": 69177.4, "biometria": 1.2225, "rendPotencial": 0.454522, "rendOperacional": null, "mortalidade": 0.003779, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.957644, "kgh": null, "unh": null, "unidadeHora": 67.2409, "kgHora": 81.2271, "eficSkinner": null, "couroSkinner": null, "gwPac": null, "gwPxv": null, "rendMRN": null}, {"semana": "2026.04", "semana_num": 4, "mes": "2026.01", "from": "2026-01-19", "to": "2026-01-23", "label": "S4 (19/01 – 23/01)", "peixeVivo": 81655.61, "pacResfriado": 25203.0, "unidadePeixes": 71099.85, "biometria": 1.1512, "rendPotencial": 0.451758, "rendOperacional": null, "mortalidade": 0.00664, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.959594, "kgh": null, "unh": null, "unidadeHora": 71.2992, "kgHora": 81.1449, "eficSkinner": null, "couroSkinner": null, "gwPac": null, "gwPxv": null, "rendMRN": null}, {"semana": "2026.05", "semana_num": 5, "mes": "2026.01", "from": "2026-01-26", "to": "2026-01-31", "label": "S5 (26/01 – 31/01)", "peixeVivo": 84143.79, "pacResfriado": 25645.0, "unidadePeixes": 75135.46, "biometria": 1.1249, "rendPotencial": 0.452402, "rendOperacional": null, "mortalidade": 0.003202, "bemEstar": null, "eficPotencial": null, "eficResfriado": 0.942303, "kgh": null, "unh": null, "unidadeHora": 76.55, "kgHora": 85.1486, "eficSkinner": null, "couroSkinner": null, "gwPac": null, "gwPxv": null, "rendMRN": null}, {"semana": "2026.06", "semana_num": 6, "mes": "2026.02", "from": "2026-02-02", "to": "2026-02-06", "label": "S6 (02/02 – 06/02)", "peixeVivo": 80436.9, "pacResfriado": 24456.0, "unidadePeixes": 72955.8, "biometria": 1.1021, "rendPotencial": 0.451631, "rendOperacional": 0.441345, "mortalidade": 0.006816, "bemEstar": 0.990065, "eficPotencial": 0.977265, "eficResfriado": 0.937384, "kgh": null, "unh": null, "unidadeHora": 78.6577, "kgHora": 87.0593, "eficSkinner": 0.888504, "couroSkinner": 0.045928, "gwPac": 0.08382, "gwPxv": 0.025462, "rendMRN": 0.890716}, {"semana": "2026.07", "semana_num": 7, "mes": "2026.02", "from": "2026-02-09", "to": "2026-02-13", "label": "S7 (09/02 – 13/02)", "peixeVivo": 84146.81, "pacResfriado": 26013.0, "unidadePeixes": 79049.02, "biometria": 1.0679, "rendPotencial": 0.452088, "rendOperacional": 0.441066, "mortalidade": 0.004852, "bemEstar": 0.988398, "eficPotencial": 0.975726, "eficResfriado": 0.942522, "kgh": null, "unh": null, "unidadeHora": 74.0872, "kgHora": 78.3021, "eficSkinner": 0.888928, "couroSkinner": 0.045652, "gwPac": 0.070895, "gwPxv": 0.021919, "rendMRN": 0.894892}, {"semana": "2026.08", "semana_num": 8, "mes": "2026.02", "from": "2026-02-16", "to": "2026-02-20", "label": "S8 (16/02 – 20/02)", "peixeVivo": 84071.39, "pacResfriado": 24814.0, "unidadePeixes": 82363.18, "biometria": 1.0241, "rendPotencial": 0.45499, "rendOperacional": 0.443735, "mortalidade": 0.00758, "bemEstar": 0.980641, "eficPotencial": 0.975296, "eficResfriado": 0.909689, "kgh": null, "unh": null, "unidadeHora": 72.6464, "kgHora": 73.4892, "eficSkinner": 0.885085, "couroSkinner": 0.047586, "gwPac": 0.094629, "gwPxv": 0.027914, "rendMRN": 0.889752}, {"semana": "2026.09", "semana_num": 9, "mes": "2026.02", "from": "2026-02-23", "to": "2026-02-27", "label": "S9 (23/02 – 27/02)", "peixeVivo": 82673.2, "pacResfriado": 24995.0, "unidadePeixes": 77740.17, "biometria": 1.0655, "rendPotencial": 0.452187, "rendOperacional": 0.44025, "mortalidade": 0.003144, "bemEstar": 0.975899, "eficPotencial": 0.973606, "eficResfriado": 0.939651, "kgh": null, "unh": null, "unidadeHora": 68.6212, "kgHora": 72.4583, "eficSkinner": 0.890067, "couroSkinner": 0.045218, "gwPac": 0.056671, "gwPxv": 0.017147, "rendMRN": 0.892454}, {"semana": "2026.10", "semana_num": 10, "mes": "2026.03", "from": "2026-03-02", "to": "2026-03-06", "label": "S10 (02/03 – 06/03)", "peixeVivo": 71019.61, "pacResfriado": 21829.0, "unidadePeixes": 73765.55, "biometria": 0.9659, "rendPotencial": 0.448431, "rendOperacional": 0.438426, "mortalidade": null, "bemEstar": 0.972285, "eficPotencial": 0.97773, "eficResfriado": 0.941645, "kgh": null, "unh": null, "unidadeHora": 74.7471, "kgHora": 71.9637, "eficSkinner": 0.895705, "couroSkinner": 0.042734, "gwPac": 0.033895, "gwPxv": 0.010402, "rendMRN": 0.89154}, {"semana": "2026.11", "semana_num": 11, "mes": "2026.03", "from": "2026-03-09", "to": "2026-03-13", "label": "S11 (09/03 – 13/03)", "peixeVivo": 73421.82, "pacResfriado": 22266.0, "unidadePeixes": 75469.22, "biometria": 0.977, "rendPotencial": 0.449989, "rendOperacional": 0.440612, "mortalidade": null, "bemEstar": 0.955355, "eficPotencial": 0.979228, "eficResfriado": 0.929895, "kgh": null, "unh": null, "unidadeHora": 76.7585, "kgHora": 74.6133, "eficSkinner": 0.894039, "couroSkinner": 0.043647, "gwPac": 0.034259, "gwPxv": 0.01042, "rendMRN": 0.892303}, {"semana": "2026.12", "semana_num": 12, "mes": "2026.03", "from": "2026-03-16", "to": "2026-03-20", "label": "S12 (16/03 – 20/03)", "peixeVivo": 70762.19, "pacResfriado": 21672.0, "unidadePeixes": 72401.29, "biometria": 0.9793, "rendPotencial": 0.448245, "rendOperacional": 0.438949, "mortalidade": 0.004776, "bemEstar": 0.951393, "eficPotencial": 0.979264, "eficResfriado": 0.937026, "kgh": null, "unh": null, "unidadeHora": 77.8873, "kgHora": 75.6191, "eficSkinner": 0.894954, "couroSkinner": 0.043, "gwPac": 0.024203, "gwPxv": 0.007385, "rendMRN": 0.894472}, {"semana": "2026.13", "semana_num": 13, "mes": "2026.03", "from": "2026-03-23", "to": "2026-03-28", "label": "S13 (23/03 – 28/03)", "peixeVivo": 88208.14, "pacResfriado": 27391.0, "unidadePeixes": 90990.13, "biometria": 0.9726, "rendPotencial": 0.447182, "rendOperacional": 0.436966, "mortalidade": 0.006601, "bemEstar": 0.955623, "eficPotencial": 0.977105, "eficResfriado": 0.950426, "kgh": null, "unh": null, "unidadeHora": 75.1166, "kgHora": 72.3232, "eficSkinner": 0.890927, "couroSkinner": 0.044479, "gwPac": 0.014243, "gwPxv": 0.004384, "rendMRN": 0.89033}, {"semana": "2026.14", "semana_num": 14, "mes": "2026.03", "from": "2026-03-29", "to": "2026-04-02", "label": "S14 (29/03 – 02/04)", "peixeVivo": 74396.68, "pacResfriado": 22442.0, "unidadePeixes": 73769.0, "biometria": 1.0138, "rendPotencial": 0.446902, "rendOperacional": 0.43798, "mortalidade": 0.002161, "bemEstar": 0.96424, "eficPotencial": 0.980111, "eficResfriado": 0.932918, "kgh": null, "unh": null, "unidadeHora": 77.9392, "kgHora": 78.5246, "eficSkinner": 0.891555, "couroSkinner": 0.044311, "gwPac": 0.021941, "gwPxv": 0.00674, "rendMRN": 0.892213}, {"semana": "2026.15", "semana_num": 15, "mes": "2026.04", "from": "2026-04-06", "to": "2026-04-10", "label": "S15 (06/04 – 10/04)", "peixeVivo": 57951.73, "pacResfriado": 18087.79, "unidadePeixes": 62441.6, "biometria": 0.9318, "rendPotencial": 0.448829, "rendOperacional": 0.438188, "mortalidade": 0.014198, "bemEstar": 0.954568, "eficPotencial": 0.976183, "eficResfriado": 0.946874, "kgh": null, "unh": null, "unidadeHora": 72.4477, "kgHora": 67.1002, "eficSkinner": 0.894211, "couroSkinner": 0.043319, "gwPac": 0.006273, "gwPxv": 0.001945, "rendMRN": 0.88809}, {"semana": "2026.16", "semana_num": 16, "mes": "2026.04", "from": "2026-04-13", "to": "2026-04-17", "label": "S16 (13/04 – 17/04)", "peixeVivo": 60146.81, "pacResfriado": 18469.0, "unidadePeixes": 65786.93, "biometria": 0.9138, "rendPotencial": 0.446665, "rendOperacional": 0.437233, "mortalidade": 0.013546, "bemEstar": 0.920603, "eficPotencial": 0.978955, "eficResfriado": 0.932529, "kgh": null, "unh": null, "unidadeHora": 78.6708, "kgHora": 68.6903, "eficSkinner": 0.896505, "couroSkinner": 0.042197, "gwPac": 0.009397, "gwPxv": 0.002893, "rendMRN": 0.887184}, {"semana": "2026.17", "semana_num": 17, "mes": "2026.04", "from": "2026-04-20", "to": "2026-04-24", "label": "S17 (20/04 – 24/04)", "peixeVivo": 52701.86, "pacResfriado": 15947.0, "unidadePeixes": 56052.67, "biometria": 0.9428, "rendPotencial": 0.445761, "rendOperacional": 0.436637, "mortalidade": 0.0046, "bemEstar": 0.938179, "eficPotencial": 0.979485, "eficResfriado": 0.935476, "kgh": null, "unh": null, "unidadeHora": 79.5594, "kgHora": 69.2434, "eficSkinner": 0.898079, "couroSkinner": 0.041437, "gwPac": 0.010098, "gwPxv": 0.003054, "rendMRN": 0.886377}, {"semana": "2026.18", "semana_num": 18, "mes": "2026.04", "from": "2026-04-27", "to": "2026-04-30", "label": "S18 (27/04 – 30/04)", "peixeVivo": 51232.78, "pacResfriado": 15356.0, "unidadePeixes": 54292.72, "biometria": 0.9452, "rendPotencial": 0.447028, "rendOperacional": 0.436323, "mortalidade": null, "bemEstar": 0.936801, "eficPotencial": 0.975943, "eficResfriado": 0.923109, "kgh": null, "unh": null, "unidadeHora": 85.8805, "kgHora": 75.3614, "eficSkinner": 0.899538, "couroSkinner": 0.040838, "gwPac": 0.012449, "gwPxv": 0.003718, "rendMRN": 0.883728}, {"semana": "2026.19", "semana_num": 19, "mes": "2026.05", "from": "2026-05-04", "to": "2026-05-08", "label": "S19 (04/05 – 08/05)", "peixeVivo": 64475.62, "pacResfriado": 19560.0, "unidadePeixes": 70337.32, "biometria": 0.9215, "rendPotencial": 0.455651, "rendOperacional": 0.44163, "mortalidade": 0.00847, "bemEstar": 0.93787, "eficPotencial": 0.969155, "eficResfriado": 0.925367, "kgh": null, "unh": null, "unidadeHora": 83.8026, "kgHora": 72.1526, "eficSkinner": 0.89907, "couroSkinner": 0.04153, "gwPac": 0.012802, "gwPxv": 0.003954, "rendMRN": 0.877054}, {"semana": "2026.20", "semana_num": 20, "mes": "2026.05", "from": "2026-05-11", "to": "2026-05-15", "label": "S20 (11/05 – 15/05)", "peixeVivo": 62611.36, "pacResfriado": 19208.0, "unidadePeixes": 63936.58, "biometria": 0.9787, "rendPotencial": 0.462334, "rendOperacional": 0.451447, "mortalidade": 0.0143, "bemEstar": 0.960861, "eficPotencial": 0.976479, "eficResfriado": 0.927087, "kgh": 21.0967, "unh": 20.727, "unidadeHora": 88.1193, "kgHora": 79.457, "eficSkinner": 0.898119, "couroSkinner": 0.042964, "gwPac": 0.021464, "gwPxv": 0.006288, "rendMRN": 0.863009}, {"semana": "2026.21", "semana_num": 21, "mes": "2026.05", "from": "2026-05-18", "to": "2026-05-22", "label": "S21 (18/05 – 22/05)", "peixeVivo": 58808.45, "pacResfriado": 17396.0, "unidadePeixes": 59474.01, "biometria": 0.9978, "rendPotencial": 0.468544, "rendOperacional": 0.45832, "mortalidade": null, "bemEstar": 0.940291, "eficPotencial": 0.978213, "eficResfriado": 0.91613, "kgh": 23.2346, "unh": 23.3803, "unidadeHora": 87.4192, "kgHora": 81.1188, "eficSkinner": 0.892872, "couroSkinner": 0.04586, "gwPac": 0.006576, "gwPxv": 0.007787, "rendMRN": 0.855048}, {"semana": "2026.22", "semana_num": 22, "mes": "2026.05", "from": "2026-05-25", "to": "2026-05-29", "label": "S22 (25/05 – 29/05)", "peixeVivo": 59907.49, "pacResfriado": 18086.0, "unidadePeixes": 60115.97, "biometria": 1.0245, "rendPotencial": 0.466729, "rendOperacional": 0.458141, "mortalidade": null, "bemEstar": 0.96251, "eficPotencial": 0.981569, "eficResfriado": 0.939221, "kgh": 22.5366, "unh": 22.4721, "unidadeHora": 86.6401, "kgHora": 82.4521, "eficSkinner": 0.893187, "couroSkinner": 0.045702, "gwPac": 0.015026, "gwPxv": 0.006572, "rendMRN": 0.851313}, {"semana": "2026.23", "semana_num": 23, "mes": "2026.06", "from": "2026-06-01", "to": "2026-06-05", "label": "S23 (01/06 – 05/06)", "peixeVivo": 61380.59, "pacResfriado": 19242.0, "unidadePeixes": 54359.04, "biometria": 1.1394, "rendPotencial": 0.462913, "rendOperacional": 0.455912, "mortalidade": null, "bemEstar": 0.978227, "eficPotencial": 0.984775, "eficResfriado": 0.954743, "kgh": 22.9132, "unh": 20.189, "unidadeHora": 81.2884, "kgHora": 80.9786, "eficSkinner": 0.900593, "couroSkinner": 0.042259, "gwPac": 0.008378, "gwPxv": 0.007135, "rendMRN": 0.877681}];
+const MONTHS_MAP = {"2026.01":"Janeiro","2026.02":"Fevereiro","2026.03":"Março","2026.04":"Abril","2026.05":"Maio","2026.06":"Junho"};
+const MONTH_ORDER = ["2026.01","2026.02","2026.03","2026.04","2026.05","2026.06"];
+
+let state = { from:'2026-06-01', to:'2026-06-05', tab:'dias' };
+let charts = {};
+
+function switchTab(tab, btn) {
+  state.tab = tab;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.fsec').forEach(s=>s.classList.remove('show'));
+  document.getElementById('sec-'+tab).classList.add('show');
+  if(tab==='semanas') syncWeekCbs();
+  if(tab==='meses')   syncMonthCbs();
+  if(tab==='dias') { document.getElementById('dateFrom').value=state.from; document.getElementById('dateTo').value=state.to; }
+  applyFilters();
+}
+
+function applyPreset(btn) {
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const p = btn.dataset.preset;
+  const ALL = DAILY.map(d=>d.date).sort();
+  const last = ALL[ALL.length-1];
+  if(p==='hoje')   setRange(last,last);
+  else if(p==='semana'){ const w=WEEKS_AGG[WEEKS_AGG.length-1]; setRange(w.from,w.to); }
+  else if(p==='mes'){    const m=DAILY.filter(d=>d.mes===MONTH_ORDER[MONTH_ORDER.length-1]); setRange(m[0].date,m[m.length-1].date); }
+  else if(p==='tudo')   setRange(ALL[0],last);
+  applyFilters();
+}
+
+function setRange(f,t){ document.getElementById('dateFrom').value=f; document.getElementById('dateTo').value=t; syncWeekCbs(); syncMonthCbs(); }
+
+function onDateChange(){ syncWeekCbs(); syncMonthCbs(); }
+
+function buildWeekList(){
+  const el=document.getElementById('weekList');
+  let lastMes=null;
+  WEEKS_AGG.forEach(w=>{
+    if(w.mes!==lastMes){
+      const h=document.createElement('div'); h.className='mes-header'; h.textContent=MONTHS_MAP[w.mes]+'/2026';
+      el.appendChild(h); lastMes=w.mes;
+    }
+    const row=document.createElement('div'); row.className='cb-row';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.id='wcb_'+w.semana; cb.value=w.semana;
+    cb.addEventListener('change',()=>{
+      const sel=WEEKS_AGG.filter(x=>document.getElementById('wcb_'+x.semana)?.checked);
+      if(!sel.length) return;
+      const f=sel.map(x=>x.from).sort()[0], t=sel.map(x=>x.to).sort().pop();
+      document.getElementById('dateFrom').value=f; document.getElementById('dateTo').value=t;
+      syncMonthCbs();
+    });
+    const lbl=document.createElement('label'); lbl.htmlFor='wcb_'+w.semana; lbl.textContent=w.label;
+    row.appendChild(cb); row.appendChild(lbl); el.appendChild(row);
+  });
+}
+function syncWeekCbs(){
+  const f=document.getElementById('dateFrom').value, t=document.getElementById('dateTo').value;
+  WEEKS_AGG.forEach(w=>{ const cb=document.getElementById('wcb_'+w.semana); if(cb) cb.checked=(w.from>=f&&w.to<=t)||(w.from<=t&&w.to>=f); });
+}
+function selAll(type,val){
+  if(type==='week'){
+    WEEKS_AGG.forEach(w=>{ const cb=document.getElementById('wcb_'+w.semana); if(cb) cb.checked=val; });
+    if(val){ const f=WEEKS_AGG[0].from, t=WEEKS_AGG[WEEKS_AGG.length-1].to; document.getElementById('dateFrom').value=f; document.getElementById('dateTo').value=t; syncMonthCbs(); }
+  } else {
+    MONTH_ORDER.forEach(m=>{ const cb=document.getElementById('mcb_'+m); if(cb) cb.checked=val; });
+    if(val){ const rows=DAILY.map(d=>d.date).sort(); document.getElementById('dateFrom').value=rows[0]; document.getElementById('dateTo').value=rows[rows.length-1]; syncWeekCbs(); }
+  }
+}
+
+function buildMonthList(){
+  const el=document.getElementById('monthList');
+  MONTH_ORDER.forEach(m=>{
+    const row=document.createElement('div'); row.className='cb-row';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.id='mcb_'+m; cb.value=m;
+    cb.addEventListener('change',()=>{
+      const sel=MONTH_ORDER.filter(x=>document.getElementById('mcb_'+x)?.checked);
+      if(!sel.length) return;
+      const rows=DAILY.filter(d=>sel.includes(d.mes)).map(d=>d.date).sort();
+      document.getElementById('dateFrom').value=rows[0]; document.getElementById('dateTo').value=rows[rows.length-1];
+      syncWeekCbs();
+    });
+    const lbl=document.createElement('label'); lbl.htmlFor='mcb_'+m; lbl.textContent=MONTHS_MAP[m]+'/2026';
+    row.appendChild(cb); row.appendChild(lbl); el.appendChild(row);
+  });
+}
+function syncMonthCbs(){
+  const f=document.getElementById('dateFrom').value, t=document.getElementById('dateTo').value;
+  MONTH_ORDER.forEach(m=>{ const cb=document.getElementById('mcb_'+m); if(cb) cb.checked=DAILY.some(d=>d.mes===m&&d.date>=f&&d.date<=t); });
+}
+
+function applyFilters(){
+  let f=document.getElementById('dateFrom').value, t=document.getElementById('dateTo').value;
+  if(f>t){ t=f; document.getElementById('dateTo').value=t; }
+  state.from=f; state.to=t;
+  render();
+}
+
+function getGranularity(){
+  if(state.tab==='semanas') return 'semanas';
+  if(state.tab==='meses')   return 'meses';
+  return 'dias';
+}
+
+function recalcWeeks(){
+  const weeks={};
+  DAILY.forEach(d=>{
+    if(!weeks[d.semana]) weeks[d.semana]={rows:[],from:d.date,to:d.date,mes:d.mes,semana_num:d.semana_num};
+    weeks[d.semana].rows.push(d);
+    if(d.date<weeks[d.semana].from) weeks[d.semana].from=d.date;
+    if(d.date>weeks[d.semana].to)   weeks[d.semana].to=d.date;
+  });
+  WEEKS_AGG.length=0;
+  for(const s in weeks){
+    const w=weeks[s], agg=aggregate(w.rows);
+    if(agg){
+      agg.semana=s; agg.semana_num=w.semana_num;
+      agg.mes=w.mes; agg.from=w.from; agg.to=w.to;
+      const fb=w.from.split('-').reverse().slice(0,2).join('/');
+      const tb=w.to.split('-').reverse().slice(0,2).join('/');
+      agg.label=`S${w.semana_num} (${fb} – ${tb})`;
+      WEEKS_AGG.push(agg);
+    }
+  }
+  WEEKS_AGG.sort((a,b)=>a.semana.localeCompare(b.semana));
+}
+
+function getFilteredDaily(){ return DAILY.filter(d=>d.date>=state.from&&d.date<=state.to); }
+function getFilteredWeeks(){ return WEEKS_AGG.filter(w=>w.from<=state.to&&w.to>=state.from); }
+
+function aggregate(rows){
+  if(!rows.length) return null;
+  const sumKg=f=>rows.reduce((s,r)=>(r[f]||0)+s,0);
+  const wavg=f=>{ const v=rows.filter(r=>r[f]!=null&&(r.peixeVivo||0)>0&&r[f]>0); if(!v.length) return null; const tw=v.reduce((s,r)=>s+r.peixeVivo,0); return v.reduce((s,r)=>s+r[f]*r.peixeVivo,0)/tw; };
+  const savg=f=>{ const v=rows.filter(r=>r[f]!=null&&r[f]>0); return v.length?v.reduce((s,r)=>s+r[f],0)/v.length:null; };
+  const mortKgSum=rows.reduce((s,r)=>s+((r.mortalidade||0)*(r.peixeVivo||0)),0);
+  return {peixeVivo:sumKg('peixeVivo'),pacResfriado:sumKg('pacResfriado'),unidadePeixes:sumKg('unidadePeixes'),biometria:savg('biometria'),rendPotencial:wavg('rendPotencial'),rendOperacional:wavg('rendOperacional'),mortalidade:wavg('mortalidade'),bemEstar:wavg('bemEstar'),eficPotencial:wavg('eficPotencial'),eficResfriado:wavg('eficResfriado'),kgh:savg('kgh'),unh:savg('unh'),kgHora:savg('kgHora'),unidadeHora:savg('unidadeHora'),eficSkinner:wavg('eficSkinner'),couroSkinner:wavg('couroSkinner'),gwPac:wavg('gwPac'),gwPxv:wavg('gwPxv'),rendMRN:savg('rendMRN'),mortKg:mortKgSum>0?mortKgSum:null};
+}
+function getPrevDaily(){ const d1=new Date(state.from),d2=new Date(state.to),days=(d2-d1)/86400000+1; const p2=new Date(d1); p2.setDate(p2.getDate()-1); const p1=new Date(p2); p1.setDate(p1.getDate()-days+1); return DAILY.filter(d=>d.date>=p1.toISOString().slice(0,10)&&d.date<=p2.toISOString().slice(0,10)); }
+function getPrevWeeks(){ const ws=getFilteredWeeks(); if(!ws.length) return []; const n=ws.length; const allIdx=ws.map(w=>WEEKS_AGG.indexOf(w)); const minIdx=Math.min(...allIdx); const prevStart=minIdx-n; if(prevStart<0) return []; return WEEKS_AGG.slice(Math.max(0,prevStart),minIdx); }
+
+const fmt=(v,d=2)=>v==null?'–':v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtKg=v=>!v?'–':Math.round(v).toLocaleString('pt-BR');
+const fmtD=s=>{const[y,m,d]=s.split('-');return d+'/'+m+'/'+y.slice(2)};
+function renderDelta(id,cur,prev,isPct=false,inv=false){
+  const el=document.getElementById(id); if(!el||cur==null||prev==null||prev===0){if(el)el.innerHTML='–';return;}
+  const d=isPct?(cur-prev)*100:((cur-prev)/Math.abs(prev))*100; const up=inv?d<0:d>0;
+  el.innerHTML=(d>0?'▲':'▼')+' '+Math.abs(d).toFixed(2).replace('.',',')+(isPct?' p.p.':'%')+' vs ant.';
+  el.className='kpi-delta '+(up?'up':'down');
+}
+
+function render(){
+  const gran=getGranularity();
+  const dailyRows=getFilteredDaily();
+  if(!dailyRows.length){document.getElementById('periodLabel').textContent='Sem dados no período';return;}
+  const cur=aggregate(dailyRows);
+
+  const prevRows=getPrevDaily();
+  const cmp=aggregate(prevRows);
+
+  // Agrega por mês os dias filtrados
+  function getMonthPoints(){
+    const map={};
+    dailyRows.forEach(d=>{
+      if(!map[d.mes]) map[d.mes]={rows:[],mes:d.mes};
+      map[d.mes].rows.push(d);
+    });
+    return MONTH_ORDER.filter(m=>map[m]).map(m=>{
+      const agg=aggregate(map[m].rows);
+      agg.mes=m; agg.label=MONTHS_MAP[m];
+      return agg;
+    });
+  }
+
+  let points, labels;
+  if(gran==='semanas'){
+    points=getFilteredWeeks();
+    labels=points.map(w=>'S'+w.semana_num);
+  } else if(gran==='meses'){
+    points=getMonthPoints();
+    labels=points.map(p=>MONTHS_MAP[p.mes]?.slice(0,3)||p.mes);
+  } else {
+    points=dailyRows;
+    labels=dailyRows.map(r=>fmtD(r.date));
+  }
+
+  let lbl=state.from===state.to?fmtD(state.from):fmtD(state.from)+' → '+fmtD(state.to);
+  document.getElementById('periodLabel').textContent=lbl;
+  document.getElementById('granBadge').textContent=
+    gran==='semanas'?'📆 por semana':gran==='meses'?'🗓 por mês':'📅 por dia';
+
+  const sfx=gran==='semanas'?' – Semanal':gran==='meses'?' – Mensal':' – Diário';
+  document.getElementById('titlePeixe').textContent='Peixe Vivo (kg)'+sfx;
+  document.getElementById('titlePac').textContent='PAC Resfriado (kg)'+sfx;
+  document.getElementById('titleRend').textContent='Rendimentos (%)'+sfx;
+  document.getElementById('titleUnh').textContent='KGH & UNH'+sfx;
+  document.getElementById('titleProd').textContent='Unidade/Hora × KG/Hora'+sfx;
+
+  renderKPIs(cur,cmp);
+  renderCharts(points,labels,gran);
+  renderGaugeGeneric('cGaugeBg2','cGauge2','gaugeVal2','gaugeBadge2',cur.kgh,0,50,30,[0,10,20,30,40,50],'kg/hh');
+  renderGaugeGeneric('cGaugeBg3','cGauge3','gaugeVal3','gaugeBadge3',cur.unh,0,40,25,[0,10,20,25,30,40],'und/hh');
+  renderBars(cur);
+  renderFlow(cur);
+  renderQual(cur);
+  renderTable(dailyRows,gran,points);
+  renderAnalise(cur,cmp);
+}
+
+function renderKPIs(c,p){
+  document.getElementById('kv-peixe').textContent=fmtKg(c.peixeVivo); renderDelta('kd-peixe',c.peixeVivo,p?.peixeVivo);
+  document.getElementById('kv-pac').textContent=fmtKg(c.pacResfriado); renderDelta('kd-pac',c.pacResfriado,p?.pacResfriado);
+  document.getElementById('kv-unid').textContent=c.unidadePeixes?Math.round(c.unidadePeixes).toLocaleString('pt-BR'):'–';
+  renderDelta('kd-unid',c.unidadePeixes,p?.unidadePeixes,false,false);
+  document.getElementById('kv-bio').textContent=c.biometria?fmt(c.biometria,3)+' kg':'–';
+  renderDelta('kd-bio',c.biometria,p?.biometria,false,false);
+  document.getElementById('kv-rp').textContent=c.rendPotencial?fmt(c.rendPotencial*100)+'%':'–'; renderDelta('kd-rp',c.rendPotencial,p?.rendPotencial,true);
+  document.getElementById('kv-ro').textContent=c.rendOperacional?fmt(c.rendOperacional*100)+'%':'–'; renderDelta('kd-ro',c.rendOperacional,p?.rendOperacional,true);
+  const efp=c.eficPotencial?c.eficPotencial*.704:null, pefp=p?.eficPotencial?p.eficPotencial*.704:null;
+  document.getElementById('kv-efp').textContent=efp?fmt(efp*100)+'%':'–'; renderDelta('kd-efp',efp,pefp,true);
+  document.getElementById('kv-efr').textContent=c.eficResfriado?fmt(c.eficResfriado*100)+'%':'–'; renderDelta('kd-efr',c.eficResfriado,p?.eficResfriado,true);
+  document.getElementById('kv-mort').textContent=c.mortalidade!=null?fmt(c.mortalidade*100,3)+'%':'–'; renderDelta('kd-mort',c.mortalidade,p?.mortalidade,true,true);
+  const mortKg=c.mortKg??null;
+  const pMortKg=p?.mortKg??null;
+  document.getElementById('kv-mort-kg').textContent=mortKg!=null?fmtKg(mortKg)+' kg':'–'; renderDelta('kd-mort-kg',mortKg,pMortKg,false,true);
+  document.getElementById('kv-bea').textContent=c.bemEstar?fmt(c.bemEstar*100)+'%':'–'; renderDelta('kd-bea',c.bemEstar,p?.bemEstar,true);
+}
+
+const cO={responsive:true,maintainAspectRatio:false,animation:{duration:350},
+  plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,titleFont:{size:10},bodyFont:{size:10}}},
+  scales:{x:{ticks:{color:'#8ca0bb',font:{size:8},maxRotation:45},grid:{color:'rgba(255,255,255,.05)'}},
+          y:{ticks:{color:'#8ca0bb',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}}}};
+
+function uoc(key,id,cfg){
+  if(charts[key]){
+    charts[key].data.labels=cfg.data.labels;
+    cfg.data.datasets.forEach((ds,i)=>{ if(charts[key].data.datasets[i]) charts[key].data.datasets[i].data=ds.data; });
+    charts[key].update();
+  } else { charts[key]=new Chart(document.getElementById(id),cfg); }
+}
+
+function renderCharts(pts,labels,gran){
+  const isSem=gran==='semanas'||gran==='meses';
+  const btype=isSem?'bar':'line';
+
+  const dp=pts.map(r=>r.peixeVivo?Math.round(r.peixeVivo):null);
+  uoc('peixe','cPeixe',{type:'line',data:{labels,datasets:[{label:'Peixe Vivo',data:dp,borderColor:'#1d8cf8',backgroundColor:'rgba(29,140,248,.15)',borderWidth:2,pointRadius:isSem?5:3,pointBackgroundColor:'#1d8cf8',tension:.4,fill:true,spanGaps:true}]},
+    options:{...cO,scales:{...cO.scales,y:{...cO.scales.y,ticks:{color:'#8ca0bb',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'}}}}});
+
+  const dc=pts.map(r=>r.pacResfriado?Math.round(r.pacResfriado):null);
+  const metaPac=pts.map(()=>isSem?19000:3800);
+  uoc('pac','cPac',{type:btype,data:{labels,datasets:[
+    {label:'PAC Resf.',data:dc,backgroundColor:'rgba(29,140,248,.8)',borderColor:'#1d8cf8',borderRadius:isSem?4:0,borderWidth:isSem?0:2,pointRadius:isSem?0:3,fill:isSem?true:false,tension:.4,spanGaps:true},
+    {label:isSem?'Meta Sem.':'Meta Dia',data:metaPac,type:'line',borderColor:'#f6ad55',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false}
+  ]},options:{...cO,plugins:{...cO.plugins,legend:{display:true,position:'bottom',labels:{color:'#8ca0bb',font:{size:9},boxWidth:10,padding:5}}},
+    scales:{...cO.scales,y:{...cO.scales.y,ticks:{color:'#8ca0bb',font:{size:9},callback:v=>(v/1000).toFixed(0)+'k'}}}}});
+
+  const rp=pts.map(r=>r.rendPotencial?+(r.rendPotencial*100).toFixed(2):null);
+  const ro=pts.map(r=>r.rendOperacional?+(r.rendOperacional*100).toFixed(2):null);
+  const rpac=pts.map(r=>(r.pacResfriado&&r.peixeVivo)?+((r.pacResfriado/r.peixeVivo)*100).toFixed(2):null);
+  uoc('rend','cRend',{type:'line',data:{labels,datasets:[
+    {label:'Rend. Pot.',data:rp,borderColor:'#1d8cf8',pointBackgroundColor:'#1d8cf8',borderWidth:2,pointRadius:isSem?5:3,tension:.3,spanGaps:true},
+    {label:'Rend. Op.',data:ro,borderColor:'#28c76f',pointBackgroundColor:'#28c76f',borderWidth:2,pointRadius:isSem?5:3,tension:.3,spanGaps:true},
+    {label:'Rend. PAC',data:rpac,borderColor:'#f6ad55',pointBackgroundColor:'#f6ad55',borderWidth:2,pointRadius:isSem?5:3,tension:.3,spanGaps:true}
+  ]},options:{...cO,plugins:{...cO.plugins,legend:{display:true,position:'top',labels:{color:'#8ca0bb',font:{size:9},boxWidth:10,padding:5}}},
+    scales:{...cO.scales,y:{...cO.scales.y,min:15,max:65,ticks:{color:'#8ca0bb',font:{size:9},callback:v=>v+'%'}}}}});
+
+  const dkgh=pts.map(r=>r.kgh?+r.kgh.toFixed(1):null);
+  const dunh=pts.map(r=>r.unh?+r.unh.toFixed(1):null);
+  uoc('unh','cUnh',{type:'line',data:{labels,datasets:[
+    {label:'KGH (kg/hh)',data:dkgh,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.15)',pointBackgroundColor:'#a78bfa',borderWidth:2,pointRadius:isSem?5:3,tension:.3,fill:false,spanGaps:true},
+    {label:'UNH (un/hh)',data:dunh,borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.15)',pointBackgroundColor:'#fb923c',borderWidth:2,pointRadius:isSem?5:3,tension:.3,fill:false,spanGaps:true}
+  ]},options:{...cO,plugins:{...cO.plugins,legend:{display:true,position:'top',labels:{color:'#8ca0bb',font:{size:9},boxWidth:10,padding:5}}},
+    scales:{...cO.scales,y:{...cO.scales.y,min:10,max:35,ticks:{color:'#8ca0bb',font:{size:9},callback:v=>v}}}}});
+
+  const dUndHr=pts.map(r=>r.unidadeHora?+r.unidadeHora.toFixed(1):null);
+  const dKgHr =pts.map(r=>r.kgHora?+r.kgHora.toFixed(1):null);
+  uoc('prod','cProd',{type:'line',data:{labels,datasets:[
+    {label:'Unidade/Hora',data:dUndHr,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.12)',pointBackgroundColor:'#38bdf8',borderWidth:2,pointRadius:isSem?5:3,tension:.3,fill:true,spanGaps:true,yAxisID:'yU'},
+    {label:'KG/Hora',     data:dKgHr, borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.12)',pointBackgroundColor:'#4ade80',borderWidth:2,pointRadius:isSem?5:3,tension:.3,fill:true,spanGaps:true,yAxisID:'yK'},
+  ]},options:{
+    responsive:true,maintainAspectRatio:false,animation:{duration:350},
+    plugins:{legend:{display:true,position:'top',labels:{color:'#8ca0bb',font:{size:9},boxWidth:10,padding:5}},
+             tooltip:{mode:'index',intersect:false,titleFont:{size:10},bodyFont:{size:10}}},
+    scales:{
+      x:{ticks:{color:'#8ca0bb',font:{size:8},maxRotation:45},grid:{color:'rgba(255,255,255,.05)'}},
+      yU:{position:'left', title:{display:true,text:'Un/h',color:'#38bdf8',font:{size:8}},
+          ticks:{color:'#38bdf8',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'},
+          suggestedMin:40,suggestedMax:110},
+      yK:{position:'right',title:{display:true,text:'Kg/h',color:'#4ade80',font:{size:8}},
+          ticks:{color:'#4ade80',font:{size:9}},grid:{display:false},
+          suggestedMin:40,suggestedMax:110},
+    }
+  }});
+}
+
+function drawGaugeBg(){
+  const cv=document.getElementById('cGaugeBg');
+  if(!cv||cv.dataset.drawn) return;
+  cv.dataset.drawn='1';
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const scale=W/180;
+  const cx=W/2, cy=H-8, R=Math.round(64*scale), lw=Math.round(16*scale);
+  const lr=R+Math.round(14*scale);
+  const startA=Math.PI, endA=2*Math.PI;
+
+  const toAngle=v=>startA+((v-10)/20)*Math.PI;
+
+  ctx.beginPath(); ctx.arc(cx,cy,R,startA,endA);
+  ctx.lineWidth=lw; ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineCap='butt'; ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(cx,cy,R,toAngle(22),toAngle(25));
+  ctx.lineWidth=lw+4; ctx.strokeStyle='#22c55e'; ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(cx,cy,R,toAngle(10),toAngle(22));
+  ctx.lineWidth=lw; ctx.strokeStyle='#86efac'; ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(cx,cy,R,toAngle(25),toAngle(30));
+  ctx.lineWidth=lw; ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.stroke();
+
+  const ticks=[10,15,20,22,25,30];
+  ticks.forEach(v=>{
+    const a=toAngle(v);
+    const isMeta=(v===22||v===25);
+    const len=isMeta?Math.round(10*scale):Math.round(7*scale);
+    const r1=R-lw/2-2, r2=r1-len;
+    const cos=Math.cos(a), sin=Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(cx+cos*r1, cy+sin*r1);
+    ctx.lineTo(cx+cos*r2, cy+sin*r2);
+    ctx.strokeStyle=isMeta?'#fff':'rgba(255,255,255,.5)';
+    ctx.lineWidth=isMeta?2:1; ctx.stroke();
+
+    ctx.fillStyle=isMeta?'#fff':'rgba(255,255,255,.6)';
+    ctx.font=(isMeta?'bold ':'')+(Math.round(8*scale))+'px Inter';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(v), cx+Math.cos(a)*lr, cy+Math.sin(a)*lr);
+  });
+
+  ctx.beginPath(); ctx.arc(cx,cy,R+lw/2+1,startA,endA);
+  ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R-lw/2-1,startA,endA);
+  ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.stroke();
+}
+
+function drawGaugeBgGeneric(bgId, min, max, meta, ticks){
+  const cv=document.getElementById(bgId);
+  if(!cv||cv.dataset.drawn) return;
+  cv.dataset.drawn='1';
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  const scale=W/180;
+  const cx=W/2, cy=H-8, R=Math.round(64*scale), lw=Math.round(16*scale);
+  const lr=R+Math.round(14*scale);
+  const startA=Math.PI, endA=2*Math.PI;
+  const toAngle=v=>startA+((v-min)/(max-min))*Math.PI;
+
+  ctx.beginPath(); ctx.arc(cx,cy,R,startA,endA);
+  ctx.lineWidth=lw; ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineCap='butt'; ctx.stroke();
+
+  // zona abaixo da meta (vermelho)
+  ctx.beginPath(); ctx.arc(cx,cy,R,toAngle(min),toAngle(meta));
+  ctx.lineWidth=lw; ctx.strokeStyle='#ef4444'; ctx.stroke();
+
+  // zona meta e acima (verde)
+  ctx.beginPath(); ctx.arc(cx,cy,R,toAngle(meta),toAngle(max));
+  ctx.lineWidth=lw+4; ctx.strokeStyle='#22c55e'; ctx.stroke();
+
+  ticks.forEach(v=>{
+    const a=toAngle(v);
+    const isMeta=v===meta;
+    const len=isMeta?Math.round(10*scale):Math.round(7*scale);
+    const r1=R-lw/2-2, r2=r1-len;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*r1, cy+Math.sin(a)*r1);
+    ctx.lineTo(cx+Math.cos(a)*r2, cy+Math.sin(a)*r2);
+    ctx.strokeStyle=isMeta?'#fff':'rgba(255,255,255,.5)';
+    ctx.lineWidth=isMeta?2:1; ctx.stroke();
+    ctx.fillStyle=isMeta?'#fff':'rgba(255,255,255,.6)';
+    ctx.font=(isMeta?'bold ':'')+Math.round(8*scale)+'px Inter';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(v), cx+Math.cos(a)*lr, cy+Math.sin(a)*lr);
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,R+lw/2+1,startA,endA);
+  ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R-lw/2-1,startA,endA);
+  ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.stroke();
+}
+
+function renderGaugeGeneric(bgId, needleId, valId, badgeId, value, min, max, meta, ticks, unit){
+  drawGaugeBgGeneric(bgId, min, max, meta, ticks);
+  const cv=document.getElementById(needleId), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H-8, R=72;
+  const toAngle=v=>Math.PI+((v-min)/(max-min))*Math.PI;
+  const v=value||0;
+  const angle=toAngle(Math.max(min,Math.min(max,v)));
+  const nLen=R-4, nBack=12;
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+  ctx.beginPath();
+  ctx.moveTo(Math.cos(angle)*nLen, Math.sin(angle)*nLen);
+  ctx.lineTo(Math.cos(angle+Math.PI/2)*3, Math.sin(angle+Math.PI/2)*3);
+  ctx.lineTo(-Math.cos(angle)*nBack, -Math.sin(angle)*nBack);
+  ctx.lineTo(Math.cos(angle-Math.PI/2)*3, Math.sin(angle-Math.PI/2)*3);
+  ctx.closePath();
+  ctx.fillStyle='#1a1a2e'; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=.5; ctx.stroke();
+  ctx.shadowColor='transparent';
+  ctx.beginPath(); ctx.arc(0,0,7,0,2*Math.PI);
+  const capGrad=ctx.createRadialGradient(-2,-2,1,0,0,7);
+  capGrad.addColorStop(0,'#555'); capGrad.addColorStop(1,'#111');
+  ctx.fillStyle=capGrad; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.restore();
+  const gv=document.getElementById(valId), gb=document.getElementById(badgeId);
+  if(value!=null){
+    gv.textContent=Number.isInteger(value)?value:value.toFixed(1);
+    const ok=value>=meta;
+    gb.textContent=ok?'DENTRO DA META':'ABAIXO DA META';
+    gb.className='gauge-badge'+(ok?'':' bad');
+  } else {
+    gv.textContent='–'; gb.textContent='N/D'; gb.className='gauge-badge';
+  }
+}
+
+function renderGauge(kgh,unh){
+  drawGaugeBg();
+  const cv=document.getElementById('cGauge'),ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const cx=W/2, cy=H-8, R=72;
+  const MIN=10, MAX=30;
+  const toAngle=v=>Math.PI+((v-MIN)/(MAX-MIN))*Math.PI;
+
+  const v=kgh||0;
+  const angle=toAngle(Math.max(MIN,Math.min(MAX,v)));
+
+  const nLen=R-4, nBack=12;
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+  ctx.beginPath();
+  ctx.moveTo(Math.cos(angle)*nLen, Math.sin(angle)*nLen);       
+  ctx.lineTo(Math.cos(angle+Math.PI/2)*3, Math.sin(angle+Math.PI/2)*3);  
+  ctx.lineTo(-Math.cos(angle)*nBack, -Math.sin(angle)*nBack);    
+  ctx.lineTo(Math.cos(angle-Math.PI/2)*3, Math.sin(angle-Math.PI/2)*3);  
+  ctx.closePath();
+  ctx.fillStyle='#1a1a2e'; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=.5; ctx.stroke();
+  ctx.shadowColor='transparent';
+
+  ctx.beginPath(); ctx.arc(0,0,7,0,2*Math.PI);
+  const capGrad=ctx.createRadialGradient(-2,-2,1,0,0,7);
+  capGrad.addColorStop(0,'#555'); capGrad.addColorStop(1,'#111');
+  ctx.fillStyle=capGrad; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.restore();
+
+  const gv=document.getElementById('gaugeVal'), gb=document.getElementById('gaugeBadge');
+  if(kgh!=null){
+    gv.textContent=kgh.toFixed(1);
+    const inMeta=kgh>=22&&kgh<=25;
+    gb.textContent=inMeta?'DENTRO DA META':kgh<22?'ABAIXO DA META':'ACIMA DA META';
+    gb.className='gauge-badge'+(inMeta?'':kgh<22?' bad':' warn');
+  } else {
+    gv.textContent='–'; gb.textContent='N/D'; gb.className='gauge-badge';
+  }
+}
+
+function renderBars(c){
+  const rendPac=c.pacResfriado&&c.peixeVivo?c.pacResfriado/c.peixeVivo:null;
+  const rendPacEqm=rendPac&&c.eficPotencial?rendPac/c.eficPotencial:null;
+  const items=[
+    {l:'Eficiência Filetagem', v:c.eficPotencial},
+    {l:'Eficiência Skinner',   v:c.eficSkinner},
+    {l:'Eficiência Refile',    v:c.rendMRN},
+    {l:'Rendimento PAC',       v:rendPac},
+    {l:'Rendimento PAC EQM',   v:rendPacEqm},
+    {l:'Eficiência PotEQM',    v:c.eficPotencial?c.eficPotencial*.704:null},
+    {l:'Eficiência Resfriado', v:c.eficResfriado},
+  ];
+  document.getElementById('barEfic').innerHTML=items.map(i=>{const p=i.v?Math.max(0,Math.min(100,i.v*100)):0;return`<div class="bar-item"><div class="bar-lbl"><span>${i.l}</span><span>${i.v?fmt(p,2)+'%':'–'}</span></div><div class="bar-bg"><div class="bar-fill" style="width:${p}%"></div></div></div>`;}).join('');
+}
+
+function renderFlow(c){
+  if(!c.peixeVivo){document.getElementById('flowList').innerHTML='<span style="color:var(--muted);font-size:10px">N/D</span>';return;}
+  const pv=c.peixeVivo,rp=c.rendPotencial?c.rendPotencial*pv:null,ro=c.rendOperacional?c.rendOperacional*pv:null,pac=c.pacResfriado,perdas=rp?rp-pac:null;
+  const items=[{l:'Peixe Vivo',v:pv,c:'#1d8cf8',p:null},{l:'Rend. Potencial',v:rp,c:'#2196f3',p:rp?rp/pv:null},{l:'Rend. Operacional',v:ro,c:'#42a5f5',p:ro?ro/pv:null},{l:'PAC Resfriado',v:pac,c:'#00c9a7',p:pac?pac/pv:null},{l:'Perdas',v:perdas,c:'#ea5455',p:perdas?perdas/pv:null}];
+  document.getElementById('flowList').innerHTML=items.map(i=>{const w=i.v&&pv?Math.max(2,i.v/pv*100):0;return`<div class="flow-item"><div class="flow-lbl">${i.l}</div><div class="flow-bar-bg"><div class="flow-bar-fill" style="width:${w}%;background:${i.c}"></div></div><div class="flow-num">${i.v?fmtKg(i.v):'–'}</div><div class="flow-pct">${i.p?'('+fmt(i.p*100,2)+'%)':''}</div></div>`;}).join('');
+}
+
+function renderQual(c){
+  function badge(v,meta,inv=false){if(v==null)return'<span class="qual-badge g">N/D</span>';const ok=inv?v<=meta:v>=meta;return`<span class="qual-badge ${ok?'g':v>=(meta*.9)?'y':'r'}">● ${ok?'Excelente':'Atenção'}</span>`;}
+  const items=[{ic:'💀',n:'Mortalidade',v:c.mortalidade,meta:.001,inv:true,d:c.mortalidade!=null?fmt(c.mortalidade*100,3)+'%':'–'},{ic:'💚',n:'Bem-estar Animal',v:c.bemEstar,meta:.95,d:c.bemEstar?fmt(c.bemEstar*100,2)+'%':'–'},{ic:'⚙️',n:'Efic. Skinner',v:c.eficSkinner!=null?c.eficSkinner:null,meta:.88,d:c.eficSkinner!=null?fmt(c.eficSkinner*100,2)+'%':'–'},{ic:'🪲',n:'Couro Skinner',v:c.couroSkinner!=null?c.couroSkinner:null,meta:.95,d:c.couroSkinner!=null?fmt(c.couroSkinner*100,2)+'%':'–'},{ic:'📦',n:'GW Pac',v:c.gwPac!=null?c.gwPac:null,meta:.005,inv:true,d:c.gwPac!=null?fmt(c.gwPac*100,2)+'%':'–'},{ic:'📊',n:'Rend. Mortalidade',v:c.rendMRN,meta:.85,d:c.rendMRN?fmt(c.rendMRN*100,2)+'%':'–'}];
+  document.getElementById('qualList').innerHTML=items.map(i=>`<div class="qual-item"><div class="qual-icon">${i.ic}</div><div class="qual-name">${i.n}</div><div class="qual-val">${i.d}</div>${badge(i.v,i.meta,i.inv)}</div>`).join('');
+}
+
+function dotFor(v,meta,inv=false){if(v==null)return'<span class="dot y"></span>';const ok=inv?v<=meta:v>=meta;return ok?'<span class="dot g"></span>':(inv?v<=meta*2:v>=meta*.9)?'<span class="dot y"></span>':'<span class="dot r"></span>';}
+
+function renderTable(dailyRows,gran,weekPts){
+  const isSem=gran==='semanas';
+  const isMes=gran==='meses';
+  const titles={dias:'Resumo por Dia',semanas:'Resumo por Semana',meses:'Resumo por Mês'};
+  document.getElementById('tableTitle').textContent=titles[gran]||'Resumo';
+  const rows=isSem?weekPts:isMes?weekPts:dailyRows;
+  const thFirst=isMes?'Mês':isSem?'Semana':'Data';
+  const thSecond=isSem?'Período':'';
+  document.getElementById('tableHead').innerHTML=`<th>${thFirst}</th><th>${thSecond}</th><th>Peixe Vivo</th><th></th><th>Unid. Peixes</th><th></th><th>Biometria</th><th></th><th>PAC Resf.</th><th></th><th>Rend.Pot.</th><th></th><th>Rend.Op.</th><th></th><th>Efic.Resf.</th><th></th><th>Mort.</th><th></th><th>KGH</th><th>UNH</th><th>Bem-Estar</th><th></th>`;
+  document.getElementById('tableBody').innerHTML=rows.map(r=>{
+    const lbl=isMes?(MONTHS_MAP[r.mes]||r.mes):isSem?'S'+r.semana_num:fmtD(r.date);
+    const per=isSem?fmtD(r.from)+' – '+fmtD(r.to):'';
+    const metaPV=isSem?60000:isMes?240000:12000;
+    const metaPAC=isSem?19000:isMes?76000:3800;
+    return`<tr><td><strong>${lbl}</strong></td><td style="font-size:8px;color:var(--muted)">${per}</td><td>${fmtKg(r.peixeVivo)}</td><td>${dotFor(r.peixeVivo,metaPV)}</td><td>${r.unidadePeixes?Math.round(r.unidadePeixes).toLocaleString('pt-BR'):'–'}</td><td></td><td>${r.biometria?fmt(r.biometria,3)+' kg':'–'}</td><td></td><td>${fmtKg(r.pacResfriado)}</td><td>${dotFor(r.pacResfriado,metaPAC)}</td><td>${r.rendPotencial?fmt(r.rendPotencial*100,2)+'%':'–'}</td><td>${dotFor(r.rendPotencial,.46)}</td><td>${r.rendOperacional?fmt(r.rendOperacional*100,2)+'%':'–'}</td><td>${dotFor(r.rendOperacional,.45)}</td><td>${r.eficResfriado?fmt(r.eficResfriado*100,2)+'%':'–'}</td><td>${dotFor(r.eficResfriado,.95)}</td><td>${r.mortalidade!=null?fmt(r.mortalidade*100,3)+'%':'–'}</td><td>${dotFor(r.mortalidade,.001,true)}</td><td>${r.kgh?fmt(r.kgh,1):'–'}</td><td>${r.unh?fmt(r.unh,1):'–'}</td><td>${r.bemEstar?fmt(r.bemEstar*100,2)+'%':'–'}</td><td>${dotFor(r.bemEstar,.95)}</td></tr>`;
+  }).join('');
+}
+
+function renderAnalise(c,p){
+  const ins=[];
+  if(c.peixeVivo>=60000)ins.push({i:'✅',t:'Produção de peixe vivo acima da meta (≥ 60.000 kg).'});
+  else ins.push({i:'⚠️',t:`Produção: ${fmtKg(c.peixeVivo)} kg (meta: 60.000 kg).`});
+  if(c.rendPotencial&&c.rendOperacional){const gap=(c.rendPotencial-c.rendOperacional)*100;ins.push(gap<2?{i:'✅',t:'Gap potencial × operacional dentro do esperado.'}:{i:'⚠️',t:`Gap rend. pot. × op.: ${fmt(gap,2)} p.p.`});}
+  if(c.eficResfriado>=.95)ins.push({i:'✅',t:'Eficiência de resfriado excelente (≥ 95%).'});
+  else if(c.eficResfriado)ins.push({i:'⚠️',t:`Efic. resfriado: ${fmt(c.eficResfriado*100,2)}%.`});
+  if(c.mortalidade===0)ins.push({i:'✅',t:'Mortalidade zero — resultado excepcional.'});
+  else if(c.mortalidade>.001)ins.push({i:'🔴',t:`Mortalidade acima do limite: ${fmt(c.mortalidade*100,3)}%.`});
+  if(c.kgh){const ok=c.kgh>=22&&c.kgh<=25; ins.push({i:ok?'✅':'⚠️',t:`KGH médio: ${fmt(c.kgh,1)} kg/hh${ok?' (dentro da meta 22–25)':' (fora da meta 22–25)'}.`});}
+  if(c.unh)ins.push({i:'📊',t:`UNH médio: ${fmt(c.unh,1)} un/hh.`});
+  if(c.pacResfriado&&c.peixeVivo)ins.push({i:'📦',t:`Perdas: ${fmtKg(c.peixeVivo-c.pacResfriado)} kg (${fmt((c.peixeVivo-c.pacResfriado)/c.peixeVivo*100,2)}% do peixe vivo).`});
+  document.getElementById('analiseList').innerHTML=ins.slice(0,5).map(i=>`<div class="analise-item"><div class="analise-icon">${i.i}</div><div class="analise-text">${i.t}</div></div>`).join('');
+}
+
+let currentPage = 'visao';
+
+function applyPageVisibility(page) {
+  document.querySelectorAll('[data-pages]').forEach(el => {
+    const pages = el.getAttribute('data-pages').split(' ');
+    el.classList.toggle('page-hidden', !pages.includes(page));
+  });
+  setTimeout(() => {
+    Object.values(charts).forEach(c => { try { c.resize(); } catch(e){} });
+    const gbg = document.getElementById('cGaugeBg');
+    if(gbg) { gbg.removeAttribute('data-drawn'); drawGaugeBg(); }
+    ['cGaugeBg2','cGaugeBg3'].forEach(id=>{const el=document.getElementById(id);if(el)el.removeAttribute('data-drawn');});
+  }, 50);
+}
+
+function navTo(btn) {
+  const page = btn.dataset.page;
+  if(page === currentPage) return;
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btn.classList.add('active');
+  applyPageVisibility(page);
+}
+
+let modalChart = null;
+
+function openModal(canvasId, title) {
+  title = title.replace('⛶', '').trim();
+  const srcChart = Object.values(charts).find(c => c.canvas && c.canvas.id === canvasId);
+  if(!srcChart) return;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('chartModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if(modalChart) { modalChart.destroy(); modalChart = null; }
+  const src = srcChart;
+  const cfg = {
+    type: src.config.type,
+    data: JSON.parse(JSON.stringify(src.config.data)), 
+    options: JSON.parse(JSON.stringify(src.config.options || {})),
+  };
+  const scales = cfg.options.scales || {};
+  Object.values(scales).forEach(ax => {
+    if(ax.ticks) ax.ticks.font = { size: 12 };
+    if(ax.title) ax.title.font = { size: 11 };
+  });
+  const legend = (cfg.options.plugins||{}).legend;
+  if(legend && legend.labels) legend.labels.font = { size: 11 };
+  if(legend && legend.labels) legend.labels.padding = 16;
+  (cfg.data.datasets||[]).forEach(ds => {
+    if(ds.pointRadius != null) ds.pointRadius = Math.max(ds.pointRadius, 6);
+    if(ds.borderWidth != null) ds.borderWidth = Math.max(ds.borderWidth, 2.5);
+  });
+  cfg.options.responsive = true;
+  cfg.options.maintainAspectRatio = false;
+  cfg.options.animation = { duration: 300 };
+  const modalCanvas = document.getElementById('cModal');
+  modalChart = new Chart(modalCanvas, cfg);
+  document.onkeydown = e => { if(e.key === 'Escape') closeModal(); };
+}
+
+function closeModal() {
+  document.getElementById('chartModal').classList.remove('open');
+  document.body.style.overflow = '';
+  document.onkeydown = null;
+  if(modalChart) { modalChart.destroy(); modalChart = null; }
+}
+
+function closeModalOutside(e) {
+  if(e.target === document.getElementById('chartModal')) closeModal();
+}
+
+// ── PERSISTÊNCIA ──────────────────────────────────────────────────────────────
+const LS_KEY = 'btjaqua_daily_v1';
+
+function salvarDados() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(DAILY));
+    const now = new Date();
+    const ts = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('headerUpdateTime').textContent = ts;
+    localStorage.setItem(LS_KEY+'_ts', ts);
+  } catch(e) { console.warn('localStorage cheio:', e); }
+}
+
+function restaurarDados() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.length) return false;
+    DAILY.length = 0;
+    saved.forEach(d => DAILY.push(d));
+    WEEKS_AGG.length = 0;
+    recalcWeeks();
+    MONTH_ORDER.length = 0;
+    [...new Set(DAILY.map(d => d.mes))].sort().forEach(m => MONTH_ORDER.push(m));
+    const ts = localStorage.getItem(LS_KEY+'_ts');
+    if (ts) document.getElementById('headerUpdateTime').textContent = ts;
+    return true;
+  } catch(e) { return false; }
+}
+
+function limparDados() {
+  if (!confirm('Apagar todos os dados salvos no navegador?')) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_KEY+'_ts');
+  location.reload();
+}
+
+function exportarHTML() {
+  const src = document.documentElement.outerHTML;
+  // Substitui a declaração DAILY no fonte pelos dados atuais
+  const dailyJson = JSON.stringify(DAILY);
+  const out = src.replace(/const DAILY = \[[\s\S]*?\];/, 'const DAILY = ' + dailyJson + ';');
+  const blob = new Blob([out], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date(); const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0');
+  a.download = `dashboard_btjaqua_${d.getFullYear()}${mm}${dd}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+const _restored = restaurarDados();
+buildWeekList();
+buildMonthList();
+syncWeekCbs();
+syncMonthCbs();
+applyPageVisibility('visao');
+applyFilters();
+
+// ── DRAG-AND-DROP KPI → GRÁFICO ──────────────────────────────────
+(function initDragDrop(){
+  const KPI_ID_MAP = {
+    'kv-peixe':'peixeVivo','kv-unid':'unidadePeixes','kv-bio':'biometria',
+    'kv-pac':'pacResfriado','kv-rp':'rendPotencial','kv-ro':'rendOperacional',
+    'kv-efp':'eficPoteqm','kv-efr':'eficResfriado','kv-mort':'mortalidade',
+    'kv-mort-kg':'mortKg','kv-bea':'bemEstar'
+  };
+
+  const CANVAS_KEY = {cPeixe:'peixe',cPac:'pac',cRend:'rend',cUnh:'unh',cProd:'prod'};
+
+  const META_CFG = {
+    peixeVivo:      {label:'Peixe Vivo (kg)',          color:'#1d8cf8',pct:false,meta:60000,  get:r=>r.peixeVivo},
+    unidadePeixes:  {label:'Unid. Peixes',             color:'#f6ad55',pct:false,meta:null,   get:r=>r.unidadePeixes},
+    biometria:      {label:'Biometria (kg)',            color:'#a78bfa',pct:false,meta:null,   get:r=>r.biometria},
+    pacResfriado:   {label:'PAC Resfriado (kg)',        color:'#00c9a7',pct:false,meta:19000,  get:r=>r.pacResfriado},
+    rendPotencial:  {label:'Rendimento Potencial (%)',  color:'#1d8cf8',pct:true, meta:0.46,   get:r=>r.rendPotencial},
+    rendOperacional:{label:'Rendimento Operacional (%)',color:'#28c76f',pct:true, meta:0.45,   get:r=>r.rendOperacional},
+    eficPoteqm:     {label:'Eficiência PotEQM (%)',    color:'#f6ad55',pct:true, meta:0.68,   get:r=>r.eficPotencial?+(r.eficPotencial*.704):null},
+    eficResfriado:  {label:'Eficiência Resfriado (%)', color:'#00c9a7',pct:true, meta:0.95,   get:r=>r.eficResfriado},
+    mortalidade:    {label:'Mortalidade (%)',           color:'#ea4455',pct:true, meta:0.001,  get:r=>r.mortalidade},
+    mortKg:         {label:'Mortalidade (kg)',          color:'#f87171',pct:false,meta:null,   get:r=>r.mortKg??null},
+    bemEstar:       {label:'Bem-Estar Animal (%)',      color:'#28c76f',pct:true, meta:0.95,   get:r=>r.bemEstar},
+    kgh:            {label:'KGH (kg/hh)',               color:'#f6ad55',pct:false,meta:22,     get:r=>r.kgh},
+    unh:            {label:'UNH (un/hh)',               color:'#a78bfa',pct:false,meta:null,   get:r=>r.unh},
+  };
+
+  // estado: qual métrica está em cada canvas
+  const slotMetric = {};
+
+  function getPoints(){
+    const gran=getGranularity(), dailyRows=getFilteredDaily();
+    if(gran==='semanas'){
+      const pts=getFilteredWeeks();
+      return {pts, labels:pts.map(w=>'S'+w.semana_num)};
+    }
+    if(gran==='meses'){
+      const map={};
+      dailyRows.forEach(d=>{if(!map[d.mes])map[d.mes]={rows:[],mes:d.mes};map[d.mes].rows.push(d);});
+      const pts=MONTH_ORDER.filter(m=>map[m]).map(m=>{const a=aggregate(map[m].rows);a.mes=m;return a;});
+      return {pts, labels:pts.map(p=>MONTHS_MAP[p.mes]||p.mes)};
+    }
+    return {pts:dailyRows, labels:dailyRows.map(r=>{const[,m,d]=r.date.split('-');return d+'/'+m;})};
+  }
+
+  function renderKpiChart(canvasId, metric){
+    const cfg=META_CFG[metric]; if(!cfg) return;
+    const {pts,labels}=getPoints();
+    const isSem=getGranularity()==='semanas'||getGranularity()==='meses';
+
+    const data=pts.map(r=>{
+      const v=cfg.get(r);
+      return v==null?null: cfg.pct?+(v*100).toFixed(3):+v.toFixed(3);
+    });
+
+    const datasets=[{
+      label:cfg.label, data,
+      borderColor:cfg.color, backgroundColor:cfg.color+'22',
+      borderWidth:2, pointRadius:isSem?4:2, pointBackgroundColor:cfg.color,
+      tension:.4, fill:true, spanGaps:true
+    }];
+
+    if(cfg.meta!=null){
+      const mv=cfg.pct?cfg.meta*100:cfg.meta;
+      datasets.push({label:'Meta',data:pts.map(()=>mv),type:'line',
+        borderColor:'#f6ad55',borderDash:[4,3],borderWidth:1.5,pointRadius:0,fill:false});
+    }
+
+    const yFmt = cfg.pct
+      ? v=>v.toFixed(2)+'%'
+      : v=>v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(1);
+
+    const key=CANVAS_KEY[canvasId]||canvasId;
+    if(charts[key]){charts[key].destroy();delete charts[key];}
+    charts[key]=new Chart(document.getElementById(canvasId),{
+      type:'line', data:{labels,datasets},
+      options:{...cO,scales:{...cO.scales,y:{...cO.scales.y,
+        ticks:{color:'#8ca0bb',font:{size:9},callback:yFmt}}}}
+    });
+    slotMetric[canvasId]=metric;
+  }
+
+  // re-render slots customizados quando filtros mudam
+  const _origRender = render;
+  window.render = function(){
+    _origRender();
+    Object.entries(slotMetric).forEach(([canvasId,metric])=>renderKpiChart(canvasId,metric));
+  };
+
+  // Torna KPIs arrastáveis
+  document.querySelectorAll('.kpi').forEach(kpi=>{
+    const valEl=kpi.querySelector('[id^="kv-"]'); if(!valEl) return;
+    const metric=KPI_ID_MAP[valEl.id]; if(!metric) return;
+    kpi.dataset.metric=metric;
+    kpi.draggable=true;
+    kpi.title='Arraste para um gráfico';
+    kpi.addEventListener('dragstart',e=>{
+      e.dataTransfer.setData('metric',metric);
+      kpi.classList.add('kpi-dragging');
+    });
+    kpi.addEventListener('dragend',()=>kpi.classList.remove('kpi-dragging'));
+  });
+
+  // Torna chart-cards zonas de soltura
+  document.querySelectorAll('.chart-card').forEach(card=>{
+    // hint visual
+    const hint=document.createElement('div');
+    hint.className='drop-hint'; hint.textContent='Soltar aqui';
+    card.appendChild(hint);
+
+    card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drop-target');});
+    card.addEventListener('dragleave',e=>{if(!card.contains(e.relatedTarget))card.classList.remove('drop-target');});
+    card.addEventListener('drop',e=>{
+      e.preventDefault(); card.classList.remove('drop-target');
+      const metric=e.dataTransfer.getData('metric'); if(!metric) return;
+      const canvas=card.querySelector('canvas'); if(!canvas) return;
+      const cfg=META_CFG[metric]; if(!cfg) return;
+
+      // Atualiza título
+      const titleEl=card.querySelector('.card-title');
+      if(titleEl){
+        const gran=getGranularity();
+        const sfx=gran==='semanas'?' – Semanal':gran==='meses'?' – Mensal':' – Diário';
+        const icon=titleEl.querySelector('.expand-icon');
+        titleEl.textContent=cfg.label+sfx;
+        if(icon)titleEl.appendChild(icon);
+      }
+
+      renderKpiChart(canvas.id, metric);
+    });
+  });
+})();
+</script>
+
+<div class="chart-modal-overlay" id="chartModal" onclick="closeModalOutside(event)">
+  <div class="chart-modal-box">
+    <div class="chart-modal-header">
+      <span class="chart-modal-title" id="modalTitle">–</span>
+      <button class="chart-modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="chart-modal-body">
+      <canvas id="cModal"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('input-excel')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, {type: 'array', cellDates: true});
+            const ws = workbook.Sheets[workbook.SheetNames[0]];
+            const excelRows = XLSX.utils.sheet_to_json(ws);
+
+            let novosDiasAdd = 0;
+            let ultimaSemanaMemoria = 99;
+
+            const achaColuna = (row, palavra) => {
+                let chave = Object.keys(row).find(k => k.toLowerCase().includes(palavra.toLowerCase()));
+                return chave ? row[chave] : null;
+            };
+
+            const getNum = (row, palavras, isPct = false) => {
+                let val = null;
+                for(let p of palavras) {
+                    val = achaColuna(row, p);
+                    if(val != null && val !== '') break;
+                }
+                if(val == null || val === '') return null;
+                let num = typeof val === 'number' ? val : parseFloat(val.toString().replace("%", "").replace(/\./g, "").replace(",", "."));
+                if(isPct && num > 1) return num / 100;
+                return num;
+            };
+
+            excelRows.forEach(row => {
+                let colSemana = achaColuna(row, "ano.semana") || achaColuna(row, "semana");
+                if (colSemana && String(colSemana).toLowerCase() !== 'total') {
+                    let wMatch = String(colSemana).replace(',', '.').match(/(\d{1,2})$/);
+                    if (wMatch) ultimaSemanaMemoria = parseInt(wMatch[1]);
+                }
+                
+                let w = ultimaSemanaMemoria;
+                let dataConvertida = null;
+                let dataStr = achaColuna(row, "date") || achaColuna(row, "data");
+                
+                if (dataStr && String(dataStr).toLowerCase() !== 'total') {
+                    if (dataStr instanceof Date) {
+                        // Normaliza fuso: adiciona offset para que getDate() leia a data calendário correta
+                        // independente de XLSX criar Date em UTC ou local
+                        const norm = new Date(dataStr.getTime() + dataStr.getTimezoneOffset() * 60000);
+                        let y = norm.getFullYear();
+                        let m = String(norm.getMonth() + 1).padStart(2, '0');
+                        let d = String(norm.getDate()).padStart(2, '0');
+                        dataConvertida = `${y}-${m}-${d}`;
+                    } else if (typeof dataStr === 'string') {
+                        let txt = dataStr.trim().split(" ")[0];
+                        if (txt.match(/^\d{2}\/\d{2}\/\d{2,4}$/)) {
+                            let p = txt.split("/");
+                            let ano = p[2].length === 2 ? "20" + p[2] : p[2];
+                            dataConvertida = `${ano}-${p[1]}-${p[0]}`;
+                        } else if (txt.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            dataConvertida = txt;
+                        }
+                    } else if (typeof dataStr === 'number' && dataStr > 40000 && dataStr < 50000) {
+                        // Serial Excel → UTC ms → normaliza fuso
+                        const raw = new Date(Math.round((dataStr - 25569) * 86400 * 1000));
+                        const norm = new Date(raw.getTime() + raw.getTimezoneOffset() * 60000);
+                        let y = norm.getFullYear();
+                        let m = String(norm.getMonth() + 1).padStart(2, '0');
+                        let d = String(norm.getDate()).padStart(2, '0');
+                        dataConvertida = `${y}-${m}-${d}`;
+                    }
+                }
+
+                if (!dataConvertida) return;
+                let dObj = {
+                    date: dataConvertida,
+                    mes: dataConvertida.substring(0, 4) + "." + dataConvertida.substring(5, 7),
+                    semana: `2026.${String(w).padStart(2,'0')}`,
+                    peixeVivo: getNum(row, ["peixevivo", "vivo"]),
+                    pacResfriado: getNum(row, ["totalpacresfriado", "totalpac"]),
+                    unidadePeixes: getNum(row, ["unidadepeixes", "unidade"]),
+                    biometria: getNum(row, ["biometria"]),
+                    rendPotencial: getNum(row, ["rendpotencial"], true),
+                    rendOperacional: getNum(row, ["rendoperacional"], true),
+                    mortalidade: getNum(row, ["mortalidade"], true),
+                    bemEstar: getNum(row, ["bemestar"], true),
+                    eficPotencial: getNum(row, ["eficpotencial", "eficienciapoteqm"], true),
+                    eficResfriado: getNum(row, ["eficienciaresfriado"], true),
+                    kgh: getNum(row, ["kghh"]),
+                    unh: getNum(row, ["unihh"]),
+                    unidadeHora: getNum(row, ["unidadehora"]),
+                    kgHora: getNum(row, ["kghora"]),
+                    eficSkinner: getNum(row, ["eficskinner","efic.skinner","efic skinner","skinner"], true),
+                    couroSkinner: getNum(row, ["couroskinner","couro skinner","couro"], true),
+                    gwPac: getNum(row, ["gwpac","gw pac","gw_pac","gw-pac"], true),
+                    gwPxv: getNum(row, ["gwpxv","gw pxv","gw_pxv","gw-pxv"], true),
+                    rendMRN: getNum(row,["rendimento mrn","rendmrn","rend mrn","rend.mrn","rendmortalidade","refile","mrn"],true)
+                };
+                dObj.semana_num = parseInt((dObj.semana || '2026.99').split('.').pop());
+                // Ao substituir dia existente, preserva campos que vieram null do Excel
+                const idxExist = DAILY.findIndex(d => d.date === dataConvertida);
+                if (idxExist >= 0) {
+                    const prev = DAILY[idxExist];
+                    Object.keys(dObj).forEach(k => { if (dObj[k] == null && prev[k] != null) dObj[k] = prev[k]; });
+                    DAILY.splice(idxExist, 1);
+                }
+                DAILY.push(dObj);
+                novosDiasAdd++;
+            });
+
+            if (novosDiasAdd > 0) {
+                DAILY.sort((a, b) => a.date.localeCompare(b.date));
+
+                // Recalcula WEEKS_AGG com os novos dados
+                recalcWeeks();
+
+                // Recalcula MONTH_ORDER
+                MONTH_ORDER.length = 0;
+                [...new Set(DAILY.map(d => d.mes))].sort().forEach(m => MONTH_ORDER.push(m));
+
+                // Reconstrói filtros laterais
+                document.getElementById('weekList').innerHTML = '';
+                document.getElementById('monthList').innerHTML = '';
+                buildWeekList(); buildMonthList();
+
+                const ultimaData = DAILY[DAILY.length - 1].date;
+                document.getElementById('dateTo').value = ultimaData;
+                state.to = ultimaData;
+                syncWeekCbs(); syncMonthCbs();
+
+                salvarDados();
+                alert(`✅ ${novosDiasAdd} novos dias adicionados. Dados salvos automaticamente.`);
+                applyFilters();
+            } else {
+                alert("Nenhum dado novo encontrado na planilha. Verifique se as datas já existem.");
+            }
+
+        } catch (err) {
+            console.error("Erro ao processar arquivo:", err);
+            alert("Ocorreu um erro ao ler o arquivo Excel. Verifique a formatação da sua planilha.");
+        }
+    };
+    
+    // Inicia a leitura do arquivo
+    reader.readAsArrayBuffer(file);
+});
+</script>
+</body>
+</html>
