@@ -3,14 +3,22 @@ Script principal — baixa arquivos, coleta dados e abre o dashboard.
 Chamado pelo atalho Devolutiva Pisciculturas.bat
 """
 import urllib.request
+import urllib.parse
 import os
 import sys
 import glob
 import subprocess
 import json
+import base64
 import shutil
 
-URL = "https://raw.githubusercontent.com/cezarusan/razec/claude/pisciculturas-dashboard-devolutiva-kfazaq"
+# NOTA: usamos a API do GitHub (nao o link "raw") porque o nome desta branch
+# contem uma barra ("claude/pisciculturas-dashboard-devolutiva-kfazaq"), o que
+# deixa a URL do raw.githubusercontent.com ambigua e causa erros intermitentes
+# (429 / 502 / 503 "Backend.max_conn reached").
+OWNER = "cezarusan"
+REPO  = "razec"
+REF   = "claude/pisciculturas-dashboard-devolutiva-kfazaq"
 
 def achar_pasta():
     for p in [r"P:\FOODS\PCP\31 - Originacao", r"P:\FOODS\PCP\31 - Originação"]:
@@ -21,13 +29,19 @@ def achar_pasta():
             return p
     return None
 
-def baixar(url, destino):
-    import time
+def baixar(caminho, destino):
     print(f"   baixando {os.path.basename(destino)}...", end=" ")
-    url_cb = url + f"?t={int(time.time())}"
-    req = urllib.request.Request(url_cb, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
-    with urllib.request.urlopen(req) as resp, open(destino, "wb") as f:
-        f.write(resp.read())
+    api_url = ("https://api.github.com/repos/" + OWNER + "/" + REPO +
+               "/contents/" + caminho + "?ref=" + urllib.parse.quote(REF, safe=""))
+    req = urllib.request.Request(api_url, headers={
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "BTJFoods-Devolutiva/1.0",
+    })
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read())
+    conteudo = base64.b64decode(data["content"])
+    with open(destino, "wb") as f:
+        f.write(conteudo)
     print("OK")
 
 def main():
@@ -68,9 +82,9 @@ def main():
 
     # 1. Baixa arquivos atualizados
     print("\n[1/3] Baixando arquivos atualizados do GitHub...")
-    baixar(URL + "/scripts/coletar_devolutiva.py",            coletar)
-    baixar(URL + "/scripts/preparar_dashboard.py",            preparar)
-    baixar(URL + "/dashboards/devolutiva-pisciculturas.html", html_base)
+    baixar("scripts/coletar_devolutiva.py",            coletar)
+    baixar("scripts/preparar_dashboard.py",            preparar)
+    baixar("dashboards/devolutiva-pisciculturas.html", html_base)
 
     # 2. Coleta dados e gera JSON
     print("\n[2/3] Coletando os 100 ultimos apontamentos...")
