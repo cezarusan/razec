@@ -160,6 +160,10 @@ tbody tr:hover{background:rgba(255,255,255,.03)}
 .chart-card:hover{border-color:var(--accent)}
 .chart-card:hover .expand-icon{opacity:1}
 .expand-icon{position:absolute;right:0;top:0;font-size:11px;opacity:0;transition:opacity .2s;color:var(--accent)}
+.reset-icon{position:absolute;right:16px;top:0;font-size:11px;opacity:0;transition:opacity .2s;color:var(--yellow);cursor:pointer;display:none}
+.chart-card.customized .reset-icon{display:inline}
+.chart-card.customized:hover .reset-icon{opacity:1}
+.chart-card.customized .card-title{color:var(--yellow)}
 .gran-badge{display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;background:rgba(29,140,248,.15);color:var(--accent);border:1px solid rgba(29,140,248,.3);vertical-align:middle}
 
 /* ── DRAG-AND-DROP ───────────────────────────────────────────────── */
@@ -322,16 +326,16 @@ table th,table td{font-size:7.5px;padding:2px 4px}
 
     <div data-pages="visao producao">
       <div class="charts-row">
-        <div class="card chart-card" onclick="openModal('cPeixe',document.getElementById('titlePeixe').textContent)"><div class="card-title" id="titlePeixe">Peixe Vivo (kg)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPeixe"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cPac',document.getElementById('titlePac').textContent)"><div class="card-title" id="titlePac">PAC Resfriado (kg)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPac"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cRend',document.getElementById('titleRend').textContent)"><div class="card-title" id="titleRend">Rendimentos (%)<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cRend"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cPeixe',document.getElementById('titlePeixe').querySelector('.title-text').textContent)"><div class="card-title" id="titlePeixe"><span class="title-text">Peixe Vivo (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPeixe')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPeixe"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cPac',document.getElementById('titlePac').querySelector('.title-text').textContent)"><div class="card-title" id="titlePac"><span class="title-text">PAC Resfriado (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPac')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPac"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cRend',document.getElementById('titleRend').querySelector('.title-text').textContent)"><div class="card-title" id="titleRend"><span class="title-text">Rendimentos (%)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cRend')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cRend"></canvas></div></div>
       </div>
     </div>
 
     <div data-pages="visao rendimentos producao">
       <div class="charts-row2">
-        <div class="card chart-card" onclick="openModal('cUnh',document.getElementById('titleUnh').textContent)"><div class="card-title" id="titleUnh">KGH & UNH<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cUnh"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cProd',document.getElementById('titleProd').textContent)"><div class="card-title" id="titleProd">Unidade/Hora × KG/Hora<span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cProd"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cUnh',document.getElementById('titleUnh').querySelector('.title-text').textContent)"><div class="card-title" id="titleUnh"><span class="title-text">KGH & UNH</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cUnh')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cUnh"></canvas></div></div>
+        <div class="card chart-card" onclick="openModal('cProd',document.getElementById('titleProd').querySelector('.title-text').textContent)"><div class="card-title" id="titleProd"><span class="title-text">Unidade/Hora × KG/Hora</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cProd')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cProd"></canvas></div></div>
       </div>
     </div>
 
@@ -579,11 +583,17 @@ function render(){
     gran==='semanas'?'📆 por semana':gran==='meses'?'🗓 por mês':'📅 por dia';
 
   const sfx=gran==='semanas'?' – Semanal':gran==='meses'?' – Mensal':' – Diário';
-  document.getElementById('titlePeixe').textContent='Peixe Vivo (kg)'+sfx;
-  document.getElementById('titlePac').textContent='PAC Resfriado (kg)'+sfx;
-  document.getElementById('titleRend').textContent='Rendimentos (%)'+sfx;
-  document.getElementById('titleUnh').textContent='KGH & UNH'+sfx;
-  document.getElementById('titleProd').textContent='Unidade/Hora × KG/Hora'+sfx;
+  const setTitleIfDefault=(id,txt)=>{
+    const el=document.getElementById(id);
+    if(!el||el.closest('.chart-card')?.classList.contains('customized')) return;
+    const span=el.querySelector('.title-text');
+    if(span) span.textContent=txt; else el.textContent=txt;
+  };
+  setTitleIfDefault('titlePeixe','Peixe Vivo (kg)'+sfx);
+  setTitleIfDefault('titlePac','PAC Resfriado (kg)'+sfx);
+  setTitleIfDefault('titleRend','Rendimentos (%)'+sfx);
+  setTitleIfDefault('titleUnh','KGH & UNH'+sfx);
+  setTitleIfDefault('titleProd','Unidade/Hora × KG/Hora'+sfx);
 
   renderKPIs(cur,cmp);
   renderCharts(points,labels,gran);
@@ -1175,14 +1185,23 @@ applyFilters();
       if(titleEl){
         const gran=getGranularity();
         const sfx=gran==='semanas'?' – Semanal':gran==='meses'?' – Mensal':' – Diário';
-        const icon=titleEl.querySelector('.expand-icon');
-        titleEl.textContent=cfg.label+sfx;
-        if(icon)titleEl.appendChild(icon);
+        const textSpan=titleEl.querySelector('.title-text');
+        if(textSpan) textSpan.textContent=cfg.label+sfx;
       }
+      card.classList.add('customized');
 
       renderKpiChart(canvas.id, metric);
     });
   });
+
+  // Restaura um gráfico customizado para sua versão original
+  window.resetSlot = function(canvasId){
+    delete slotMetric[canvasId];
+    const canvas=document.getElementById(canvasId);
+    const card=canvas?.closest('.chart-card');
+    if(card)card.classList.remove('customized');
+    render();
+  };
 })();
 </script>
 
