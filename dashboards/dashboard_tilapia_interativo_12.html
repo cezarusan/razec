@@ -305,7 +305,7 @@ table th,table td{font-size:7.5px;padding:2px 4px}
   </header>
 
   <div class="kpi-row" data-pages="visao producao rendimentos eficiencias qualidade comparativos">
-    <div class="kpi"><div class="kpi-lbl">Peixe Vivo (kg)</div><div class="kpi-icon">🐟</div><div class="kpi-val" id="kv-peixe">–</div><div class="kpi-meta">Meta: ≥ 60.000 kg</div><div class="kpi-delta" id="kd-peixe">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Peixe Vivo (kg)</div><div class="kpi-icon">🐟</div><div class="kpi-val" id="kv-peixe">–</div><div class="kpi-meta">total no período</div><div class="kpi-delta" id="kd-peixe">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Unid. Peixes</div><div class="kpi-icon">🔢</div><div class="kpi-val" id="kv-unid">–</div><div class="kpi-meta">unidades abatidas</div><div class="kpi-delta" id="kd-unid">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Biometria (kg)</div><div class="kpi-icon">⚖️</div><div class="kpi-val" id="kv-bio">–</div><div class="kpi-meta">peso médio biometria</div><div class="kpi-delta" id="kd-bio">–</div></div>
     <div class="kpi"><div class="kpi-lbl">PAC Resfriado (kg)</div><div class="kpi-icon">❄️</div><div class="kpi-val" id="kv-pac">–</div><div class="kpi-meta">Meta: ≥ 19.000 kg</div><div class="kpi-delta" id="kd-pac">–</div></div>
@@ -908,8 +908,7 @@ function renderTable(dailyRows,gran,weekPts){
 
 function renderAnalise(c,p){
   const ins=[];
-  if(c.peixeVivo>=60000)ins.push({i:'✅',t:'Produção de peixe vivo acima da meta (≥ 60.000 kg).'});
-  else ins.push({i:'⚠️',t:`Produção: ${fmtKg(c.peixeVivo)} kg (meta: 60.000 kg).`});
+  if(c.peixeVivo)ins.push({i:'📊',t:`Produção de peixe vivo no período: ${fmtKg(c.peixeVivo)} kg.`});
   if(c.rendPotencial&&c.rendOperacional){const gap=(c.rendPotencial-c.rendOperacional)*100;ins.push(gap<2?{i:'✅',t:'Gap potencial × operacional dentro do esperado.'}:{i:'⚠️',t:`Gap rend. pot. × op.: ${fmt(gap,2)} p.p.`});}
   if(c.eficResfriado>=.95)ins.push({i:'✅',t:'Eficiência de resfriado excelente (≥ 95%).'});
   else if(c.eficResfriado)ins.push({i:'⚠️',t:`Efic. resfriado: ${fmt(c.eficResfriado*100,2)}%.`});
@@ -1065,7 +1064,7 @@ applyFilters();
   const CANVAS_KEY = {cPeixe:'peixe',cPac:'pac',cRend:'rend',cUnh:'unh',cProd:'prod'};
 
   const META_CFG = {
-    peixeVivo:      {label:'Peixe Vivo (kg)',          color:'#1d8cf8',pct:false,meta:60000,  get:r=>r.peixeVivo},
+    peixeVivo:      {label:'Peixe Vivo (kg)',          color:'#1d8cf8',pct:false,meta:null,    get:r=>r.peixeVivo},
     unidadePeixes:  {label:'Unid. Peixes',             color:'#f6ad55',pct:false,meta:null,   get:r=>r.unidadePeixes},
     biometria:      {label:'Biometria (kg)',            color:'#a78bfa',pct:false,meta:null,   get:r=>r.biometria},
     pacResfriado:   {label:'PAC Resfriado (kg)',        color:'#00c9a7',pct:false,meta:19000,  get:r=>r.pacResfriado},
