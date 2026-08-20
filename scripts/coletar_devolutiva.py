@@ -69,7 +69,7 @@ COLS_RENDIMENTO = {
 }
 
 # Valores fixos
-REND_PREV      = 47.50   # % fixo
+REND_PREV      = 46.50   # % fixo
 MORT_PREV      = 0.00    # kg fixo
 DESC_500G_PERC = 0.0020  # 0,20% da Biomassa Realizada
 DESC_BACT_PERC = 0.0010  # 0,10% da Biomassa Realizada
