@@ -256,7 +256,7 @@ table th,table td{font-size:7.5px;padding:2px 4px}
         <label for="input-excel" style="color: #fff; display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px;">
             📥 Atualizar Dados (Excel):
         </label>
-        <input type="file" id="input-excel" accept=".xlsx" style="color: #fff; width: 100%;" />
+        <input type="file" id="input-excel" accept=".xlsx,.csv" style="color: #fff; width: 100%;" />
     </div>
 
     <div class="filter-tabs">
@@ -1223,17 +1223,59 @@ applyFilters();
 </div>
 
 <script>
+// Parser de CSV próprio (RFC4180: respeita vírgulas dentro de aspas) — usado no lugar do
+// parser automático do SheetJS para .csv, que converte "16011,06" em NUMBER 1601106
+// (trata vírgula como separador de milhar), inflando os valores em 100x antes mesmo do
+// nosso parseNumStr rodar. Aqui tudo chega como STRING, então nosso parser decide certo.
+function parseCsvToRows(text) {
+    text = text.replace(/^﻿/, ''); // remove BOM
+    const lines = text.split(/\r\n|\n|\r/).filter(l => l.length > 0);
+    if (!lines.length) return [];
+    const parseLine = (line) => {
+        const cells = [];
+        let cur = '', inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (line[i+1] === '"') { cur += '"'; i++; }
+                    else inQuotes = false;
+                } else cur += ch;
+            } else {
+                if (ch === '"') inQuotes = true;
+                else if (ch === ',') { cells.push(cur); cur = ''; }
+                else cur += ch;
+            }
+        }
+        cells.push(cur);
+        return cells;
+    };
+    const headers = parseLine(lines[0]);
+    return lines.slice(1).map(line => {
+        const cells = parseLine(line);
+        const row = {};
+        headers.forEach((h, i) => { row[h] = cells[i] !== undefined ? cells[i] : ''; });
+        return row;
+    });
+}
+
 document.getElementById('input-excel')?.addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    const isCsv = /\.csv$/i.test(file.name);
     const reader = new FileReader();
     reader.onload = function(evt) {
         try {
-            const data = new Uint8Array(evt.target.result);
-            const workbook = XLSX.read(data, {type: 'array', cellDates: true});
-            const ws = workbook.Sheets[workbook.SheetNames[0]];
-            const excelRows = XLSX.utils.sheet_to_json(ws);
+            let excelRows;
+            if (isCsv) {
+                excelRows = parseCsvToRows(evt.target.result);
+            } else {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, {type: 'array', cellDates: true});
+                const ws = workbook.Sheets[workbook.SheetNames[0]];
+                excelRows = XLSX.utils.sheet_to_json(ws);
+            }
 
             let novosDiasAdd = 0;
             let ultimaSemanaMemoria = 99;
@@ -1389,8 +1431,10 @@ document.getElementById('input-excel')?.addEventListener('change', function(e) {
         }
     };
     
-    // Inicia a leitura do arquivo
-    reader.readAsArrayBuffer(file);
+    // Inicia a leitura do arquivo (texto p/ CSV — preserva vírgulas/pontos exatamente
+    // como estão no arquivo; binário p/ XLSX real)
+    if (isCsv) reader.readAsText(file, 'UTF-8');
+    else reader.readAsArrayBuffer(file);
 });
 </script>
 </body>
