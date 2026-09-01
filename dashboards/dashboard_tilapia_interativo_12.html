@@ -1243,6 +1243,30 @@ document.getElementById('input-excel')?.addEventListener('change', function(e) {
                 return chave ? row[chave] : null;
             };
 
+            // Converte texto numérico PT-BR (1.234,56) ou US (1,234.56) ou decimal puro
+            // (1234,56 / 1234.56) para float, detectando qual símbolo é o decimal em vez
+            // de assumir sempre "ponto = milhar", que inflava valores tipo "16011.06" em 100x.
+            const parseNumStr = (str) => {
+                const s = str.trim();
+                const lastComma = s.lastIndexOf(',');
+                const lastDot = s.lastIndexOf('.');
+                if (lastComma !== -1 && lastDot !== -1) {
+                    // tem os dois símbolos: o que aparece por último é o decimal
+                    if (lastComma > lastDot) return parseFloat(s.replace(/\./g, '').replace(',', '.'));
+                    return parseFloat(s.replace(/,/g, ''));
+                }
+                if (lastComma !== -1) return parseFloat(s.replace(',', '.'));
+                if (lastDot !== -1) {
+                    // só ponto: decimal se houver exatamente 1-2 dígitos após o último ponto
+                    // e nenhum outro ponto (ex: "16011.06"); senão é milhar (ex: "1.234.567")
+                    const casas = s.length - lastDot - 1;
+                    const soUmPonto = s.indexOf('.') === lastDot;
+                    if (soUmPonto && casas <= 2) return parseFloat(s);
+                    return parseFloat(s.replace(/\./g, ''));
+                }
+                return parseFloat(s);
+            };
+
             const getNum = (row, palavras, isPct = false) => {
                 let val = null;
                 for(let p of palavras) {
@@ -1250,7 +1274,7 @@ document.getElementById('input-excel')?.addEventListener('change', function(e) {
                     if(val != null && val !== '') break;
                 }
                 if(val == null || val === '') return null;
-                let num = typeof val === 'number' ? val : parseFloat(val.toString().replace("%", "").replace(/\./g, "").replace(",", "."));
+                let num = typeof val === 'number' ? val : parseNumStr(val.toString().replace('%', ''));
                 if(isPct && num > 1) return num / 100;
                 return num;
             };
