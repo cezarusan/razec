@@ -94,34 +94,39 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 .trend-stab{color:#6e8ca8;font-size:12px}
 
 /* ── RANKING ── */
-.ranking-section{padding:12px 16px}
-.ranking-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.ranking-title{font-size:13px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
-.ranking-title .trophy{font-size:14px}
-.ranking-count{font-size:11px;color:var(--txt3)}
-.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.ranking-section{padding:16px 16px 20px;background:linear-gradient(180deg,var(--surf2) 0%,var(--bg) 140px)}
+.ranking-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ranking-title{font-size:14px;font-weight:800;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+.ranking-title .trophy{font-size:15px}
+.ranking-count{font-size:11px;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:10px;padding:3px 10px}
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 
 /* ── OP CARD ── */
-.op-card{background:var(--surf);border:1px solid var(--bdr);border-top:2px solid var(--c,#fff);border-radius:6px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.45)}
-.op-card-head{padding:9px 12px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.op-info{min-width:0}
-.op-code{font-size:11px;font-weight:600;color:var(--c,#fff);letter-spacing:.04em;opacity:.85}
-.op-name{font-size:14px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.op-rank{font-size:10px;font-weight:700;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.op-card{background:linear-gradient(180deg,var(--surf) 0%,var(--surf) 60%,var(--surf2) 100%);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.45);transition:transform .15s ease,box-shadow .15s ease}
+.op-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.55)}
+.op-card-head{padding:12px 14px 10px;display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,color-mix(in srgb,var(--c,#fff) 16%,transparent),transparent 70%);border-bottom:1px solid var(--bdr)}
+.op-avatar{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#0b0f16;background:var(--c,#fff);box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.op-info{min-width:0;flex:1}
+.op-code{font-size:10px;font-weight:700;color:var(--c,#fff);letter-spacing:.06em;opacity:.9;text-transform:uppercase}
+.op-name{font-size:14.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.op-rank{font-size:10px;font-weight:800;color:var(--txt3);background:var(--surf3);border:1px solid var(--bdr2);border-radius:3px;padding:2px 6px;white-space:nowrap}
 .op-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
-.op-body{padding:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.op-hero{display:flex;align-items:baseline;justify-content:space-between;padding:10px 14px 2px;gap:8px}
+.op-hero-val{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--c,#fff);line-height:1}
+.op-hero-label{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);font-weight:700}
+.op-body{padding:6px 14px 8px;display:grid;grid-template-columns:1fr 1fr;gap:5px 10px}
 .op-k{font-size:10px;color:var(--txt3);align-self:center}
 .op-v{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--txt);text-align:right;align-self:center}
 .op-v.rend-v{color:var(--c,#fff)}
-.op-footer{padding:7px 12px 9px;border-top:1px solid var(--bdr)}
-.progress-wrap{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.progress-bar{flex:1;height:5px;background:var(--surf3);border-radius:3px;overflow:hidden;position:relative}
+.op-footer{padding:9px 14px 11px;border-top:1px solid var(--bdr);background:rgba(0,0,0,.12)}
+.progress-wrap{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.progress-bar{flex:1;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden;position:relative}
 .progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
 .fill-ok  {background:#4caf50}
 .fill-warn{background:#ff8f00}
 .fill-low {background:#f44336}
 .progress-pct{font-size:10px;color:var(--txt2);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:44px;text-align:right}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:3px;letter-spacing:.04em}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:4px 9px;border-radius:4px;letter-spacing:.03em}
 .badge-otimo{background:#1b4020;color:#69f0ae;border:1px solid #2e7d32}
 .badge-medio{background:#3e2800;color:#ffb300;border:1px solid #e65100}
 .badge-baixo{background:#3b0f0f;color:#ff8a80;border:1px solid #c62828}
@@ -150,6 +155,26 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
 
 /* ── EMPTY ── */
 .empty{padding:40px;text-align:center;color:var(--txt3);font-size:12px}
+
+/* ── MODO TV (kiosk) ── */
+body.kiosk .filterbar,
+body.kiosk .btn-gray,
+body.kiosk #btn-atualizar{display:none !important}
+body.kiosk .topbar{height:58px}
+body.kiosk .brand{font-size:20px}
+body.kiosk .top-meta{font-size:14px}
+body.kiosk .kpi{padding:14px 22px 14px 18px;min-width:120px}
+body.kiosk .kpi-label{font-size:11px}
+body.kiosk .kpi-val{font-size:32px}
+body.kiosk .kpi-sub{font-size:12px}
+body.kiosk .ranking-title{font-size:18px}
+body.kiosk .op-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
+body.kiosk .op-name{font-size:18px}
+body.kiosk .op-avatar{width:44px;height:44px;font-size:15px}
+body.kiosk .op-hero-val{font-size:34px}
+body.kiosk .op-k,body.kiosk .op-v{font-size:14px}
+body.kiosk .badge{font-size:12px;padding:5px 11px}
+body.kiosk .chart-title,body.kiosk .linechart-legend,body.kiosk .chart-legend{font-size:13px}
 
 /* ── THEME (force dark) ── */
 @media (prefers-color-scheme:light){:root{
@@ -183,6 +208,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:system-u
     <button class="btn btn-green" id="btn-atualizar" onclick="refresh()">&#8635; Atualizar</button>
     <button class="btn btn-orange" id="btn-auto" onclick="toggleAuto()">&#9201; Auto: 10s</button>
     <button class="btn btn-gray" onclick="exportCSV()">&#8595; CSV</button>
+    <button class="btn btn-gray" id="btn-kiosk" onclick="toggleKiosk()">&#128250; Modo TV</button>
   </div>
 </div>
 
@@ -1189,9 +1215,12 @@ function render() {
       ? `⚡ Proximo da meta`
       : `↓ Abaixo da meta (${meta}%)`;
 
+    const initials = op.name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
     return `
     <div class="op-card" style="--c:${col}">
       <div class="op-card-head">
+        <div class="op-avatar">${initials||'?'}</div>
         <div class="op-info">
           <div class="op-code">Op. ${s.op}</div>
           <div class="op-name">${op.name}</div>
@@ -1201,24 +1230,26 @@ function render() {
           <span class="alert-pill ${alertCls}">${alertLabel}</span>
         </div>
       </div>
+      <div class="op-hero">
+        <div><div class="op-hero-label">Rendimento</div><div class="op-hero-val">${fmtPct(s.avgRd)} <span class="${trendCls}" style="font-size:15px">${trendSymbol}</span></div></div>
+        <span class="badge badge-${ritmo}">${rlabel}</span>
+      </div>
       <div class="op-body">
         <div class="op-k">Caixas</div>       <div class="op-v">${s.caixas}</div>
-        <div class="op-k">Rendimento</div>   <div class="op-v rend-v">${fmtPct(s.avgRd)}&nbsp;<span class="${trendCls}">${trendSymbol}</span></div>
-        <div class="op-k">Intervalo</div>    <div class="op-v">${fmtMins(s.avgIntvl)}</div>
         <div class="op-k">Cx/Hora</div>      <div class="op-v">${s.cxh.toFixed(1)}</div>
+        <div class="op-k">Intervalo</div>    <div class="op-v">${fmtMins(s.avgIntvl)}</div>
+        <div class="op-k">Ult. apont.</div>  <div class="op-v">${s.lastHora}</div>
         <div class="op-k">Kg entrada</div>   <div class="op-v">${fmtKg(s.sumPi)}</div>
         <div class="op-k">Kg saida</div>     <div class="op-v">${fmtKg(s.sumPf)}</div>
-        <div class="op-k">Residuo</div>      <div class="op-v">${fmtKg(s.sumRes)}</div>
-        <div class="op-k">Ult. apont.</div>  <div class="op-v">${s.lastHora}</div>
+        <div class="op-k">Residuo</div>      <div class="op-v" style="grid-column:2/3">${fmtKg(s.sumRes)}</div>
       </div>
       <div class="op-footer">
         <div class="progress-wrap">
           <div class="progress-bar">
             <div class="progress-fill ${fillCls}" style="width:${pct.toFixed(1)}%"></div>
           </div>
-          <span class="progress-pct">${fmtPct(s.avgRd)}</span>
+          <span class="progress-pct">meta ${meta}%</span>
         </div>
-        <span class="badge badge-${ritmo}">${rlabel}</span>
       </div>
     </div>`;
   }).join('');
@@ -1255,6 +1286,26 @@ function renderKPI(gs, rows, type, meta) {
       ${k.sub?`<div class="kpi-sub">${k.sub}</div>`:''}
     </div>`).join('');
 }
+
+/* ── MODO TV (kiosk) ── */
+function setKiosk(on) {
+  document.body.classList.toggle('kiosk', on);
+  const btn = document.getElementById('btn-kiosk');
+  if (btn) btn.textContent = on ? '\u{1F4FA} Sair do Modo TV' : '\u{1F4FA} Modo TV';
+  try { localStorage.setItem('kiosk', on ? '1' : '0'); } catch (e) {}
+  setTimeout(render, 60); /* redesenha os graficos com o novo layout */
+}
+function toggleKiosk() { setKiosk(!document.body.classList.contains('kiosk')); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.body.classList.contains('kiosk')) setKiosk(false);
+  if (e.key.toLowerCase() === 't' && (e.ctrlKey || e.altKey)) toggleKiosk();
+});
+(function initKiosk() {
+  const params = new URLSearchParams(location.search);
+  let want = params.has('tv') || params.has('kiosk');
+  if (!want) { try { want = localStorage.getItem('kiosk') === '1'; } catch (e) {} }
+  if (want) setKiosk(true);
+})();
 
 /* resize — redraw ambos os graficos */
 let resizeTmr;
