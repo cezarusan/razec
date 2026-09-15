@@ -297,6 +297,10 @@ table th,table td{font-size:7.5px;padding:2px 4px}
     <div>
       <h1>ANÁLISE DE PRODUÇÃO</h1>
       <div class="period-badge">📅 <span id="periodLabel">–</span> <span class="gran-badge" id="granBadge">–</span></div>
+      <div id="highlightBadge" style="display:none;align-items:center;gap:6px;background:rgba(255,238,0,.12);border:1px solid rgba(255,238,0,.4);border-radius:20px;padding:4px 11px;font-size:10px;font-weight:600;color:#ffee00;margin-top:5px;margin-left:6px">
+        📌 Destaque: <span id="highlightLabel"></span>
+        <span onclick="clearHighlight()" style="cursor:pointer;font-weight:800;padding:0 2px" title="Remover destaque">✕</span>
+      </div>
     </div>
     
     <div class="header-right">
@@ -326,16 +330,16 @@ table th,table td{font-size:7.5px;padding:2px 4px}
 
     <div data-pages="visao producao">
       <div class="charts-row">
-        <div class="card chart-card" onclick="openModal('cPeixe',document.getElementById('titlePeixe').querySelector('.title-text').textContent)"><div class="card-title" id="titlePeixe"><span class="title-text">Peixe Vivo (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPeixe')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPeixe"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cPac',document.getElementById('titlePac').querySelector('.title-text').textContent)"><div class="card-title" id="titlePac"><span class="title-text">PAC Resfriado (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPac')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPac"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cRend',document.getElementById('titleRend').querySelector('.title-text').textContent)"><div class="card-title" id="titleRend"><span class="title-text">Rendimentos (%)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cRend')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cRend"></canvas></div></div>
+        <div class="card chart-card" ondblclick="openModal('cPeixe',document.getElementById('titlePeixe').querySelector('.title-text').textContent)"><div class="card-title" id="titlePeixe"><span class="title-text">Peixe Vivo (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPeixe')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPeixe"></canvas></div></div>
+        <div class="card chart-card" ondblclick="openModal('cPac',document.getElementById('titlePac').querySelector('.title-text').textContent)"><div class="card-title" id="titlePac"><span class="title-text">PAC Resfriado (kg)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cPac')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cPac"></canvas></div></div>
+        <div class="card chart-card" ondblclick="openModal('cRend',document.getElementById('titleRend').querySelector('.title-text').textContent)"><div class="card-title" id="titleRend"><span class="title-text">Rendimentos (%)</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cRend')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cRend"></canvas></div></div>
       </div>
     </div>
 
     <div data-pages="visao rendimentos producao">
       <div class="charts-row2">
-        <div class="card chart-card" onclick="openModal('cUnh',document.getElementById('titleUnh').querySelector('.title-text').textContent)"><div class="card-title" id="titleUnh"><span class="title-text">KGH & UNH</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cUnh')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cUnh"></canvas></div></div>
-        <div class="card chart-card" onclick="openModal('cProd',document.getElementById('titleProd').querySelector('.title-text').textContent)"><div class="card-title" id="titleProd"><span class="title-text">Unidade/Hora × KG/Hora</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cProd')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cProd"></canvas></div></div>
+        <div class="card chart-card" ondblclick="openModal('cUnh',document.getElementById('titleUnh').querySelector('.title-text').textContent)"><div class="card-title" id="titleUnh"><span class="title-text">KGH & UNH</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cUnh')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cUnh"></canvas></div></div>
+        <div class="card chart-card" ondblclick="openModal('cProd',document.getElementById('titleProd').querySelector('.title-text').textContent)"><div class="card-title" id="titleProd"><span class="title-text">Unidade/Hora × KG/Hora</span><span class="reset-icon" title="Restaurar gráfico original" onclick="event.stopPropagation();resetSlot('cProd')">↺</span><span class="expand-icon">⛶</span></div><div class="chart-wrap"><canvas id="cProd"></canvas></div></div>
       </div>
     </div>
 
@@ -397,31 +401,83 @@ const MONTH_ORDER = ["2026.01","2026.02","2026.03","2026.04","2026.05","2026.06"
 let state = { from:'2026-06-01', to:'2026-06-05', tab:'dias' };
 let charts = {};
 let _chartPoints = null, _chartGran = null;
+let _selectedIdx = null;
 
-// Clique em qualquer ponto/barra dos gráficos principais: filtra o dashboard inteiro
-// (KPIs, gauges, tabela, análise) para aquele dia/semana/mês específico.
+// Plugin do Chart.js: desenha uma linha vertical + círculo destacando o mesmo
+// índice (mesma data) em TODOS os gráficos simultaneamente.
+Chart.register({
+  id: 'dateHighlightPlugin',
+  afterDatasetsDraw(chart){
+    if(_selectedIdx==null) return;
+    const meta = chart.getDatasetMeta(0);
+    const el = meta && meta.data && meta.data[_selectedIdx];
+    if(!el || !chart.chartArea) return;
+    const {ctx, chartArea} = chart;
+    ctx.save();
+    ctx.strokeStyle = '#ffee00';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    ctx.moveTo(el.x, chartArea.top);
+    ctx.lineTo(el.x, chartArea.bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(el.x, el.y, 7, 0, Math.PI*2);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#ffee00';
+    ctx.stroke();
+    ctx.restore();
+  }
+});
+
+// Clique em qualquer ponto/barra dos gráficos principais: destaca a mesma
+// data/semana/mês em TODOS os gráficos e mostra os KPIs só daquele ponto,
+// sem alterar o intervalo de datas selecionado (a tendência continua visível).
 function onChartPointClick(evt, elements){
   if(!elements.length || !_chartPoints) return;
   const idx = elements[0].index;
   const p = _chartPoints[idx];
   if(!p) return;
-  let from, to;
-  if(_chartGran==='semanas'){
-    if(!p.from || !p.to) return;
-    from = p.from; to = p.to;
-  } else if(_chartGran==='meses'){
-    if(!p.mes) return;
-    const [y,m] = p.mes.split('.');
-    from = `${y}-${m}-01`;
-    const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
-    to = `${y}-${m}-${String(lastDay).padStart(2,'0')}`;
-  } else {
-    if(!p.date) return;
-    from = p.date; to = p.date;
-  }
-  document.getElementById('dateFrom').value = from;
-  document.getElementById('dateTo').value = to;
-  applyFilters();
+  highlightPoint(idx, p);
+}
+
+function withMortKg(p){
+  if(p.mortKg!=null) return p;
+  const mk = (p.mortalidade||0)*(p.peixeVivo||0);
+  return {...p, mortKg: mk>0?mk:null};
+}
+
+function highlightPoint(idx, p){
+  _selectedIdx = idx;
+  const cur = withMortKg(p);
+  const prevP = _chartPoints[idx-1];
+  const cmp = prevP ? withMortKg(prevP) : null;
+
+  let label;
+  if(_chartGran==='semanas') label = `S${p.semana_num} (${fmtD(p.from)} – ${fmtD(p.to)})`;
+  else if(_chartGran==='meses') label = MONTHS_MAP[p.mes]||p.mes;
+  else label = fmtD(p.date);
+
+  const badge = document.getElementById('highlightBadge');
+  if(badge){ badge.style.display='inline-flex'; document.getElementById('highlightLabel').textContent=label; }
+
+  renderKPIs(cur,cmp);
+  renderGaugeGeneric('cGaugeBg2','cGauge2','gaugeVal2','gaugeBadge2',cur.kgh,0,50,30,[0,10,20,30,40,50],'kg/hh');
+  renderGaugeGeneric('cGaugeBg3','cGauge3','gaugeVal3','gaugeBadge3',cur.unh,0,40,25,[0,10,20,25,30,40],'und/hh');
+  renderBars(cur);
+  renderFlow(cur);
+  renderQual(cur);
+  renderAnalise(cur,cmp,1);
+
+  Object.values(charts).forEach(c=>c.update());
+}
+
+function clearHighlight(){
+  _selectedIdx = null;
+  const badge = document.getElementById('highlightBadge');
+  if(badge) badge.style.display='none';
+  render();
 }
 
 function switchTab(tab, btn) {
@@ -570,6 +626,9 @@ function renderDelta(id,cur,prev,isPct=false,inv=false){
 }
 
 function render(){
+  _selectedIdx = null;
+  const badge = document.getElementById('highlightBadge');
+  if(badge) badge.style.display='none';
   const gran=getGranularity();
   const dailyRows=getFilteredDaily();
   if(!dailyRows.length){document.getElementById('periodLabel').textContent='Sem dados no período';return;}
