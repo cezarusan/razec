@@ -316,7 +316,7 @@ table th,table td{font-size:7.5px;padding:2px 4px}
     <div class="kpi"><div class="kpi-lbl">Rendimento Potencial (%)</div><div class="kpi-icon">🎯</div><div class="kpi-val" id="kv-rp">–</div><div class="kpi-meta">Meta: ≥ 46,00%</div><div class="kpi-delta" id="kd-rp">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Rendimento Operacional (%)</div><div class="kpi-icon">⚙️</div><div class="kpi-val" id="kv-ro">–</div><div class="kpi-meta">Meta: ≥ 45,00%</div><div class="kpi-delta" id="kd-ro">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Eficiência PotEQM (%)</div><div class="kpi-icon">🏭</div><div class="kpi-val" id="kv-efp">–</div><div class="kpi-meta">Meta: ≥ 68,00%</div><div class="kpi-delta" id="kd-efp">–</div></div>
-    <div class="kpi"><div class="kpi-lbl">Eficiência Resfriado (%)</div><div class="kpi-icon">🧊</div><div class="kpi-val" id="kv-efr">–</div><div class="kpi-meta">Meta: ≥ 95,00%</div><div class="kpi-delta" id="kd-efr">–</div></div>
+    <div class="kpi"><div class="kpi-lbl">Eficiência Resfriado (%)</div><div class="kpi-icon">🧊</div><div class="kpi-val" id="kv-efr">–</div><div class="kpi-meta">Meta: ≥ 97,00%</div><div class="kpi-delta" id="kd-efr">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Mortalidade (%)</div><div class="kpi-icon">💀</div><div class="kpi-val" id="kv-mort">–</div><div class="kpi-meta">Meta: ≤ 0,10%</div><div class="kpi-delta" id="kd-mort">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Mortalidade (kg)</div><div class="kpi-icon">⚖️</div><div class="kpi-val" id="kv-mort-kg">–</div><div class="kpi-meta">Mortalidade × Peixe Vivo</div><div class="kpi-delta" id="kd-mort-kg">–</div></div>
     <div class="kpi"><div class="kpi-lbl">Bem Estar Animal (%)</div><div class="kpi-icon">💚</div><div class="kpi-val" id="kv-bea">–</div><div class="kpi-meta">Meta: ≥ 95,00%</div><div class="kpi-delta" id="kd-bea">–</div></div>
@@ -912,7 +912,7 @@ function renderTable(dailyRows,gran,weekPts){
     const per=isSem?fmtD(r.from)+' – '+fmtD(r.to):'';
     const metaPV=isSem?60000:isMes?240000:12000;
     const metaPAC=isSem?19000:isMes?76000:3800;
-    return`<tr><td><strong>${lbl}</strong></td><td style="font-size:8px;color:var(--muted)">${per}</td><td>${fmtKg(r.peixeVivo)}</td><td>${dotFor(r.peixeVivo,metaPV)}</td><td>${r.unidadePeixes?Math.round(r.unidadePeixes).toLocaleString('pt-BR'):'–'}</td><td></td><td>${r.biometria?fmt(r.biometria,3)+' kg':'–'}</td><td></td><td>${fmtKg(r.pacResfriado)}</td><td>${dotFor(r.pacResfriado,metaPAC)}</td><td>${r.rendPotencial?fmt(r.rendPotencial*100,2)+'%':'–'}</td><td>${dotFor(r.rendPotencial,.46)}</td><td>${r.rendOperacional?fmt(r.rendOperacional*100,2)+'%':'–'}</td><td>${dotFor(r.rendOperacional,.45)}</td><td>${r.eficResfriado?fmt(r.eficResfriado*100,2)+'%':'–'}</td><td>${dotFor(r.eficResfriado,.95)}</td><td>${r.mortalidade!=null?fmt(r.mortalidade*100,3)+'%':'–'}</td><td>${dotFor(r.mortalidade,.001,true)}</td><td>${r.kgh?fmt(r.kgh,1):'–'}</td><td>${r.unh?fmt(r.unh,1):'–'}</td><td>${r.bemEstar?fmt(r.bemEstar*100,2)+'%':'–'}</td><td>${dotFor(r.bemEstar,.95)}</td></tr>`;
+    return`<tr><td><strong>${lbl}</strong></td><td style="font-size:8px;color:var(--muted)">${per}</td><td>${fmtKg(r.peixeVivo)}</td><td>${dotFor(r.peixeVivo,metaPV)}</td><td>${r.unidadePeixes?Math.round(r.unidadePeixes).toLocaleString('pt-BR'):'–'}</td><td></td><td>${r.biometria?fmt(r.biometria,3)+' kg':'–'}</td><td></td><td>${fmtKg(r.pacResfriado)}</td><td>${dotFor(r.pacResfriado,metaPAC)}</td><td>${r.rendPotencial?fmt(r.rendPotencial*100,2)+'%':'–'}</td><td>${dotFor(r.rendPotencial,.46)}</td><td>${r.rendOperacional?fmt(r.rendOperacional*100,2)+'%':'–'}</td><td>${dotFor(r.rendOperacional,.45)}</td><td>${r.eficResfriado?fmt(r.eficResfriado*100,2)+'%':'–'}</td><td>${dotFor(r.eficResfriado,.97)}</td><td>${r.mortalidade!=null?fmt(r.mortalidade*100,3)+'%':'–'}</td><td>${dotFor(r.mortalidade,.001,true)}</td><td>${r.kgh?fmt(r.kgh,1):'–'}</td><td>${r.unh?fmt(r.unh,1):'–'}</td><td>${r.bemEstar?fmt(r.bemEstar*100,2)+'%':'–'}</td><td>${dotFor(r.bemEstar,.95)}</td></tr>`;
   }).join('');
 }
 
@@ -925,7 +925,7 @@ function renderAnalise(c,p,nDias){
     else ins.push({i:'📊',t:`Produção de peixe vivo no período: ${fmtKg(c.peixeVivo)} kg.`});
   }
   if(c.rendPotencial&&c.rendOperacional){const gap=(c.rendPotencial-c.rendOperacional)*100;ins.push(gap<2?{i:'✅',t:'Gap potencial × operacional dentro do esperado.'}:{i:'⚠️',t:`Gap rend. pot. × op.: ${fmt(gap,2)} p.p.`});}
-  if(c.eficResfriado>=.95)ins.push({i:'✅',t:'Eficiência de resfriado excelente (≥ 95%).'});
+  if(c.eficResfriado>=.97)ins.push({i:'✅',t:'Eficiência de resfriado excelente (≥ 97%).'});
   else if(c.eficResfriado)ins.push({i:'⚠️',t:`Efic. resfriado: ${fmt(c.eficResfriado*100,2)}%.`});
   if(c.mortalidade===0)ins.push({i:'✅',t:'Mortalidade zero — resultado excepcional.'});
   else if(c.mortalidade>.001)ins.push({i:'🔴',t:`Mortalidade acima do limite: ${fmt(c.mortalidade*100,3)}%.`});
@@ -1086,7 +1086,7 @@ applyFilters();
     rendPotencial:  {label:'Rendimento Potencial (%)',  color:'#00b4ff',pct:true, meta:0.46,   get:r=>r.rendPotencial},
     rendOperacional:{label:'Rendimento Operacional (%)',color:'#00e676',pct:true, meta:0.45,   get:r=>r.rendOperacional},
     eficPoteqm:     {label:'Eficiência PotEQM (%)',    color:'#ffcc66',pct:true, meta:0.68,   get:r=>r.eficPotencial?+(r.eficPotencial*.704):null},
-    eficResfriado:  {label:'Eficiência Resfriado (%)', color:'#00e5c7',pct:true, meta:0.95,   get:r=>r.eficResfriado},
+    eficResfriado:  {label:'Eficiência Resfriado (%)', color:'#00e5c7',pct:true, meta:0.97,   get:r=>r.eficResfriado},
     mortalidade:    {label:'Mortalidade (%)',           color:'#ea4455',pct:true, meta:0.001,  get:r=>r.mortalidade},
     mortKg:         {label:'Mortalidade (kg)',          color:'#f87171',pct:false,meta:null,   get:r=>r.mortKg??null},
     bemEstar:       {label:'Bem-Estar Animal (%)',      color:'#00e676',pct:true, meta:0.95,   get:r=>r.bemEstar},
