@@ -396,6 +396,33 @@ const MONTH_ORDER = ["2026.01","2026.02","2026.03","2026.04","2026.05","2026.06"
 
 let state = { from:'2026-06-01', to:'2026-06-05', tab:'dias' };
 let charts = {};
+let _chartPoints = null, _chartGran = null;
+
+// Clique em qualquer ponto/barra dos gráficos principais: filtra o dashboard inteiro
+// (KPIs, gauges, tabela, análise) para aquele dia/semana/mês específico.
+function onChartPointClick(evt, elements){
+  if(!elements.length || !_chartPoints) return;
+  const idx = elements[0].index;
+  const p = _chartPoints[idx];
+  if(!p) return;
+  let from, to;
+  if(_chartGran==='semanas'){
+    if(!p.from || !p.to) return;
+    from = p.from; to = p.to;
+  } else if(_chartGran==='meses'){
+    if(!p.mes) return;
+    const [y,m] = p.mes.split('.');
+    from = `${y}-${m}-01`;
+    const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+    to = `${y}-${m}-${String(lastDay).padStart(2,'0')}`;
+  } else {
+    if(!p.date) return;
+    from = p.date; to = p.date;
+  }
+  document.getElementById('dateFrom').value = from;
+  document.getElementById('dateTo').value = to;
+  applyFilters();
+}
 
 function switchTab(tab, btn) {
   state.tab = tab;
@@ -626,6 +653,9 @@ function renderKPIs(c,p){
 }
 
 const cO={responsive:true,maintainAspectRatio:false,animation:{duration:350},
+  onClick:onChartPointClick,
+  interaction:{mode:'index',intersect:false},
+  onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
   plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,titleFont:{size:10},bodyFont:{size:10}}},
   scales:{x:{ticks:{color:'#a3b8d1',font:{size:8},maxRotation:45},grid:{color:'rgba(255,255,255,.05)'}},
           y:{ticks:{color:'#a3b8d1',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}}}};
@@ -639,6 +669,7 @@ function uoc(key,id,cfg){
 }
 
 function renderCharts(pts,labels,gran){
+  _chartPoints = pts; _chartGran = gran;
   const isSem=gran==='semanas'||gran==='meses';
   const btype=isSem?'bar':'line';
 
@@ -679,6 +710,9 @@ function renderCharts(pts,labels,gran){
     {label:'KG/Hora',     data:dKgHr, borderColor:'#2ecc71',backgroundColor:'rgba(74,222,128,.12)',pointBackgroundColor:'#2ecc71',borderWidth:2,pointRadius:isSem?5:3,tension:.3,fill:true,spanGaps:true,yAxisID:'yK'},
   ]},options:{
     responsive:true,maintainAspectRatio:false,animation:{duration:350},
+    onClick:onChartPointClick,
+    interaction:{mode:'index',intersect:false},
+    onHover:(evt,els)=>{ evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
     plugins:{legend:{display:true,position:'top',labels:{color:'#a3b8d1',font:{size:9},boxWidth:10,padding:5}},
              tooltip:{mode:'index',intersect:false,titleFont:{size:10},bodyFont:{size:10}}},
     scales:{
