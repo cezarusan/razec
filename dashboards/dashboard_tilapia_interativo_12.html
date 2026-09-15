@@ -346,7 +346,7 @@ table th,table td{font-size:7.5px;padding:2px 4px}
     <div data-pages="visao eficiencias qualidade">
       <div class="bottom-row">
         <div class="card"><div class="card-title">Eficiência das Etapas (%)</div><div class="bar-list" id="barEfic"></div></div>
-        <div class="card" style="display:flex;flex-direction:column">
+        <div class="card" style="display:flex;flex-direction:column;cursor:pointer" ondblclick="openGaugeModal('cGauge2','KG/HR – KG/Homem/Hora')">
           <div class="card-title">KG/HR – KG/Homem/Hora</div>
           <div class="gauge-center">
             <div class="gauge-canvas-wrap">
@@ -359,7 +359,7 @@ table th,table td{font-size:7.5px;padding:2px 4px}
             <div class="gauge-meta">Meta: ≥ 30 kg/hh</div>
           </div>
         </div>
-        <div class="card" style="display:flex;flex-direction:column">
+        <div class="card" style="display:flex;flex-direction:column;cursor:pointer" ondblclick="openGaugeModal('cGauge3','UND/HR – Und/Homem/Hora')">
           <div class="card-title">UND/HR – Und/Homem/Hora</div>
           <div class="gauge-center">
             <div class="gauge-canvas-wrap">
@@ -880,16 +880,20 @@ function drawGaugeBgGeneric(bgId, min, max, meta, ticks){
   ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.stroke();
 }
 
+let _gaugeState = {};
+
 function renderGaugeGeneric(bgId, needleId, valId, badgeId, value, min, max, meta, ticks, unit){
+  _gaugeState[needleId] = {bgId,needleId,valId,badgeId,value,min,max,meta,ticks,unit};
   drawGaugeBgGeneric(bgId, min, max, meta, ticks);
   const cv=document.getElementById(needleId), ctx=cv.getContext('2d');
   const W=cv.width, H=cv.height;
+  const scale=W/180;
   ctx.clearRect(0,0,W,H);
-  const cx=W/2, cy=H-8, R=72;
+  const cx=W/2, cy=H-8, R=Math.round(64*scale);
   const toAngle=v=>Math.PI+((v-min)/(max-min))*Math.PI;
   const v=value||0;
   const angle=toAngle(Math.max(min,Math.min(max,v)));
-  const nLen=R-4, nBack=12;
+  const nLen=R-Math.round(4*scale), nBack=Math.round(12*scale);
   ctx.save(); ctx.translate(cx,cy);
   ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
   ctx.beginPath();
@@ -901,20 +905,20 @@ function renderGaugeGeneric(bgId, needleId, valId, badgeId, value, min, max, met
   ctx.fillStyle='#1a1a2e'; ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=.5; ctx.stroke();
   ctx.shadowColor='transparent';
-  ctx.beginPath(); ctx.arc(0,0,7,0,2*Math.PI);
-  const capGrad=ctx.createRadialGradient(-2,-2,1,0,0,7);
+  ctx.beginPath(); ctx.arc(0,0,Math.round(7*scale),0,2*Math.PI);
+  const capGrad=ctx.createRadialGradient(-2,-2,1,0,0,Math.round(7*scale));
   capGrad.addColorStop(0,'#555'); capGrad.addColorStop(1,'#111');
   ctx.fillStyle=capGrad; ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,.2)'; ctx.lineWidth=1; ctx.stroke();
   ctx.restore();
   const gv=document.getElementById(valId), gb=document.getElementById(badgeId);
   if(value!=null){
-    gv.textContent=Number.isInteger(value)?value:value.toFixed(1);
+    if(gv) gv.textContent=Number.isInteger(value)?value:value.toFixed(1);
     const ok=value>=meta;
-    gb.textContent=ok?'DENTRO DA META':'ABAIXO DA META';
-    gb.className='gauge-badge'+(ok?'':' bad');
+    if(gb){ gb.textContent=ok?'DENTRO DA META':'ABAIXO DA META'; gb.className='gauge-badge'+(ok?'':' bad'); }
   } else {
-    gv.textContent='–'; gb.textContent='N/D'; gb.className='gauge-badge';
+    if(gv) gv.textContent='–';
+    if(gb){ gb.textContent='N/D'; gb.className='gauge-badge'; }
   }
 }
 
@@ -1086,11 +1090,35 @@ function openModal(canvasId, title) {
   document.onkeydown = e => { if(e.key === 'Escape') closeModal(); };
 }
 
+function openGaugeModal(needleId, title){
+  const g = _gaugeState[needleId];
+  if(!g) return;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('chartModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if(modalChart) { modalChart.destroy(); modalChart = null; }
+  const body = document.getElementById('chartModalBody');
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px">
+      <div style="position:relative;width:min(70vw,520px);height:calc(min(70vw,520px)*0.62)">
+        <canvas id="modalGaugeBg" width="520" height="322" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+        <canvas id="modalGaugeNeedle" width="520" height="322" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas>
+      </div>
+      <div style="font-size:42px;font-weight:800;color:#fff">${g.value!=null?(Number.isInteger(g.value)?g.value:g.value.toFixed(1)):'–'} <span style="font-size:18px;color:#a3b8d1;font-weight:600">${g.unit}</span></div>
+      <div style="font-size:13px;font-weight:700;padding:4px 12px;border-radius:12px;${g.value>=g.meta?'background:rgba(46,204,113,.15);color:#2ecc71':'background:rgba(231,76,60,.15);color:#e74c3c'}">${g.value>=g.meta?'DENTRO DA META':'ABAIXO DA META'}</div>
+      <div style="font-size:12px;color:#a3b8d1">Meta: ≥ ${g.meta} ${g.unit}</div>
+    </div>`;
+  renderGaugeGeneric('modalGaugeBg','modalGaugeNeedle',null,null, g.value, g.min, g.max, g.meta, g.ticks, g.unit);
+  document.onkeydown = e => { if(e.key === 'Escape') closeModal(); };
+}
+
 function closeModal() {
   document.getElementById('chartModal').classList.remove('open');
   document.body.style.overflow = '';
   document.onkeydown = null;
   if(modalChart) { modalChart.destroy(); modalChart = null; }
+  const body = document.getElementById('chartModalBody');
+  if(!document.getElementById('cModal')) body.innerHTML = '<canvas id="cModal"></canvas>';
 }
 
 function closeModalOutside(e) {
@@ -1307,7 +1335,7 @@ applyFilters();
       <span class="chart-modal-title" id="modalTitle">–</span>
       <button class="chart-modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="chart-modal-body">
+    <div class="chart-modal-body" id="chartModalBody">
       <canvas id="cModal"></canvas>
     </div>
   </div>
