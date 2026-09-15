@@ -608,7 +608,7 @@ function aggregate(rows){
   if(!rows.length) return null;
   const sumKg=f=>rows.reduce((s,r)=>(r[f]||0)+s,0);
   const wavg=f=>{ const v=rows.filter(r=>r[f]!=null&&(r.peixeVivo||0)>0&&r[f]>0); if(!v.length) return null; const tw=v.reduce((s,r)=>s+r.peixeVivo,0); return v.reduce((s,r)=>s+r[f]*r.peixeVivo,0)/tw; };
-  const savg=f=>{ const v=rows.filter(r=>r[f]!=null&&r[f]>0); return v.length?v.reduce((s,r)=>s+r[f],0)/v.length:null; };
+  const savg=f=>{ const v=rows.filter(r=>r[f]!=null&&r[f]>0&&r[f]<=150); return v.length?v.reduce((s,r)=>s+r[f],0)/v.length:null; };
   const mortKgSum=rows.reduce((s,r)=>s+((r.mortalidade||0)*(r.peixeVivo||0)),0);
   return {peixeVivo:sumKg('peixeVivo'),pacResfriado:sumKg('pacResfriado'),unidadePeixes:sumKg('unidadePeixes'),biometria:savg('biometria'),rendPotencial:wavg('rendPotencial'),rendOperacional:wavg('rendOperacional'),rendimentoPac:wavg('rendimentoPac'),rendPacEQM:wavg('rendPacEQM'),mortalidade:wavg('mortalidade'),bemEstar:wavg('bemEstar'),eficPotencial:wavg('eficPotencial'),eficResfriado:wavg('eficResfriado'),kgh:savg('kgh'),unh:savg('unh'),kgHora:savg('kgHora'),unidadeHora:savg('unidadeHora'),eficSkinner:wavg('eficSkinner'),couroSkinner:wavg('couroSkinner'),gwPac:wavg('gwPac'),gwPxv:wavg('gwPxv'),rendMRN:savg('rendMRN'),mortKg:mortKgSum>0?mortKgSum:null};
 }
@@ -1508,11 +1508,21 @@ document.getElementById('input-excel')?.addEventListener('change', function(e) {
                     rendMRN: getNum(row,["rendimento mrn","rendmrn","rend mrn","rend.mrn","rendmortalidade","refile","mrn"],true)
                 };
                 dObj.semana_num = parseInt((dObj.semana || '2026.99').split('.').pop());
+                // Sanidade: kgh/unh são taxas de produtividade (kg ou unidades por hora-homem),
+                // fisicamente sempre abaixo de ~150. Um valor fora disso é resíduo de dado
+                // corrompido (de uma versão antiga, antes das correções de parsing) — descarta.
+                const RATE_FIELDS = ['kgh','unh'];
+                RATE_FIELDS.forEach(k => { if (dObj[k] != null && (dObj[k] < 0 || dObj[k] > 150)) dObj[k] = null; });
                 // Ao substituir dia existente, preserva campos que vieram null do Excel
+                // (nunca herda um valor implausível de kgh/unh que já estivesse salvo)
                 const idxExist = DAILY.findIndex(d => d.date === dataConvertida);
                 if (idxExist >= 0) {
                     const prev = DAILY[idxExist];
-                    Object.keys(dObj).forEach(k => { if (dObj[k] == null && prev[k] != null) dObj[k] = prev[k]; });
+                    Object.keys(dObj).forEach(k => {
+                        if (dObj[k] != null) return;
+                        if (RATE_FIELDS.includes(k) && prev[k] != null && (prev[k] < 0 || prev[k] > 150)) return;
+                        if (prev[k] != null) dObj[k] = prev[k];
+                    });
                     DAILY.splice(idxExist, 1);
                 }
                 DAILY.push(dObj);
