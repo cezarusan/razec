@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escamadeira — 24/09/2026</title>
+<style>
+:root {
+  --bg:#0d1117; --surf:#131b24; --surf2:#192330; --bdr:#1e2d3f; --bdr2:#26394f;
+  --txt:#ccd6e0; --txt2:#6e8ca8; --cyan:#00bcd4; --orange:#ff8f00; --yellow:#ffc107;
+  --green:#4caf50; --red:#f44336;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13px;padding:16px;max-width:1200px;margin:0 auto}
+h1{font-size:18px;font-weight:700;margin-bottom:2px}
+h1 .co{color:var(--cyan)} h1 .sec{color:var(--orange)}
+.sub{color:var(--txt2);font-size:12px;margin-bottom:16px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2);margin:22px 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.kpi{background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:12px 14px}
+.kpi .lbl{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em}
+.kpi .val{font-size:24px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .val small{font-size:12px;color:var(--txt2);font-weight:500;margin-left:3px}
+.kpi .hint{font-size:11px;color:var(--txt2);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:8px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--bdr);white-space:nowrap}
+th{background:var(--surf2);color:var(--txt2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--surf2)}
+tfoot td{font-weight:700;background:var(--surf2)}
+.nz{color:var(--yellow);font-weight:600}
+.gap{color:var(--red);font-weight:600}
+.bar{display:flex;align-items:center;gap:8px;padding:5px 12px}
+.bar .n{width:70px;color:var(--txt2)}
+.bar .t{flex:1;height:14px;background:var(--surf2);border-radius:3px;overflow:hidden;display:flex}
+.bar .t span{display:block;height:100%}
+.bar .v{width:70px;text-align:right;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;padding:8px 12px;color:var(--txt2);font-size:11px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.lote-tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600}
+.l1{background:rgba(0,188,212,.15);color:var(--cyan)} .l2{background:rgba(255,143,0,.15);color:var(--orange)}
+.note{color:var(--txt2);font-size:11px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<h1><span class="co">BTJ</span> · <span class="sec">Apontamento Escamadeira</span></h1>
+<div class="sub">Data: 24/09/2026 · Fonte: export 2026-09-24T19-23 · IDs 1545–1582</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid2">
+  <div>
+    <h2>Resumo por lote</h2>
+    <div class="card"><table id="tLote"></table></div>
+  </div>
+  <div>
+    <h2>Peso por caixa (kg)</h2>
+    <div class="card" id="bars"></div>
+  </div>
+</div>
+
+<h2>Intervalos entre pesagens acima de 20 min</h2>
+<div class="card"><table id="tGap"></table></div>
+<div class="note">Intervalo = diferença entre HoraInicio de pesagens consecutivas. Útil para identificar paradas (almoço, falta de matéria-prima, manutenção).</div>
+
+<h2>Apontamentos (38 registros)</h2>
+<div class="card"><table id="tDados"></table></div>
+
+<script>
+// Id, Data, Caixa, Lote, PesoEscam, Mortalidade, HoraInicio, ForaPadrao, Vivo, EviscCEscama, EviscSEscama
+const RAW = `1545,24/09/2026,1,1,409,0,05:39:00,0,0,0,0
+1546,24/09/2026,1,1,312,0,05:46:00,0,0,0,0
+1547,24/09/2026,2,1,407,0,05:58:00,0,0,0,0
+1548,24/09/2026,2,1,308,0,06:04:00,0,0,0,0
+1549,24/09/2026,3,1,400,0,06:16:00,0,0,0,0
+1550,24/09/2026,3,1,310,0,06:24:00,0,0,0,0
+1551,24/09/2026,3,1,414,0,06:34:00,0,0,0,0
+1552,24/09/2026,4,1,305,0,06:46:00,0,0,0,0
+1553,24/09/2026,4,1,411,0,06:55:00,0,0,0,0
+1554,24/09/2026,5,1,405,0,07:30:00,0,0,0,0
+1555,24/09/2026,5,1,318,0,07:40:00,0,0,0,0
+1556,24/09/2026,5,1,301,0,07:52:00,0,0,0,0
+1557,24/09/2026,6,1,410,0,08:02:00,0,0,0,0
+1558,24/09/2026,6,1,308,0,08:09:00,0,0,0,0
+1559,24/09/2026,7,1,420,0,08:29:00,0,0,0,0
+1560,24/09/2026,7,1,311,0,08:38:00,0,0,0,0
+1561,24/09/2026,8,1,408,0,08:50:00,0,0,0,0
+1562,24/09/2026,8,1,306,0,08:58:00,0,0,0,0
+1563,24/09/2026,8,1,330,0,09:32:00,0,0,0,17.72
+1564,24/09/2026,1,2,413,0,09:49:00,0,0,0,0
+1565,24/09/2026,1,2,313,0,09:57:00,0,0,0,0
+1566,24/09/2026,2,2,410,0,11:09:00,0,0,0,0
+1567,24/09/2026,2,2,309,0,11:15:00,0,0,0,0
+1568,24/09/2026,3,2,403,0,11:30:00,0,0,0,0
+1569,24/09/2026,3,2,307,0,11:36:00,0,0,0,0
+1570,24/09/2026,3,2,405,0,11:48:00,0,0,0,0
+1571,24/09/2026,4,2,313,0,11:56:00,0,0,0,0
+1572,24/09/2026,4,2,419,0,12:10:00,0,0,0,0
+1573,24/09/2026,5,2,310,0,13:00:00,0,0,0,0
+1574,24/09/2026,5,2,405,0,13:10:00,0,0,0,0
+1575,24/09/2026,6,2,320,0,13:22:00,0,0,0,0
+1576,24/09/2026,6,2,408,0,13:31:00,0,0,0,0
+1577,24/09/2026,6,2,307,0,13:42:00,0,0,0,0
+1578,24/09/2026,7,2,415,0,13:57:00,0,0,0,0
+1579,24/09/2026,7,2,311,0,14:07:00,0,0,0,0
+1580,24/09/2026,8,2,406,0,14:19:00,0,0,0,0
+1581,24/09/2026,8,2,308,0,14:27:00,0,0,0,0
+1582,24/09/2026,8,2,185,0,14:36:00,19.63,0,0,0`;
+
+const rows = RAW.trim().split('\n').map(l => {
+  const c = l.split(',');
+  return { id:+c[0], data:c[1], caixa:+c[2], lote:+c[3], peso:+c[4], mort:+c[5], hora:c[6],
+           fora:+c[7], vivo:+c[8], evCE:+c[9], evSE:+c[10] };
+});
+
+const fmt = (n, d=0) => n.toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
+const min = h => { const [a,b] = h.split(':'); return +a*60 + +b; };
+const hm = m => String(Math.floor(m/60)).padStart(2,'0') + 'h' + String(m%60).padStart(2,'0');
+const sum = (arr, k) => arr.reduce((s, r) => s + r[k], 0);
+const cell = (v, d=2) => v ? `<span class="nz">${fmt(v,d)}</span>` : '0';
+
+// ── KPIs
+const total = sum(rows,'peso');
+const ini = min(rows[0].hora), fim = min(rows[rows.length-1].hora);
+const horas = (fim - ini) / 60;
+const fora = sum(rows,'fora'), mort = sum(rows,'mort'), evSE = sum(rows,'evSE'), evCE = sum(rows,'evCE'), vivo = sum(rows,'vivo');
+const kpis = [
+  ['Peso escamadeira', fmt(total), 'kg', `${rows.length} pesagens · média ${fmt(total/rows.length,1)} kg`],
+  ['Janela de apontamento', `${rows[0].hora.slice(0,5)}–${rows[rows.length-1].hora.slice(0,5)}`, '', `${hm(fim-ini)} entre 1ª e última pesagem`],
+  ['Ritmo médio', fmt(total/horas,0), 'kg/h', 'sobre a janela bruta (inclui paradas)'],
+  ['Peixe fora padrão', fmt(fora,2), 'kg', `${fmt(fora/total*100,2)}% do peso escamado`],
+  ['Evisc. s/ escama', fmt(evSE,2), 'kg', `${fmt(evSE/total*100,2)}% do peso escamado`],
+  ['Mortalidade', fmt(mort,2), 'kg', `Peixe vivo: ${fmt(vivo,2)} · Evisc. c/ escama: ${fmt(evCE,2)}`],
+];
+document.getElementById('kpis').innerHTML = kpis.map(([l,v,u,h]) =>
+  `<div class="kpi"><div class="lbl">${l}</div><div class="val">${v}<small>${u}</small></div><div class="hint">${h}</div></div>`).join('');
+
+// ── Resumo por lote
+const lotes = [...new Set(rows.map(r => r.lote))];
+let h = `<thead><tr><th>Lote</th><th>Pesagens</th><th>Caixas</th><th>Peso (kg)</th><th>Início</th><th>Fim</th><th>Fora padrão</th><th>Evisc. s/ esc.</th></tr></thead><tbody>`;
+lotes.forEach(l => {
+  const r = rows.filter(x => x.lote === l);
+  h += `<tr><td><span class="lote-tag l${l}">Lote ${l}</span></td><td>${r.length}</td><td>${new Set(r.map(x=>x.caixa)).size}</td>
+        <td>${fmt(sum(r,'peso'))}</td><td>${r[0].hora.slice(0,5)}</td><td>${r[r.length-1].hora.slice(0,5)}</td>
+        <td>${cell(sum(r,'fora'))}</td><td>${cell(sum(r,'evSE'))}</td></tr>`;
+});
+h += `</tbody><tfoot><tr><td>Total</td><td>${rows.length}</td><td>—</td><td>${fmt(total)}</td><td>${rows[0].hora.slice(0,5)}</td><td>${rows[rows.length-1].hora.slice(0,5)}</td><td>${fmt(fora,2)}</td><td>${fmt(evSE,2)}</td></tr></tfoot>`;
+document.getElementById('tLote').innerHTML = h;
+
+// ── Barras por caixa (empilhado por lote)
+const caixas = [...new Set(rows.map(r => r.caixa))].sort((a,b)=>a-b);
+const porCaixa = caixas.map(c => ({ c, l1: sum(rows.filter(r=>r.caixa===c&&r.lote===1),'peso'), l2: sum(rows.filter(r=>r.caixa===c&&r.lote===2),'peso') }));
+const maxC = Math.max(...porCaixa.map(x => x.l1 + x.l2));
+document.getElementById('bars').innerHTML =
+  `<div class="legend"><span><i style="background:var(--cyan)"></i>Lote 1</span><span><i style="background:var(--orange)"></i>Lote 2</span></div>` +
+  porCaixa.map(x => `<div class="bar"><span class="n">Caixa ${x.c}</span><span class="t">
+    <span style="width:${x.l1/maxC*100}%;background:var(--cyan)" title="Lote 1: ${fmt(x.l1)} kg"></span>
+    <span style="width:${x.l2/maxC*100}%;background:var(--orange)" title="Lote 2: ${fmt(x.l2)} kg"></span></span>
+    <span class="v">${fmt(x.l1+x.l2)}</span></div>`).join('') + '<div style="height:8px"></div>';
+
+// ── Intervalos > 20 min
+let g = `<thead><tr><th>De (Id)</th><th>Até (Id)</th><th>Horário</th><th>Intervalo</th><th>Contexto</th></tr></thead><tbody>`;
+let nGap = 0, minGap = 0;
+for (let i = 1; i < rows.length; i++) {
+  const d = min(rows[i].hora) - min(rows[i-1].hora);
+  if (d > 20) {
+    nGap++; minGap += d;
+    const a = rows[i-1], b = rows[i];
+    const ctx = a.lote !== b.lote ? `Troca Lote ${a.lote} → ${b.lote}` : (a.caixa !== b.caixa ? `Caixa ${a.caixa} → ${b.caixa} (Lote ${b.lote})` : `Mesma caixa ${a.caixa} (Lote ${b.lote})`);
+    g += `<tr><td>${a.id}</td><td>${b.id}</td><td>${a.hora.slice(0,5)} → ${b.hora.slice(0,5)}</td><td class="gap">${d} min</td><td>${ctx}</td></tr>`;
+  }
+}
+g += `</tbody><tfoot><tr><td colspan="3">${nGap} intervalos</td><td>${minGap} min</td><td>${hm(minGap)} de ${hm(fim-ini)} da janela</td></tr></tfoot>`;
+document.getElementById('tGap').innerHTML = g;
+
+// ── Tabela completa
+let t = `<thead><tr><th>Id</th><th>Data</th><th>Hora início</th><th>Lote</th><th>Caixa</th><th>Peso escam. (kg)</th><th>Mortalidade (kg)</th><th>Fora padrão</th><th>Peixe vivo</th><th>Evisc. c/ escama</th><th>Evisc. s/ escama</th></tr></thead><tbody>`;
+rows.forEach(r => {
+  t += `<tr><td>${r.id}</td><td>${r.data}</td><td>${r.hora}</td><td><span class="lote-tag l${r.lote}">${r.lote}</span></td><td>${r.caixa}</td>
+        <td>${fmt(r.peso)}</td><td>${cell(r.mort)}</td><td>${cell(r.fora)}</td><td>${cell(r.vivo)}</td><td>${cell(r.evCE)}</td><td>${cell(r.evSE)}</td></tr>`;
+});
+t += `</tbody><tfoot><tr><td colspan="5">Total</td><td>${fmt(total)}</td><td>${fmt(mort,2)}</td><td>${fmt(fora,2)}</td><td>${fmt(vivo,2)}</td><td>${fmt(evCE,2)}</td><td>${fmt(evSE,2)}</td></tr></tfoot>`;
+document.getElementById('tDados').innerHTML = t;
+</script>
+</body>
+</html>
